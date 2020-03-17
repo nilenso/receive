@@ -6,7 +6,23 @@ before_script:
   - export LEIN_ROOT=1
   - PATH=$PATH:.
   - lein deps
+  - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
+  - eval $(ssh-agent -s)
+  - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+  - mkdir -p ~/.ssh
+  - chmod 700 ~/.ssh
+
+
+stages:
+  - test
+  - deploy
 
 test:
-	script:
-		- lein test
+  stage: test
+  script:
+    - lein test
+
+deploy:
+  stage: deploy
+  script:
+    - ssh root@"$SSH_IP" "echo Test >> ~/.deloy.log"
