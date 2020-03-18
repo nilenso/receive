@@ -1,12 +1,30 @@
 before_script:
-	- apt-get update -y
+  - apt-get update -y
   - apt-get install default-jre -y
   - wget https://raw.githubusercontent.com/technomancy/leiningen/stable/bin/lein
   - chmod a+x lein
   - export LEIN_ROOT=1
   - PATH=$PATH:.
   - lein deps
+  - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
+  - eval $(ssh-agent -s)
+  - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+  - mkdir -p ~/.ssh
+  - chmod 700 ~/.ssh
+  - echo "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+  - chmod 644 ~/.ssh/known_hosts
+
+
+stages:
+  - test
+  - deploy
 
 test:
-	script:
-		- lein test
+  stage: test
+  script:
+    - lein test
+
+deploy:
+  stage: deploy
+  script:
+    - ssh root@"$SSH_IP" "~/setup_receive.sh"
