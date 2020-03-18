@@ -28,3 +28,5 @@ deploy:
   stage: deploy
   script:
     - ssh root@"$SSH_IP" "~/setup_receive.sh"
+  only:
+    - master
