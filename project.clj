@@ -6,5 +6,6 @@
   :dependencies [[org.clojure/clojure "1.10.0"]
                  [ring "1.8.0"]
                  [bidi "2.1.6"]]
+  :profiles {:test {:dependencies [[ring/ring-mock "0.4.0"]]}}
   :main receive.core
   :repl-options {:init-ns receive.core})
