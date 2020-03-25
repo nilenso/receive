@@ -6,5 +6,11 @@
 (deftest ping-handler
   (is (= (core/ping (mock/request :get "/ping"))
          {:status 200
-          :headers {"Content-Type" "text/plain"}
-          :body "Hey you have reached here"})))
+          :body {:success true
+                 :message "Server is running fine!"}})))
+
+(deftest not-found-handler
+  (is (= (core/not-found (mock/request :get "/bad_route"))
+         {:status 404
+          :body {:success false
+                 :message "Not found"}})))
