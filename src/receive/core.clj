@@ -5,8 +5,11 @@
             [ring.middleware.params :refer [wrap-params]]
             [ring.middleware.multipart-params :refer [wrap-multipart-params]]
             [ring.middleware.reload :refer [wrap-reload]]
+            [ring.middleware.resource :refer [wrap-resource]]
             [clojure.java.io :as io]
-            [clojure.string :refer [replace-first]]))
+            [clojure.string :refer [replace-first]]
+            [hiccup.core :as h]
+            [receive.view.base :refer [base upload-button title] :rename {base base-layout}]))
 
 (defn expand-home [file-name]
   (if (.startsWith file-name "~")
@@ -38,15 +41,25 @@
     {:status 200
      :body {:name filename}}))
 
+(defn index [request]
+  {:status 200
+   :headers {"Content-Type" "text/html"}
+   :body (h/html (base-layout [:div
+                               title
+                               upload-button]))})
+
 (def handler
-  (make-handler ["/" {:get {"ping" ping}
-                      "upload" {:post {"/" upload}}
-                      true not-found}]))
+  (make-handler ["/"
+                 {:get {"" index
+                        "ping" ping}
+                  "upload" {:post {"/" upload}}
+                  true not-found}]))
 
 (def app (-> handler
              wrap-json-response
              wrap-params
-             wrap-multipart-params))
+             wrap-multipart-params
+             (wrap-resource "public")))
 
 (defn start-server
   []
