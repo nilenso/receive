@@ -6,7 +6,8 @@
             [ring.middleware.multipart-params :refer [wrap-multipart-params]]
             [ring.middleware.reload :refer [wrap-reload]]
             [clojure.java.io :as io]
-            [clojure.string :refer [replace-first]]))
+            [clojure.string :refer [replace-first]]
+            [ring.logger :refer [wrap-with-logger]]))
 
 (defn expand-home
   "Replaces the tilde in file path with the user's home directory"
@@ -57,7 +58,8 @@
 (def app (-> handler
              wrap-json-response
              wrap-params
-             wrap-multipart-params))
+             wrap-multipart-params
+             wrap-with-logger))
 
 (defn start-server
   []
