@@ -7,7 +7,10 @@
             [ring.middleware.reload :refer [wrap-reload]]
             [clojure.java.io :as io]
             [clojure.string :refer [replace-first]]
-            [ring.logger :refer [wrap-with-logger]]))
+            [ring.logger :refer [wrap-with-logger]]
+            [aero.core :refer [read-config]]))
+
+(def config (read-config (clojure.java.io/resource "config.edn")))
 
 (defn expand-home
   "Replaces the tilde in file path with the user's home directory"
@@ -22,7 +25,7 @@
 (defn file-save-path
   "Returns the path of the file to be saved given a unique ID and a file name"
   [uid filename]
-  (format "%s%s__%s" (expand-home "~/Desktop/") uid filename))
+  (format "%s/%s__%s" (expand-home (:storage-path config)) uid filename))
 
 (defn save-to-disk
   "Given a file and a file name, saves the files to disk"
@@ -39,7 +42,7 @@
                :body {:success false
                       :message "Not found"}}))
 
-(defn upload 
+(defn upload
   "Handles file upload and saves to the location specified in the config"
   [request]
   (let [file (get (:params request) "file")
@@ -63,11 +66,11 @@
 
 (defn start-server
   []
-  (jetty/run-jetty app {:port  3000
+  (jetty/run-jetty app {:port  (:port config)
                         :join? false}))
 
 (defn start-dev-server []
-  (jetty/run-jetty (wrap-reload #'app) {:port 3000 :join? false}))
+  (jetty/run-jetty (wrap-reload #'app) {:port (:port config) :join? false}))
 
 (defn -main [& args]
   (start-server))
