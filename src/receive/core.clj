@@ -8,7 +8,9 @@
             [clojure.java.io :as io]
             [clojure.string :refer [replace-first]]))
 
-(defn expand-home [file-name]
+(defn expand-home
+  "Replaces the tilde in file path with the user's home directory"
+  [file-name]
   (if (.startsWith file-name "~")
     (replace-first file-name "~" (System/getProperty "user.home"))
     file-name))
@@ -16,8 +18,15 @@
 (defn uuid []
   (.toString (java.util.UUID/randomUUID)))
 
-(defn save-to-disk [tempfile uid filename]
-  (io/copy tempfile (io/file (str (expand-home "~/Desktop/") uid "__" filename))))
+(defn file-save-path
+  "Returns the path of the file to be saved given a unique ID and a file name"
+  [uid filename]
+  (format "%s%s__%s" (expand-home "~/Desktop/") uid filename))
+
+(defn save-to-disk
+  "Given a file and a file name, saves the files to disk"
+  [tempfile filename]
+  (io/copy tempfile (io/file filename)))
 
 (def ping (constantly
            {:status 200
@@ -29,12 +38,14 @@
                :body {:success false
                       :message "Not found"}}))
 
-(defn upload [request]
+(defn upload 
+  "Handles file upload and saves to the location specified in the config"
+  [request]
   (let [file (get (:params request) "file")
         tempfile (:tempfile file)
         filename (:filename file)
         uid (uuid)]
-    (save-to-disk tempfile uid filename)
+    (save-to-disk tempfile (file-save-path uid filename))
     {:status 200
      :body {:name filename}}))
 
