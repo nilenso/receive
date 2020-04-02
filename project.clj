@@ -8,7 +8,8 @@
                  [bidi "2.1.6"]
                  [ring/ring-json "0.5.0"]
                  [ring-logger "1.0.1"]
-                 [aero "1.1.6"]]
+                 [aero "1.1.6"]
+                 [hiccup "1.0.5"]]
   :profiles {:test {:dependencies [[ring/ring-mock "0.4.0"]]}}
   :main receive.core
   :plugins [[lein-ring "0.12.5"]]
