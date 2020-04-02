@@ -13,6 +13,7 @@ before_script:
   - chmod 700 ~/.ssh
   - echo "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
   - chmod 644 ~/.ssh/known_hosts
+  - mkdir /root/uploads
 
 
 stages:
