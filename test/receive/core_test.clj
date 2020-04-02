@@ -21,6 +21,12 @@
     (.write file "Some data"))
   (io/file file))
 
+(deftest save-file-to-disk
+  (let [filename "/tmp/save-to-file-test"
+        tempfile (create-temp-file "/tmp/test_tempfile.dat")]
+    (core/save-to-disk tempfile filename)
+    (is (.exists (io/file filename)))))
+
 (deftest upload-handler
   (let [tempfile (create-temp-file "/tmp/tempfile.dat")
         file {:tempfile tempfile
