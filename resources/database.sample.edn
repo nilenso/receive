@@ -1,0 +1,3 @@
+{:dbtype "postgresql"
+ :dbname "receive"
+ :host "localhost"}
