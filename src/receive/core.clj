@@ -5,32 +5,13 @@
             [ring.middleware.params :refer [wrap-params]]
             [ring.middleware.multipart-params :refer [wrap-multipart-params]]
             [ring.middleware.reload :refer [wrap-reload]]
-            [clojure.java.io :as io]
-            [clojure.string :refer [replace-first]]
+            [receive.service.persistence :refer [process-uploaded-file]]
+            [receive.util.helper :refer [uuid]]
+            [clojure.java.io :refer [resource]]
             [ring.logger :refer [wrap-with-logger]]
             [aero.core :refer [read-config]]))
 
-(def config (read-config (clojure.java.io/resource "config.edn")))
-
-(defn expand-home
-  "Replaces the tilde in file path with the user's home directory"
-  [file-name]
-  (if (.startsWith file-name "~")
-    (replace-first file-name "~" (System/getProperty "user.home"))
-    file-name))
-
-(defn uuid []
-  (.toString (java.util.UUID/randomUUID)))
-
-(defn file-save-path
-  "Returns the path of the file to be saved given a unique ID and a file name"
-  [uid filename]
-  (format "%s/%s__%s" (expand-home (:storage-path config)) uid filename))
-
-(defn save-to-disk
-  "Given a file and a file name, saves the files to disk"
-  [tempfile filename]
-  (io/copy tempfile (io/file filename)))
+(defonce config (read-config (resource "config.edn")))
 
 (def ping (constantly
            {:status 200
@@ -48,17 +29,41 @@
   (let [file (get (:params request) "file")
         tempfile (:tempfile file)
         filename (:filename file)
-        uid (uuid)]
-    (save-to-disk tempfile (file-save-path uid filename))
+        uid (uuid)
+        result (process-uploaded-file tempfile filename uid)]
     {:status 200
-     :body {:name filename}}))
+     :body {:name filename
+            :uid (:file_storage/uid result)
+            :success true
+            :message "File saved successfully!"}}))
 
+(defn wrap-fallback-exception
+  [handler]
+  (fn [request]
+    (try
+      (handler request)
+      (catch Exception _
+        {:status 500 :body {:success false
+                            :message "Server error"}}))))
+
+ (defn wrap-postgres-exception
+   [handler]
+   (fn [request]
+     (try
+       (handler request)
+       (catch org.postgresql.util.PSQLException _
+         {:status 400 
+          :body {:success false
+                 :message "Invalid data"}}))))
+ 
 (def handler
   (make-handler ["/" {:get {"ping" ping}
                       "upload" {:post {"/" upload}}
                       true not-found}]))
 
 (def app (-> handler
+             wrap-postgres-exception
+             wrap-fallback-exception
              wrap-json-response
              wrap-params
              wrap-multipart-params

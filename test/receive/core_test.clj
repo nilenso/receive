@@ -1,6 +1,7 @@
 (ns receive.core-test
   (:require [clojure.test :refer :all]
             [receive.core :as core]
+            [receive.service.persistence :as persistence]
             [ring.mock.request :as mock]
             [clojure.java.io :as io]))
 
@@ -24,19 +25,23 @@
 (deftest save-file-to-disk
   (let [filename "/tmp/save-to-file-test"
         tempfile (create-temp-file "/tmp/test_tempfile.dat")]
-    (core/save-to-disk tempfile filename)
+    (persistence/save-to-disk tempfile filename)
     (is (.exists (io/file filename)))))
 
 (deftest upload-handler
   (let [tempfile (create-temp-file "/tmp/tempfile.dat")
         file {:tempfile tempfile
               :content-type "text/plain"
-              :filename "tempfile.dat"}]
-    (is (= (core/upload
-            (-> (mock/request :post "/upload/")
-                (assoc :content-type "multipart/form-data"
-                       :params {"file" file}
-                       :multipart-params {"file" file}
-                       :body (io/input-stream (:tempfile file)))))
+              :filename "tempfile.dat"}
+        mock-response (core/upload
+                       (-> (mock/request :post "/upload/")
+                           (assoc :content-type "multipart/form-data"
+                                  :params {"file" file}
+                                  :multipart-params {"file" file}
+                                  :body (io/input-stream (:tempfile file)))))
+        body (select-keys (:body mock-response) [:name])
+        response (assoc {} :status (:status mock-response)
+                        :body body)]
+    (is (= response
            {:status 200
             :body {:name "tempfile.dat"}}))))
