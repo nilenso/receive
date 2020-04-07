@@ -11,7 +11,8 @@
                  [aero "1.1.6"]
                  [honeysql "0.9.10"]
                  [seancorfield/next.jdbc "1.0.409"]
-                 [org.postgresql/postgresql "42.2.12"]]
+                 [org.postgresql/postgresql "42.2.12"]
+                 [hiccup "1.0.5"]]
   :profiles {:test {:dependencies [[ring/ring-mock "0.4.0"]]}}
   :main receive.core
   :plugins [[lein-ring "0.12.5"]]

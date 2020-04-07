@@ -1,0 +1,56 @@
+@import url('https://fonts.googleapis.com/css?family=Exo+2:400,500,900&display=swap');
+:root {
+    --primary: #5CDb95;
+    --primary-dark: #379683;
+    --primary-light: #8EE4AF;
+    --accent: #05386B;
+    --accent-light: #EDF5E1;
+}
+
+body {
+    min-height: 100vh;
+    min-width: 100vw;
+    width: 100vw;
+    height: 100vh;
+    margin: 0px;
+    background: var(--primary);
+    background-attachment: fixed;
+    background-size: cover;
+}
+
+* {
+    color: var(--accent-light);
+    margin: 0px;
+    padding: 0px;
+    font-family: 'Exo 2', sans-serif;
+}
+
+.container {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.upload-input {
+    padding: 10px;
+    color: var(--accent-light);
+    font-size: 32px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 900;
+    text-decoration: underline;
+}
+
+.title-section {
+    position: fixed;
+    top: 0;
+    left: 0;
+    margin: 10px;
+    border: 2px solid var(--accent);
+    padding: 6px;
+    color: var(--accent);
+    font-weight: 900;
+    border-radius: 4px;
+}

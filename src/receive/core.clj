@@ -8,8 +8,11 @@
             [receive.service.persistence :refer [process-uploaded-file]]
             [receive.util.helper :refer [uuid]]
             [clojure.java.io :refer [resource]]
+            [ring.middleware.resource :refer [wrap-resource]]
             [ring.logger :refer [wrap-with-logger]]
-            [aero.core :refer [read-config]]))
+            [aero.core :refer [read-config]]
+            [hiccup.core :as h]
+            [receive.view.base :refer [base upload-button title] :rename {base base-layout}]))
 
 (defonce config (read-config (resource "config.edn")))
 
@@ -56,10 +59,19 @@
           :body {:success false
                  :message "Invalid data"}}))))
  
+(defn index [request]
+  {:status 200
+   :headers {"Content-Type" "text/html"}
+   :body (h/html (base-layout [:div
+                               title
+                               upload-button]))})
+
 (def handler
-  (make-handler ["/" {:get {"ping" ping}
-                      "upload" {:post {"/" upload}}
-                      true not-found}]))
+  (make-handler ["/"
+                 {:get {"" index
+                        "ping" ping}
+                  "upload" {:post {"/" upload}}
+                  true not-found}]))
 
 (def app (-> handler
              wrap-postgres-exception
@@ -67,7 +79,8 @@
              wrap-json-response
              wrap-params
              wrap-multipart-params
-             wrap-with-logger))
+             wrap-with-logger
+             (wrap-resource "public")))
 
 (defn start-server
   []

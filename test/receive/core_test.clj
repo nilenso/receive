@@ -45,3 +45,8 @@
     (is (= response
            {:status 200
             :body {:name "tempfile.dat"}}))))
+
+(deftest index-handler
+  (let [mock-response (core/index (mock/request :get "/"))
+        mock-status (:status mock-response)]
+    (is (= mock-status 200))))
