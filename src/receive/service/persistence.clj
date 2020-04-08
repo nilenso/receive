@@ -1,12 +1,10 @@
 (ns receive.service.persistence
   (:require [clojure.java.io :as io]
             [clojure.string :refer [replace-first]]
-            [aero.core :refer [read-config]]
+            [receive.util.config :refer [config]]
             [next.jdbc :as jdbc]
             [receive.db.connection :refer [datasource]]
             [receive.db.sql :refer [save-file]]))
-
-(defonce config (read-config (clojure.java.io/resource "config.edn")))
 
 (defn expand-home
   "Replaces the tilde in file path with the user's home directory"

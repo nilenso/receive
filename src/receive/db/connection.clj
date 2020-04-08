@@ -1,9 +1,6 @@
 (ns receive.db.connection
   (:require [next.jdbc :as jdbc]
-            [clojure.java.io :refer [resource]]
-            [aero.core :refer [read-config]]))
-
-(defonce config (read-config (resource "config.edn")))
+            [receive.util.config :refer [config]]))
 
 (def database (:db config))
 

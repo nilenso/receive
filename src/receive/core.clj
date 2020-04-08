@@ -7,14 +7,11 @@
             [ring.middleware.reload :refer [wrap-reload]]
             [receive.service.persistence :refer [process-uploaded-file]]
             [receive.util.helper :refer [uuid]]
-            [clojure.java.io :refer [resource]]
+            [receive.util.config :refer [config]]
             [ring.middleware.resource :refer [wrap-resource]]
             [ring.logger :refer [wrap-with-logger]]
-            [aero.core :refer [read-config]]
             [hiccup.core :as h]
             [receive.view.base :refer [base upload-button title] :rename {base base-layout}]))
-
-(defonce config (read-config (resource "config.edn")))
 
 (def ping (constantly
            {:status 200
