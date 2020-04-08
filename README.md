@@ -1,10 +1,11 @@
 # receive
 
-A Clojure library designed to ... well, that part is up to you.
+A one click install application for file sharing.
 
 ## Usage
 
-FIXME
+Run `lein deps` and `lein migrate` to get started
+
 
 ## License
 
