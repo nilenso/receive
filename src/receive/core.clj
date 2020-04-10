@@ -6,12 +6,12 @@
             [ring.middleware.multipart-params :refer [wrap-multipart-params]]
             [ring.middleware.reload :refer [wrap-reload]]
             [receive.service.persistence :refer [process-uploaded-file]]
-            [receive.util.helper :refer [uuid]]
             [receive.config :refer [config]]
             [ring.middleware.resource :refer [wrap-resource]]
             [ring.logger :refer [wrap-with-logger]]
             [hiccup.core :as h]
-            [receive.view.base :refer [base upload-button title] :rename {base base-layout}]))
+            [receive.view.base :refer [base upload-button title] :rename {base base-layout}])
+  (:import [java.util UUID]))
 
 (def ping (constantly
            {:status 200
@@ -29,7 +29,7 @@
   (let [file (get (:params request) "file")
         tempfile (:tempfile file)
         filename (:filename file)
-        uid (uuid)
+        uid (str (UUID/randomUUID))
         result (process-uploaded-file tempfile filename uid)]
     {:status 200
      :body {:name filename
@@ -46,16 +46,16 @@
         {:status 500 :body {:success false
                             :message "Server error"}}))))
 
- (defn wrap-postgres-exception
-   [handler]
-   (fn [request]
-     (try
-       (handler request)
-       (catch org.postgresql.util.PSQLException _
-         {:status 400 
-          :body {:success false
-                 :message "Invalid data"}}))))
- 
+(defn wrap-postgres-exception
+  [handler]
+  (fn [request]
+    (try
+      (handler request)
+      (catch org.postgresql.util.PSQLException _
+        {:status 400
+         :body {:success false
+                :message "Invalid data"}}))))
+
 (defn index [request]
   {:status 200
    :headers {"Content-Type" "text/html"}
