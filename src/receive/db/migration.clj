@@ -1,6 +1,6 @@
 (ns receive.db.migration
   (:require [ragtime.jdbc :as jdbc]
-            [receive.util.config :refer[config]]
+            [receive.config :refer[config]]
             [ragtime.repl :as repl]))
 
 (def migration-config

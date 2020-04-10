@@ -1,4 +1,4 @@
-(ns receive.util.config
+(ns receive.config
   (:require [clojure.java.io :refer [resource]]
             [aero.core :refer [read-config]]))
 

@@ -1,7 +1,7 @@
 (ns receive.service.persistence
   (:require [clojure.java.io :as io]
             [clojure.string :refer [replace-first]]
-            [receive.util.config :refer [config]]
+            [receive.config :refer [config]]
             [next.jdbc :as jdbc]
             [receive.db.connection :refer [datasource]]
             [receive.db.sql :refer [save-file]]))

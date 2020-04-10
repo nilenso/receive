@@ -7,7 +7,7 @@
             [ring.middleware.reload :refer [wrap-reload]]
             [receive.service.persistence :refer [process-uploaded-file]]
             [receive.util.helper :refer [uuid]]
-            [receive.util.config :refer [config]]
+            [receive.config :refer [config]]
             [ring.middleware.resource :refer [wrap-resource]]
             [ring.logger :refer [wrap-with-logger]]
             [hiccup.core :as h]
