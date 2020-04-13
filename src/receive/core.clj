@@ -27,13 +27,16 @@
                :body {:success false
                       :message "Not found"}}))
 
+(defn uuid-str []
+  (str (UUID/randomUUID)))
+
 (defn upload
   "Handles file upload and saves to the location specified in the config"
   [request]
   (let [file (get (:params request) "file")
         tempfile (:tempfile file)
         filename (:filename file)
-        uid (str (UUID/randomUUID))
+        uid (uuid-str)
         result (process-uploaded-file tempfile filename uid)]
     {:status 200
      :body {:name filename
