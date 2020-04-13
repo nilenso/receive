@@ -1,5 +1,5 @@
 (ns receive.config
-  (:require [clojure.java.io :refer [resource]]
-            [aero.core :refer [read-config]]))
+  (:require [aero.core :as aero]
+            [clojure.java.io :as io]))
 
-(defonce config (read-config (resource "config.edn")))
+(defonce config (aero/read-config (io/resource "config.edn")))

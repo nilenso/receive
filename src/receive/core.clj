@@ -1,17 +1,21 @@
 (ns receive.core
-  (:require [ring.adapter.jetty :as jetty]
-            [bidi.ring :refer (make-handler)]
-            [ring.middleware.json :refer [wrap-json-response]]
-            [ring.middleware.params :refer [wrap-params]]
-            [ring.middleware.multipart-params :refer [wrap-multipart-params]]
-            [ring.middleware.reload :refer [wrap-reload]]
-            [receive.service.persistence :refer [process-uploaded-file]]
-            [receive.config :refer [config]]
-            [ring.middleware.resource :refer [wrap-resource]]
-            [ring.logger :refer [wrap-with-logger]]
-            [hiccup.core :as h]
-            [receive.view.base :refer [base upload-button title] :rename {base base-layout}])
-  (:import [java.util UUID]))
+  (:require
+   [bidi.ring :refer [make-handler]]
+   [hiccup.core :as h]
+   [receive.config :refer [config]]
+   [receive.service.persistence :refer [process-uploaded-file]]
+   [receive.view.base
+    :refer [base upload-button title]
+    :rename {base base-layout}]
+   [ring.adapter.jetty :as jetty]
+   [ring.middleware.json :refer [wrap-json-response]]
+   [ring.middleware.params :refer [wrap-params]]
+   [ring.middleware.multipart-params :refer [wrap-multipart-params]]
+   [ring.middleware.resource :refer [wrap-resource]]
+   [ring.middleware.reload :refer [wrap-reload]]
+   [ring.logger :refer [wrap-with-logger]])
+  (:import
+   java.util.UUID))
 
 (def ping (constantly
            {:status 200
@@ -64,11 +68,10 @@
                                upload-button]))})
 
 (def handler
-  (make-handler ["/"
-                 {:get {"" index
-                        "ping" ping}
-                  "upload" {:post {"/" upload}}
-                  true not-found}]))
+  (make-handler ["/" {:get {"" index
+                            "ping" ping}
+                      "upload" {:post {"/" upload}}
+                      true not-found}]))
 
 (def app (-> handler
              wrap-postgres-exception
