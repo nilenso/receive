@@ -1,6 +1,6 @@
 (defproject receive "0.1.0-SNAPSHOT"
   :description "Send and Receive files"
-  :url "http://example.com/FIXME"
+  :url "http://receive.nilenso.com"
   :license {:name "EPL-2.0 OR GPL-2.0-or-later WITH Classpath-exception-2.0"
             :url "https://www.eclipse.org/legal/epl-2.0/"}
   :dependencies [[org.clojure/clojure "1.10.0"]
@@ -9,9 +9,15 @@
                  [ring/ring-json "0.5.0"]
                  [ring-logger "1.0.1"]
                  [aero "1.1.6"]
-                 [hiccup "1.0.5"]]
+                 [honeysql "0.9.10"]
+                 [seancorfield/next.jdbc "1.0.409"]
+                 [org.postgresql/postgresql "42.2.12"]
+                 [hiccup "1.0.5"]
+                 [ragtime "0.8.0"]]
   :profiles {:test {:dependencies [[ring/ring-mock "0.4.0"]]}}
   :main receive.core
   :plugins [[lein-ring "0.12.5"]]
   :ring {:handler receive.core/app}
-  :repl-options {:init-ns receive.core})
+  :repl-options {:init-ns receive.core}
+  :aliases {"migrate"  ["run" "-m" "receive.db.migration/migrate"]
+            "rollback" ["run" "-m" "receive.db.migration/rollback"]})

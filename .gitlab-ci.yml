@@ -5,8 +5,10 @@ before_script:
   - chmod a+x lein
   - export LEIN_ROOT=1
   - PATH=$PATH:.
+  - mv resources/database.sample.edn resources/database.edn
   - lein deps
-  - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
+  - lein migrate
+  - "which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )"
   - eval $(ssh-agent -s)
   - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
   - mkdir -p ~/.ssh
@@ -15,13 +17,19 @@ before_script:
   - chmod 644 ~/.ssh/known_hosts
   - mkdir /root/uploads
 
-
 stages:
   - test
   - deploy
 
 test:
   stage: test
+  services:
+    - postgres:12.2-alpine
+  variables:
+    POSTGRES_DB: $DB_TEST
+    POSTGRES_USER: $DB_TEST_USER
+    POSTGRES_PASSWORD: "$DB_TEST_PASSWORD"
+    POSTGRES_HOST_AUTH_METHOD: trust
   script:
     - lein test
 

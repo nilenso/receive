@@ -1,0 +1,5 @@
+{:dbtype "postgresql"
+ :dbname "receive"
+ :user "user"
+ :password ""
+ :host "postgres"}

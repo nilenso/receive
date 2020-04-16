@@ -1,0 +1,6 @@
+{:up ["CREATE TABLE file_storage 
+       (id serial NOT NULL,
+       filename varchar NOT NULL,
+       uid varchar NOT NULL,
+       created_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP);"]
+ :down ["DROP TABLE file_storage;"]}
