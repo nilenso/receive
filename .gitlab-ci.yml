@@ -26,8 +26,8 @@ test:
   services:
     - postgres:12.2-alpine
   variables:
-    POSTGRES_DB: "$DB_TEST_NAME"
-    POSTGRES_USER: "$DB_TEST_USER"
+    POSTGRES_DB: $DB_TEST_NAME
+    POSTGRES_USER: $DB_TEST_USER
     POSTGRES_PASSWORD: "$DB_TEST_PASSWORD"
     POSTGRES_HOST_AUTH_METHOD: trust
   script:
