@@ -1,10 +1,40 @@
-# receive
+# Receive
 
-A Clojure library designed to ... well, that part is up to you.
+A one click install application for file sharing.
 
-## Usage
+Setup a full stack file sharing application on the platform of your choice.
 
-FIXME
+> Note: Project is still in development and all the features are not ready yet.
+
+## Getting started
+
+### Prerequisites
+
+You'll need the following softwares to get started with development.
+
+- Clojure
+- Leiningen
+- Postgres
+
+### Installing
+
+- `mkdir <path to file upload>`
+- update config.edn in resources with <path to file upload>
+- `lein deps`
+- `cp resources/database.sample.edn resources/database.edn` and replace config
+- `lein migrate` to setup database
+
+### Running
+
+Run `start-dev-server` in `core.clj` to start an auto reload development server
+
+## Testing
+
+`lein test`
+
+## Deployment
+
+> Work in progress
 
 ## License
 
