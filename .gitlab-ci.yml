@@ -7,7 +7,6 @@ before_script:
   - PATH=$PATH:.
   - mv resources/database.sample.edn resources/database.edn
   - lein deps
-  - lein migrate
   - "which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )"
   - eval $(ssh-agent -s)
   - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
@@ -31,6 +30,7 @@ test:
     POSTGRES_PASSWORD: "$DB_TEST_PASSWORD"
     POSTGRES_HOST_AUTH_METHOD: trust
   script:
+    - lein migrate
     - lein test
 
 deploy:
