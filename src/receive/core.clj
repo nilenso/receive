@@ -1,9 +1,11 @@
 (ns receive.core
   (:require
    [bidi.ring :refer [make-handler]]
+   [clojure.java.io :as io]
    [hiccup.core :as h]
    [receive.config :refer [config]]
-   [receive.service.persistence :refer [process-uploaded-file]]
+   [receive.service.file-storage :as file-storage]
+   [receive.service.persistence :as persistence]
    [receive.view.base
     :refer [base upload-button title]
     :rename {base base-layout}]
@@ -37,7 +39,7 @@
         tempfile (:tempfile file)
         filename (:filename file)
         uid (uuid-str)
-        result (process-uploaded-file tempfile filename uid)]
+        result (persistence/process-uploaded-file tempfile filename uid)]
     {:status 200
      :body {:name filename
             :uid (:file_storage/uid result)
@@ -63,6 +65,14 @@
          :body {:success false
                 :message "Invalid data"}}))))
 
+(defn download-file
+  [request]
+  (let [uid (-> request :route-params :id)
+        filename (file-storage/find-file uid)
+        abs-filename (persistence/file-save-path uid filename)]
+    {:status 200
+     :body (io/file abs-filename)}))
+
 (defn index [request]
   {:status 200
    :headers {"Content-Type" "text/html"}
@@ -74,6 +84,7 @@
   (make-handler ["/" {:get {"" index
                             "ping" ping}
                       "upload" {:post {"/" upload}}
+                      "download/" {[:id "/"] download-file}
                       true not-found}]))
 
 (def app (-> handler
