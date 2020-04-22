@@ -18,7 +18,8 @@ before_script:
 
 stages:
   - test
-  - deploy
+  - deploy_staging
+  - deploy_production
 
 test:
   stage: test
@@ -33,9 +34,23 @@ test:
     - lein migrate
     - lein test
 
-deploy:
-  stage: deploy
+deploy_staging:
+  stage: deploy_staging
+  variables:
+    ENV: "staging"
   script:
-    - ssh root@"$SSH_IP" "~/setup_receive.sh"
+    - scp scripts/setup_receive.sh root@"$SSH_IP":~/
+    - ssh root@"$SSH_IP" "ENV=${ENV} ~/setup_receive.sh"
   only:
     - master
+    - staging-pipeline
+
+deploy_production:
+  stage: deploy_production
+  variables:
+    ENV: "production"
+  script:
+    - echo "Production" >> receive.log
+  only:
+    - master
+  when: manual
