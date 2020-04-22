@@ -1,21 +1,3 @@
-before_script:
-  - apt-get update -y
-  - apt-get install default-jre -y
-  - wget https://raw.githubusercontent.com/technomancy/leiningen/stable/bin/lein
-  - chmod a+x lein
-  - export LEIN_ROOT=1
-  - PATH=$PATH:.
-  - mv resources/database.sample.edn resources/database.edn
-  - lein deps
-  - "which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )"
-  - eval $(ssh-agent -s)
-  - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
-  - mkdir -p ~/.ssh
-  - chmod 700 ~/.ssh
-  - echo "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
-  - chmod 644 ~/.ssh/known_hosts
-  - mkdir /root/uploads
-
 stages:
   - test
   - deploy_staging
@@ -30,6 +12,16 @@ test:
     POSTGRES_USER: $DB_TEST_USER
     POSTGRES_PASSWORD: "$DB_TEST_PASSWORD"
     POSTGRES_HOST_AUTH_METHOD: trust
+  before_script:
+    - apt-get update -y
+    - apt-get install default-jre -y
+    - wget https://raw.githubusercontent.com/technomancy/leiningen/stable/bin/lein
+    - chmod a+x lein
+    - export LEIN_ROOT=1
+    - PATH=$PATH:.
+    - mv resources/database.sample.edn resources/database.edn
+    - lein deps
+    - mkdir /root/uploads
   script:
     - lein migrate
     - lein test
@@ -38,9 +30,16 @@ deploy_staging:
   stage: deploy_staging
   variables:
     ENV: "staging"
+  before_script:
+    - "which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )"
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - echo "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
   script:
     - scp scripts/setup_receive.sh root@"$SSH_IP":~/
-    - echo "${ENV}" >> ~/env.log
     - ssh root@"$SSH_IP" "chmod +x ~/setup_receive.sh && ~/setup_receive.sh ${ENV}"
   only:
     - master
@@ -50,9 +49,16 @@ deploy_production:
   stage: deploy_production
   variables:
     ENV: "production"
+  before_script:
+    - "which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )"
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - echo "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
   script:
     - scp scripts/setup_receive.sh root@"$SSH_IP":~/
-    - echo "${ENV}" >> ~/env.log
     - ssh root@"$SSH_IP" "chmod +x ~/setup_receive.sh && ~/setup_receive.sh ${ENV}"
   only:
     - master
