@@ -40,8 +40,8 @@ deploy_staging:
     ENV: "staging"
   script:
     - scp scripts/setup_receive.sh root@"$SSH_IP":~/
-    - echo ${ENV} >> env.log
-    - ssh root@"$SSH_IP" "~/setup_receive.sh ${ENV}"
+    - echo ${ENV} >> ~/env.log
+    - ssh root@"$SSH_IP" "chmod +x ~/setup_receive.sh && ~/setup_receive.sh ${ENV}"
   only:
     - master
     - staging-pipeline
