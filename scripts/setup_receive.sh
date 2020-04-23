@@ -14,7 +14,7 @@ rm -rf /opt/$env/
 mkdir /opt/$env/
 mv receive /opt/$env/
 cd /opt/$env/receive
-cp /opt/database.edn /opt/$env/receive/resources/
+cp /opt/database.$env.edn /opt/$env/receive/resources/database.edn
 
 echo "Running lein deps"
 lein deps > /dev/null
