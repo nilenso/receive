@@ -1,3 +1,5 @@
+image: clojure:latest
+
 stages:
   - test
   - deploy_staging
@@ -13,11 +15,6 @@ test:
     POSTGRES_PASSWORD: "$DB_TEST_PASSWORD"
     POSTGRES_HOST_AUTH_METHOD: trust
   before_script:
-    - apt-get update -y
-    - apt-get install default-jre -y
-    - wget https://raw.githubusercontent.com/technomancy/leiningen/stable/bin/lein
-    - chmod a+x lein
-    - export LEIN_ROOT=1
     - PATH=$PATH:.
     - mv resources/database.sample.edn resources/database.edn
     - lein deps
@@ -43,7 +40,6 @@ deploy_staging:
     - ssh root@"$SSH_IP" "chmod +x ~/setup_receive.sh && ~/setup_receive.sh ${ENV}"
   only:
     - master
-    - staging-pipeline
 
 deploy_production:
   stage: deploy_production
@@ -62,5 +58,4 @@ deploy_production:
     - ssh root@"$SSH_IP" "chmod +x ~/setup_receive.sh && ~/setup_receive.sh ${ENV}"
   only:
     - master
-    - staging-pipeline
   when: manual
