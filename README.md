@@ -1,5 +1,7 @@
 # Receive
 
+[![pipeline status](https://gitlab.com/nilenso/receive/badges/master/pipeline.svg)](https://gitlab.com/nilenso/receive/-/commits/master)
+
 A one click install application for file sharing.
 
 Setup a full stack file sharing application on the platform of your choice.
@@ -34,7 +36,59 @@ Run `start-dev-server` in `core.clj` to start an auto reload development server
 
 ## Deployment
 
-> Work in progress
+### Requirements
+
+- Java
+- Clojure
+- Leiningen
+- Postgres
+  
+### Setup
+
+Add systemd services for both staging and production environement using the following script and place it in `/etc/systemd/system` and name the file `receive.staging.service`
+
+```
+[Unit]
+Description=Receive API
+
+[Service]
+Environment=NOMAD_INSTANCE=PROD
+Environment=PORT=3000
+Type=simple
+ExecStart=/usr/bin/lein run
+Restart=always
+User=root
+WorkingDirectory=/opt/staging/receive
+
+[Install]
+WantedBy=mutli-user.target
+```
+
+Run the following commands to start the service and enable auto restart
+
+```
+sudo systemctl start receive.staging.service
+sudo systemctl enable receive.staging.service
+```
+
+For nginx add the following server block to forward the request to the service
+
+```
+server {
+	listen 80;
+	listen [::]:80;
+
+	server_name receive-staging.nilenso.com;
+
+	location / {
+		proxy_pass http://localhost:3000;
+	}
+}
+```
+
+Save the database config in `/opt/database.staging.edn`. Sample config can be found in `resources/database.sample.edn`
+
+Repeat the same processs for the production setup.
 
 ## License
 
