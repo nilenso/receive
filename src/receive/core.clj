@@ -1,6 +1,7 @@
 (ns receive.core
   (:require
    [bidi.ring :refer [make-handler]]
+   [clojure.string :as string]
    [hiccup.core :as h]
    [receive.config :refer [config]]
    [receive.service.persistence :refer [process-uploaded-file]]
@@ -91,13 +92,26 @@
                       "share" {:get share-handler}
                       true not-found}]))
 
+(defn wrap-trailing-slash
+  [handler]
+  (fn [request]
+    (let [uri (:uri request)
+          trailing-slash-matcher #".+/"
+          trailing-slash? (re-matches trailing-slash-matcher uri)
+          remove-trailing-slash #(string/join "" (drop-last %))]
+      (if trailing-slash?
+        (handler (assoc request :uri (remove-trailing-slash uri)))
+        (handler request)))))
+
+
 (def app (-> handler
-             wrap-postgres-exception
-             wrap-fallback-exception
-             wrap-json-response
-             wrap-params
-             wrap-multipart-params
-             wrap-with-logger
+             (wrap-postgres-exception)
+             (wrap-fallback-exception)
+             (wrap-json-response)
+             (wrap-params)
+             (wrap-multipart-params)
+             (wrap-with-logger)
+             (wrap-trailing-slash)
              (wrap-resource "public")))
 
 (defn start-server
