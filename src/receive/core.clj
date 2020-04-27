@@ -5,7 +5,7 @@
    [receive.config :refer [config]]
    [receive.service.persistence :refer [process-uploaded-file]]
    [receive.view.base
-    :refer [base upload-button title]
+    :refer [base upload-button title copy-button]
     :rename {base base-layout}]
    [ring.adapter.jetty :as jetty]
    [ring.middleware.json :refer [wrap-json-response]]
@@ -70,10 +70,25 @@
                                title
                                upload-button]))})
 
+(defn download-link
+  [uid]
+  (format "%s/download/%s/" (:base-url config) uid))
+
+(defn share-handler [request]
+  (let [uid (-> request
+                :query-params
+                (get "uid"))
+        link (download-link uid)]
+    {:status 200
+     :body (h/html (base-layout [:div
+                                 title
+                                 (copy-button link)]))}))
+
 (def handler
   (make-handler ["/" {:get {"" index
                             "ping" ping}
                       "upload" {:post {"/" upload}}
+                      "share" {:get share-handler}
                       true not-found}]))
 
 (def app (-> handler
