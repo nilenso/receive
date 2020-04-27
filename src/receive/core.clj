@@ -87,7 +87,7 @@
 (def handler
   (make-handler ["/" {:get {"" index
                             "ping" ping}
-                      "upload" {:post {"/" upload}}
+                      "upload" {:post upload}
                       "share" {:get share-handler}
                       true not-found}]))
 
