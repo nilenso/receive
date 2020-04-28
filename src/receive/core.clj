@@ -85,7 +85,7 @@
                                  title
                                  (download-button uid filename)]))}))
 
-(defn index [request]
+(defn index [_]
   {:status 200
    :headers {"Content-Type" "text/html"}
    :body (h/html (base-layout [:div

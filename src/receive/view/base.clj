@@ -1,6 +1,5 @@
 (ns receive.view.base
-  (:require [clojure.string :as string]
-            [hiccup.page :as page]
+  (:require [hiccup.page :as page]
             [receive.config :as config]))
 
 (defn base [children]
