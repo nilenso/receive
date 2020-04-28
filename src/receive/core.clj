@@ -7,7 +7,7 @@
    [receive.service.file-storage :as file-storage]
    [receive.service.persistence :as persistence]
    [receive.view.base
-    :refer [base upload-button title]
+    :refer [base upload-button title download-button]
     :rename {base base-layout}]
    [ring.adapter.jetty :as jetty]
    [ring.middleware.json :refer [wrap-json-response]]
@@ -77,6 +77,14 @@
        :body {:message "File not found"
               :success false}})))
 
+(defn download-view [request]
+  (let [uid (-> request :params :id)
+        filename (file-storage/find-file uid)]
+    {:headers {"Content-Type" "text/html"}
+     :body (h/html (base-layout [:div
+                                 title
+                                 (download-button uid filename)]))}))
+
 (defn index [request]
   {:status 200
    :headers {"Content-Type" "text/html"}
@@ -88,7 +96,8 @@
   (make-handler ["/" {:get {"" index
                             "ping" ping}
                       "upload" {:post {"/" upload}}
-                      "download" {"/api/" {[:id "/"] download-file}}
+                      "download" {"/api/" {[:id "/"] download-file}
+                                  "/" {[:id "/"] download-view}}
                       true not-found}]))
 
 (def app (-> handler
