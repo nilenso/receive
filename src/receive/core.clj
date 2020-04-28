@@ -70,8 +70,12 @@
   (let [uid (-> request :route-params :id)
         filename (file-storage/find-file uid)
         abs-filename (persistence/file-save-path uid filename)]
-    {:status 200
-     :body (io/file abs-filename)}))
+    (if filename
+      {:status 200
+       :body (io/file abs-filename)}
+      {:status 404
+       :body {:message "File not found"
+              :success false}})))
 
 (defn index [request]
   {:status 200
@@ -84,7 +88,7 @@
   (make-handler ["/" {:get {"" index
                             "ping" ping}
                       "upload" {:post {"/" upload}}
-                      "download/" {[:id "/"] download-file}
+                      "download" {"/api/" {[:id "/"] download-file}}
                       true not-found}]))
 
 (def app (-> handler
