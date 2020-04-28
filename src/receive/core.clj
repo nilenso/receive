@@ -63,7 +63,7 @@
          :body {:success false
                 :message "Invalid data"}}))))
 
-(defn index [request]
+(defn index [_]
   {:status 200
    :headers {"Content-Type" "text/html"}
    :body (h/html (base-layout [:div

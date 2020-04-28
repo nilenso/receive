@@ -1,15 +1,15 @@
 (ns receive.view.base
   (:require [hiccup.page :as page]
-            [hiccup.form :as form]))
+   [receive.config :as config]))
 
 (defn base [children]
   (page/html5
    [:head
-    [:title "Receive UI"]
+    [:title (:ui-title config/config)]
     [:meta {:charset "utf-8"}]
     [:meta {:name "theme-color" :content "#5CDb95"}]
     (page/include-css "css/style.css")]
-   [:body
+   [:body (if config/staging? {:class "env-staging"} {})
     [:div {:class "container"}
      children
      (page/include-js "js/main.js")]]))
