@@ -66,7 +66,7 @@
 (defn index [_]
   {:status 200
    :headers {"Content-Type" "text/html"}
-   :body (h/html (base-layout (:env config) [:div
+   :body (h/html (base-layout [:div
                                title
                                upload-button]))})
 

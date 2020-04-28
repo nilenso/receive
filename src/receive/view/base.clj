@@ -1,20 +1,15 @@
 (ns receive.view.base
-  (:require [hiccup.page :as page]))
+  (:require [hiccup.page :as page]
+   [receive.config :as config]))
 
-(defn title-str [env]
-  (str "Receive UI"
-          (if (= env "production")
-            ""
-            (str " | " env))))
-
-(defn base [env children]
+(defn base [children]
   (page/html5
    [:head
-    [:title (title-str env)]
+    [:title (:ui-title config/config)]
     [:meta {:charset "utf-8"}]
     [:meta {:name "theme-color" :content "#5CDb95"}]
     (page/include-css "css/style.css")]
-   [:body (if (= env "staging") {:class "env-staging"} {})
+   [:body (if config/staging? {:class "env-staging"} {})
     [:div {:class "container"}
      children
      (page/include-js "js/main.js")]]))
