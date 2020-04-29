@@ -33,6 +33,6 @@
   (format "/download/api/%s/" uid))
 
 (defn download-button [uid filename]
-  [:a {:download "proposed_file_name" :href (download-link uid)}
+  [:a {:download filename :href (download-link uid)}
    [:button "Download"]
    [:p filename]])
