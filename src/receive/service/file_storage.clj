@@ -4,6 +4,7 @@
             [receive.db.sql :as sql]))
 
 (defn find-file
+  "Finds the file name given a uid"
   [uid]
   (:file_storage/filename
    (jdbc/execute-one! connection/datasource (sql/find-file uid))))

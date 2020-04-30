@@ -15,7 +15,8 @@
    [ring.middleware.multipart-params :refer [wrap-multipart-params]]
    [ring.middleware.resource :refer [wrap-resource]]
    [ring.middleware.reload :refer [wrap-reload]]
-   [ring.logger :refer [wrap-with-logger]])
+   [ring.logger :refer [wrap-with-logger]]
+   [ring.util.response :as response])
   (:import
    java.util.UUID))
 
@@ -80,10 +81,13 @@
 (defn download-view [request]
   (let [uid (-> request :params :id)
         filename (file-storage/find-file uid)]
-    {:headers {"Content-Type" "text/html"}
-     :body (h/html (base-layout [:div
-                                 title
-                                 (download-button uid filename)]))}))
+    (if filename
+      {:status 200
+       :headers {"Content-Type" "text/html"}
+       :body (h/html (base-layout [:div
+                                   title
+                                   (download-button uid filename)]))}
+      (response/redirect "/404"))))
 
 (defn index [_]
   {:status 200

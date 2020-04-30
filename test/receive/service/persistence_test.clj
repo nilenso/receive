@@ -1,9 +1,11 @@
 (ns receive.service.persistence-test
-  (:require [clojure.test :refer :all]
+  (:require [clojure.test :refer [deftest is]]
             [clojure.java.io :as io]
             [receive.service.persistence :as persistence]))
 
-(defn create-temp-file [file]
+(defn create-temp-file 
+  "Creates a file given a filename"
+  [file]
   (with-open [file (io/writer file)]
     (.write file "Some data"))
   (io/file file))

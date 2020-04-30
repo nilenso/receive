@@ -24,6 +24,7 @@
   (io/copy tempfile (io/file filename)))
 
 (defn process-uploaded-file
+  "Adds a new database entry and saves file to disk"
   [file filename uid]
   (jdbc/with-transaction [tx connection/datasource]
     (let [result (jdbc/execute-one! tx (sql/save-file filename uid) {:return-keys true})]
