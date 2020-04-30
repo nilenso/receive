@@ -12,6 +12,7 @@
    [ring.middleware.json :refer [wrap-json-response]]
    [ring.middleware.params :refer [wrap-params]]
    [ring.middleware.multipart-params :refer [wrap-multipart-params]]
+   [ring.middleware.keyword-params :refer [wrap-keyword-params]]
    [ring.middleware.resource :refer [wrap-resource]]
    [ring.middleware.reload :refer [wrap-reload]]
    [ring.logger :refer [wrap-with-logger]])
@@ -64,7 +65,7 @@
          :body {:success false
                 :message "Invalid data"}}))))
 
-(defn index [request]
+(defn index [_]
   {:status 200
    :headers {"Content-Type" "text/html"}
    :body (h/html (base-layout [:div
@@ -76,9 +77,7 @@
   (format "%s/download/%s/" (:base-url config) uid))
 
 (defn share-handler [request]
-  (let [uid (-> request
-                :query-params
-                (get "uid"))
+  (let [uid (-> request :params :uid)
         link (download-link uid)]
     {:status 200
      :body (h/html (base-layout [:div
@@ -103,14 +102,15 @@
         (handler (assoc request :uri (remove-trailing-slash uri)))
         (handler request)))))
 
-
 (def app (-> handler
              (wrap-postgres-exception)
              (wrap-fallback-exception)
+             (wrap-keyword-params)
              (wrap-json-response)
              (wrap-params)
              (wrap-multipart-params)
              (wrap-with-logger)
+             (wrap-keyword-params)
              (wrap-trailing-slash)
              (wrap-resource "public")))
 
