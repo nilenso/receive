@@ -3,7 +3,7 @@
             [clojure.java.io :as io]
             [receive.service.persistence :as persistence]))
 
-(defn create-temp-file 
+(defn create-temp-file
   "Creates a file given a filename"
   [file]
   (with-open [file (io/writer file)]
