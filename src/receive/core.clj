@@ -86,21 +86,19 @@
 
 (def handler
   (make-handler ["/" {:get {"" index
-                            "ping" ping}
+                            "api/ping" ping}
                       "upload" {:post upload}
                       "share" {:get share-handler}
                       true not-found}]))
 
 (defn wrap-trailing-slash
+  "Removes trailing slash in all the routes except base route"
   [handler]
-  (fn [request]
-    (let [uri (:uri request)
-          trailing-slash-matcher #".+/"
-          trailing-slash? (re-matches trailing-slash-matcher uri)
-          remove-trailing-slash #(string/join "" (drop-last %))]
-      (if trailing-slash?
-        (handler (assoc request :uri (remove-trailing-slash uri)))
-        (handler request)))))
+  (fn [{uri :uri :as request}]
+    (if (and (> (count uri) 1)
+             (.endsWith uri "/"))
+      (handler (update request :uri (comp string/join drop-last)))
+      (handler request))))
 
 (def app (-> handler
              (wrap-postgres-exception)
@@ -116,7 +114,7 @@
 
 (defn start-server
   []
-  (jetty/run-jetty app {:port  (:port config)
+  (jetty/run-jetty app {:port (:port config)
                         :join? false}))
 
 (defn start-dev-server []
