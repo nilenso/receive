@@ -74,7 +74,7 @@
 (def handler
   (make-handler ["/" {:get {"" index
                             "ping" ping}
-                      "upload" {:post {"/" 
+                      "upload" {:post {"/"
                                        (validations/upload-validation upload)}}
                       true not-found}]))
 

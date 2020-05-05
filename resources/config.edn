@@ -4,4 +4,5 @@
  :env #or [#env ENV "development"]
  :ui-title #profile {:development "Receive [Development]"
                      :staging "Receive [Staging]"
-                     :production "Receive"}}
+                     :production "Receive"}
+ :max-file-size 536870912}

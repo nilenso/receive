@@ -1,6 +1,6 @@
 (ns receive.view.base
   (:require [hiccup.page :as page]
-   [receive.config :as config]))
+            [receive.config :as config]))
 
 (defn base [children]
   (page/html5
@@ -21,7 +21,7 @@
 
 (def upload-button
   [:form {:action "/upload/"
-          :method "post" 
+          :method "post"
           :enctype "multipart/form-data"
           :name "myForm"}
    [:div {:class "upload-input" :onclick "getFile()"} "Upload"]
