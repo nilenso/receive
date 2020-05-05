@@ -3,6 +3,7 @@
    [bidi.ring :refer [make-handler]]
    [hiccup.core :as h]
    [receive.config :refer [config]]
+   [receive.validations :as validations]
    [receive.service.persistence :refer [process-uploaded-file]]
    [receive.view.base
     :refer [base upload-button title]
@@ -73,7 +74,8 @@
 (def handler
   (make-handler ["/" {:get {"" index
                             "ping" ping}
-                      "upload" {:post {"/" upload}}
+                      "upload" {:post {"/" 
+                                       (validations/upload-validation upload)}}
                       true not-found}]))
 
 (def app (-> handler
