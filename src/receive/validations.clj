@@ -32,9 +32,21 @@
          :body {:success false
                 :message "File not provided"}}))))
 
+(defn valid-filename-length?
+  [handler]
+  (fn [{params :params :as request}]
+    (let [file (get params "file")
+          filename (:filename file)]
+      (if (> (count filename) (:max-filename-length config/config))
+        {:status 400
+         :body {:success false
+                :message "File name is too long"}}
+        (handler request)))))
+
 (defn upload-validation
   [handler]
   (-> handler
       file-param-exists?
       file-exists?
+      valid-filename-length?
       file-too-large?))

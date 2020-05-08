@@ -5,4 +5,5 @@
  :ui-title #profile {:development "Receive [Development]"
                      :staging "Receive [Staging]"
                      :production "Receive"}
- :max-file-size 536870912}
+ :max-file-size 536870912
+ :max-filename-length 255}
