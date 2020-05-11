@@ -7,3 +7,9 @@
     (aero/read-config
      (io/resource "config.edn")
      {:profile (keyword env)})))
+
+(defonce staging?
+  (= (:env config) "staging"))
+
+(defonce production?
+  (= (:env config) "production"))

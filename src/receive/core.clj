@@ -35,7 +35,7 @@
 (defn upload
   "Handles file upload and saves to the location specified in the config"
   [request]
-  (let [file (get (:params request) "file")
+  (let [file (-> request :params :file)
         tempfile (:tempfile file)
         filename (:filename file)
         uid (uuid-str)

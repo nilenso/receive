@@ -5,6 +5,7 @@
     --primary-light: #8EE4AF;
     --accent: #05386B;
     --accent-light: #EDF5E1;
+    --primary-staging: #DE8143;
 }
 
 body {
@@ -16,6 +17,10 @@ body {
     background: var(--primary);
     background-attachment: fixed;
     background-size: cover;
+}
+
+body.env-staging {
+    background: var(--primary-staging);
 }
 
 * {

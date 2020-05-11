@@ -6,16 +6,16 @@
   (page/html5
    [:head
     [:base {:href (:base-url config/config) :target "_blank"}]
-    [:title "Receive UI"]
     [:link {:rel "shortcut icon" :type "image/png" :href "favicon.svg"}]
+    [:title (:ui-title config/config)]
     [:meta {:charset "utf-8"}]
     [:meta {:name "theme-color" :content "#5CDb95"}]
-    (page/include-css "css/style.css")]
-   [:body
+    (page/include-css "css/style.css")
+    (page/include-js "https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js")
+    (page/include-js "js/main.js")]
+   [:body (if config/staging? {:class "env-staging"} {})
     [:div {:class "container"}
-     children
-     (page/include-js "https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js")
-     (page/include-js "js/main.js")]]))
+     children]]))
 
 (def title
   [:a {:href (:base-url config/config)}
