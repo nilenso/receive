@@ -26,8 +26,8 @@
   (core/upload
    (-> (mock/request :post "/upload/")
        (assoc :content-type "multipart/form-data"
-              :params {"file" file}
-              :multipart-params {"file" file}
+              :params {:file file}
+              :multipart-params {:file file}
               :body (io/input-stream (:tempfile file))))))
 
 (deftest upload-handler
