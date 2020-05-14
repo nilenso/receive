@@ -40,7 +40,7 @@
         tempfile (:tempfile file)
         filename (:filename file)
         uid (uuid-str)
-        result (files/process-uploaded-file tempfile filename uid)]
+        result (files/save-file tempfile filename uid)]
     {:status 200
      :body {:name filename
             :uid (:file_storage/uid result)

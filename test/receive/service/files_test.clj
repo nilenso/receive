@@ -15,7 +15,7 @@
   (let [uid (uuid-str)
         tempfile (create-temp-file "/tmp/tempfile.dat")
         filename (str uid "_tempfile.dat")]
-    (files/process-uploaded-file tempfile filename uid)
+    (files/save-file tempfile filename uid)
     (is (= (files/get-filename uid)
            filename))))
 
@@ -23,7 +23,7 @@
   (let [uid (uuid-str)
         tempfile (create-temp-file "/tmp/tempfile.dat")
         filename (str uid "_tempfile.dat")]
-    (files/process-uploaded-file tempfile filename uid)
+    (files/save-file tempfile filename uid)
     (is (nil? (files/get-filename (uuid-str))))))
 
 (deftest save-file-to-disk
