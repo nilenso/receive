@@ -98,10 +98,9 @@
 
 (defn wrap-with-uri-rewrite [handler f]
   (fn [{uri :uri :as request}]
-    (let [rewrite (f uri)]
-      (if rewrite
-        (handler (assoc request :uri rewrite))
-        (handler request)))))
+    (if-let [rewrite (f uri)]
+      (handler (assoc request :uri rewrite))
+      (handler request))))
 
 (def app (-> handler
              (wrap-postgres-exception)
