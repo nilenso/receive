@@ -15,6 +15,7 @@
    [ring.middleware.resource :refer [wrap-resource]]
    [ring.middleware.reload :refer [wrap-reload]]
    [ring.logger :refer [wrap-with-logger]]
+   [clojure.tools.logging :as log]
    [ring.util.response :as response])
   (:import
    java.util.UUID))
@@ -51,7 +52,8 @@
   (fn [request]
     (try
       (handler request)
-      (catch Exception _
+      (catch Exception e
+        (log/error e)
         {:status 500 :body {:success false
                             :message "Server error"}}))))
 
@@ -60,7 +62,8 @@
   (fn [request]
     (try
       (handler request)
-      (catch org.postgresql.util.PSQLException _
+      (catch org.postgresql.util.PSQLException e
+        (log/error e)
         {:status 400
          :body {:success false
                 :message "Invalid data"}}))))
