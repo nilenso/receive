@@ -68,9 +68,8 @@
 (defn download-file
   [request]
   (let [uid (-> request :route-params :id)
-        filename (files/find-file uid)
-        abs-filename (files/file-save-path uid filename)]
-    (if filename
+        abs-filename (files/get-absolute-filename uid)]
+    (if abs-filename
       {:status 200
        :body (io/file abs-filename)}
       {:status 404
@@ -79,7 +78,7 @@
 
 (defn download-view [request]
   (let [uid (-> request :params :id)
-        filename (files/find-file uid)]
+        filename (files/get-filename uid)]
     (if filename
       {:status 200
        :headers {"Content-Type" "text/html"}

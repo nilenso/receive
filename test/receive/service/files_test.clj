@@ -16,7 +16,7 @@
         tempfile (create-temp-file "/tmp/tempfile.dat")
         filename (str uid "_tempfile.dat")]
     (files/process-uploaded-file tempfile filename uid)
-    (is (= (files/find-file uid)
+    (is (= (files/get-filename uid)
            filename))))
 
 (deftest find-file-bad-uid-test
@@ -24,7 +24,7 @@
         tempfile (create-temp-file "/tmp/tempfile.dat")
         filename (str uid "_tempfile.dat")]
     (files/process-uploaded-file tempfile filename uid)
-    (is (nil? (files/find-file (uuid-str))))))
+    (is (nil? (files/get-filename (uuid-str))))))
 
 (deftest save-file-to-disk
   (let [filename "/tmp/save-to-file-test"

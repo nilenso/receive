@@ -31,8 +31,15 @@
       (save-to-disk file (file-save-path uid filename))
       result)))
 
-(defn find-file
+(defn get-filename
   "Finds the file name given a uid"
   [uid]
-  (-> (jdbc/execute-one! connection/datasource (sql/find-file uid))
-      :file_storage/filename))
+  (if-let [file (jdbc/execute-one! connection/datasource (sql/find-file uid))]
+    (-> file :file_storage/filename)
+    nil))
+
+(defn get-absolute-filename
+  [uid]
+  (if-let [filename (get-filename uid)]
+    (file-save-path uid filename)
+    nil))
