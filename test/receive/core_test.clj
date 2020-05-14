@@ -2,7 +2,7 @@
   (:require [clojure.java.io :as io]
             [clojure.test :refer [deftest is]]
             [receive.core :as core]
-            [receive.service.persistence-test :as persistence]
+            [receive.service.files-test :as files]
             [ring.mock.request :as mock]))
 
 (deftest ping-handler
@@ -33,7 +33,7 @@
 (deftest upload-handler
   (with-redefs [core/uuid-str
                 (constantly "958a5425-060b-4aad-ba65-bf25e4458991")]
-    (let [tempfile (persistence/create-temp-file "/tmp/tempfile.dat")
+    (let [tempfile (files/create-temp-file "/tmp/tempfile.dat")
           file (tempfile->file tempfile)
           mock-response (mock-response file)]
       (is (= mock-response
@@ -44,7 +44,7 @@
                      :uid "958a5425-060b-4aad-ba65-bf25e4458991"}})))))
 
 (deftest download-link-test
-  (let [tempfile (persistence/create-temp-file "/tmp/tempfile.dat")
+  (let [tempfile (files/create-temp-file "/tmp/tempfile.dat")
         file (tempfile->file tempfile)
         mock-upload-response (mock-response file)
         uid (-> mock-upload-response :body :uid)

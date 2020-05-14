@@ -1,10 +1,10 @@
-(ns receive.service.persistence
-  (:require [clojure.java.io :as io]
-            [clojure.string :as string]
-            [next.jdbc :as jdbc]
-            [receive.config :as conf]
+(ns receive.service.files
+  (:require [next.jdbc :as jdbc]
             [receive.db.connection :as connection]
-            [receive.db.sql :as sql]))
+            [receive.db.sql :as sql]
+            [clojure.java.io :as io]
+            [clojure.string :as string]
+            [receive.config :as conf]))
 
 (defn expand-home
   "Replaces the tilde in file path with the user's home directory"
@@ -30,3 +30,9 @@
     (let [result (jdbc/execute-one! tx (sql/save-file filename uid) {:return-keys true})]
       (save-to-disk file (file-save-path uid filename))
       result)))
+
+(defn find-file
+  "Finds the file name given a uid"
+  [uid]
+  (-> (jdbc/execute-one! connection/datasource (sql/find-file uid))
+      :file_storage/filename))

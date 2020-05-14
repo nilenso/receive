@@ -4,8 +4,7 @@
    [clojure.java.io :as io]
    [hiccup.core :as h]
    [receive.config :refer [config]]
-   [receive.service.file-storage :as file-storage]
-   [receive.service.persistence :as persistence]
+   [receive.service.files :as files]
    [receive.view.base
     :refer [base upload-button title download-button]
     :rename {base base-layout}]
@@ -40,7 +39,7 @@
         tempfile (:tempfile file)
         filename (:filename file)
         uid (uuid-str)
-        result (persistence/process-uploaded-file tempfile filename uid)]
+        result (files/process-uploaded-file tempfile filename uid)]
     {:status 200
      :body {:name filename
             :uid (:file_storage/uid result)
@@ -69,8 +68,8 @@
 (defn download-file
   [request]
   (let [uid (-> request :route-params :id)
-        filename (file-storage/find-file uid)
-        abs-filename (persistence/file-save-path uid filename)]
+        filename (files/find-file uid)
+        abs-filename (files/file-save-path uid filename)]
     (if filename
       {:status 200
        :body (io/file abs-filename)}
@@ -80,7 +79,7 @@
 
 (defn download-view [request]
   (let [uid (-> request :params :id)
-        filename (file-storage/find-file uid)]
+        filename (files/find-file uid)]
     (if filename
       {:status 200
        :headers {"Content-Type" "text/html"}
