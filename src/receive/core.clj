@@ -91,14 +91,18 @@
                       "share" {:get share-handler}
                       true not-found}]))
 
-(defn wrap-trailing-slash
-  "Removes trailing slash in all the routes except base route"
-  [handler]
+(defn trim-trailing-slash [uri]
+  (if (and (not= uri "/")
+           (.endsWith uri "/"))
+    (comp string/join drop-last) 
+    nil))
+
+(defn wrap-with-uri-rewrite [handler f]
   (fn [{uri :uri :as request}]
-    (if (and (> (count uri) 1)
-             (.endsWith uri "/"))
-      (handler (update request :uri (comp string/join drop-last)))
-      (handler request))))
+    (let [rewrite-fn (f uri)]
+      (if rewrite-fn
+        (handler (update request :uri rewrite-fn))
+        (handler request)))))
 
 (def app (-> handler
              (wrap-postgres-exception)
@@ -109,7 +113,7 @@
              (wrap-multipart-params)
              (wrap-with-logger)
              (wrap-keyword-params)
-             (wrap-trailing-slash)
+             (wrap-with-uri-rewrite trim-trailing-slash)
              (wrap-resource "public")))
 
 (defn start-server
