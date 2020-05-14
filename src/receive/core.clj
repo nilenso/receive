@@ -92,16 +92,15 @@
                       true not-found}]))
 
 (defn trim-trailing-slash [uri]
-  (if (and (not= uri "/")
-           (.endsWith uri "/"))
-    (comp string/join drop-last) 
-    nil))
+  (when (and (not= uri "/")
+             (.endsWith uri "/"))
+    (-> uri drop-last string/join)))
 
 (defn wrap-with-uri-rewrite [handler f]
   (fn [{uri :uri :as request}]
-    (let [rewrite-fn (f uri)]
-      (if rewrite-fn
-        (handler (update request :uri rewrite-fn))
+    (let [rewrite (f uri)]
+      (if rewrite
+        (handler (assoc request :uri rewrite))
         (handler request)))))
 
 (def app (-> handler
