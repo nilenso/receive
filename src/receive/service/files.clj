@@ -1,10 +1,10 @@
-(ns receive.service.persistence
+(ns receive.service.files
   (:require [clojure.java.io :as io]
             [clojure.string :as string]
             [next.jdbc :as jdbc]
-            [receive.config :as conf]
             [receive.db.connection :as connection]
-            [receive.db.sql :as sql]))
+            [receive.db.sql :as sql]
+            [receive.config :as conf]))
 
 (defn expand-home
   "Replaces the tilde in file path with the user's home directory"
@@ -23,9 +23,23 @@
   [tempfile filename]
   (io/copy tempfile (io/file filename)))
 
-(defn process-uploaded-file
+(defn save-file
+  "Adds a new database entry and saves file to disk and returns the uid"
   [file filename uid]
   (jdbc/with-transaction [tx connection/datasource]
     (let [result (jdbc/execute-one! tx (sql/save-file filename uid) {:return-keys true})]
       (save-to-disk file (file-save-path uid filename))
-      result)))
+      (:file_storage/uid result))))
+
+(defn get-filename
+  "Finds the file name given a uid"
+  [uid]
+  (if-let [file (jdbc/execute-one! connection/datasource (sql/find-file uid))]
+    (-> file :file_storage/filename)
+    nil))
+
+(defn get-absolute-filename
+  [uid]
+  (if-let [filename (get-filename uid)]
+    (file-save-path uid filename)
+    nil))

@@ -4,7 +4,7 @@
 (defn file-too-large?
   [handler]
   (fn [{params :params :as request}]
-    (let [file (get params "file")
+    (let [file (:file params)
           size (:size file)]
       (if (> size (:max-file-size config/config))
         {:status 413
@@ -15,7 +15,7 @@
 (defn file-param-exists?
   [handler]
   (fn [{params :params :as request}]
-    (if (get params "file")
+    (if (:file params)
       (handler request)
       {:status 400
        :body {:success false
@@ -24,7 +24,7 @@
 (defn file-exists?
   [handler]
   (fn [{params :params :as request}]
-    (let [file (get params "file")
+    (let [file (:file params)
           size (:size file)]
       (if (> size 0)
         (handler request)
@@ -35,7 +35,7 @@
 (defn valid-filename-length?
   [handler]
   (fn [{params :params :as request}]
-    (let [file (get params "file")
+    (let [file (:file params)
           filename (:filename file)]
       (if (> (count filename) (:max-filename-length config/config))
         {:status 400

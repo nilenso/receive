@@ -15,5 +15,5 @@
   (jetty/run-jetty (wrap-reload #'routes/handler)
                    {:port (:port config) :join? false}))
 
-(defn -main [& args]
+(defn -main [& _]
   (start-server))

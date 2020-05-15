@@ -20,8 +20,18 @@ function uploadFile(obj) {
 
     const uploadInput = document.getElementsByClassName("upload-input")
     uploadInput.innerHTML = name
-    document.myForm.submit()
-    event.preventDefault()
+    const form = document.uploadForm
+    const formData = new FormData(form)
+    axios.post('/upload', formData, {
+        onUploadProgress: ({ loaded, total }) =>
+            uploadInput[0].innerText =
+            `Uploading ${Math.floor(loaded / total * 100)}%`
+
+    })
+        .then(({ data }) => data.uid)
+        .then(uid => `/share?uid=${uid}`)
+        .then(link => window.location.href = link)
+        .catch(error => showUploadError(error.message || "Unknown Error"))
 }
 
 function showUploadError(message) {
@@ -30,3 +40,17 @@ function showUploadError(message) {
     uploadError.classList.add('show')
     setTimeout(() => uploadError.classList.remove('show'), 3e3)
 }
+
+function copyLink() {
+    const copyButton = document.querySelector(".download-link>#copy-button")
+    const label = document.querySelector(".download-link>p")
+    const copyText = copyButton.innerText
+    const el = document.createElement('textarea')
+    el.value = copyText
+    document.body.appendChild(el)
+    el.select()
+    el.setSelectionRange(0, 99999)
+    document.execCommand('copy')
+    document.body.removeChild(el)
+    label.innerText = "Copied ✔"
+} 

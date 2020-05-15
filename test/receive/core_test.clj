@@ -1,1 +1,0 @@
-(ns receive.core-test)
