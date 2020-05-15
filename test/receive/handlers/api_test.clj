@@ -1,4 +1,4 @@
-(ns receive.handler.api-test
+(ns receive.handlers.api-test
   (:require [clojure.test :refer [deftest is]]
             [receive.handlers.api :as handler]
             [ring.mock.request :as mock]))

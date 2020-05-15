@@ -1,4 +1,4 @@
-(ns receive.handler.file-test
+(ns receive.handlers.file-test
   (:require [clojure.java.io :as io]
             [clojure.test :refer [deftest is use-fixtures]]
             [receive.handlers.file :as handler]
@@ -13,15 +13,18 @@
 (defn tempfile->file [tempfile]
   {:tempfile tempfile
    :content-type "text/plain"
-   :filename (.getName tempfile)})
+   :filename (.getName tempfile)
+   :size (.length tempfile)})
+
+(defn mock-upload-request [file]
+  (-> (mock/request :post "/upload/")
+      (assoc :content-type "multipart/form-data"
+             :params {:file file}
+             :multipart-params {:file file}
+             :body (io/input-stream (:tempfile file)))))
 
 (defn mock-upload-response [file]
-  (handler/upload
-   (-> (mock/request :post "/upload/")
-       (assoc :content-type "multipart/form-data"
-              :params {:file file}
-              :multipart-params {:file file}
-              :body (io/input-stream (:tempfile file))))))
+  (handler/upload (mock-upload-request file)))
 
 (deftest upload-handler
   (with-redefs [handler/uuid-str
