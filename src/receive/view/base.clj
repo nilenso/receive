@@ -35,6 +35,14 @@
              :value "file"
              :onchange "uploadFile(this)"}]]])
 
+(defn download-link [uid]
+  (format "/download/api/%s/" uid))
+
+(defn download-button [uid filename]
+  [:a {:download filename :href (download-link uid)}
+   [:button "Download"]
+   [:p filename]])
+
 (defn copy-button
   [download-link]
   [:div {:class "download-link"}

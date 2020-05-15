@@ -40,6 +40,7 @@ button {
     outline: none;
     border: none;
     transition: all .4s;
+    min-width: 200px;
 }
 
 button:hover, button:active{

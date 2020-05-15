@@ -1,12 +1,14 @@
 (ns receive.core
   (:require
    [bidi.ring :refer [make-handler]]
+   [clojure.java.io :as io]
    [clojure.string :as string]
    [hiccup.core :as h]
    [receive.config :refer [config]]
-   [receive.service.persistence :refer [process-uploaded-file]]
+   [receive.service.files :as files]
    [receive.view.base
-    :refer [base upload-button title copy-button]
+    :refer [base upload-button title
+            download-button copy-button]
     :rename {base base-layout}]
    [ring.adapter.jetty :as jetty]
    [ring.middleware.json :refer [wrap-json-response]]
@@ -15,7 +17,9 @@
    [ring.middleware.keyword-params :refer [wrap-keyword-params]]
    [ring.middleware.resource :refer [wrap-resource]]
    [ring.middleware.reload :refer [wrap-reload]]
-   [ring.logger :refer [wrap-with-logger]])
+   [ring.logger :refer [wrap-with-logger]]
+   [clojure.tools.logging :as log]
+   [ring.util.response :as response])
   (:import
    java.util.UUID))
 
@@ -39,10 +43,10 @@
         tempfile (:tempfile file)
         filename (:filename file)
         uid (uuid-str)
-        result (process-uploaded-file tempfile filename uid)]
+        result (files/save-file tempfile filename uid)]
     {:status 200
      :body {:name filename
-            :uid (:file_storage/uid result)
+            :uid result
             :success true
             :message "File saved successfully!"}}))
 
@@ -51,7 +55,8 @@
   (fn [request]
     (try
       (handler request)
-      (catch Exception _
+      (catch Exception e
+        (log/error e)
         {:status 500 :body {:success false
                             :message "Server error"}}))))
 
@@ -60,10 +65,33 @@
   (fn [request]
     (try
       (handler request)
-      (catch org.postgresql.util.PSQLException _
+      (catch org.postgresql.util.PSQLException e
+        (log/error e)
         {:status 400
          :body {:success false
                 :message "Invalid data"}}))))
+
+(defn download-file
+  [request]
+  (let [uid (-> request :params :id)
+        abs-filename (files/get-absolute-filename uid)]
+    (if abs-filename
+      {:status 200
+       :body (io/file abs-filename)}
+      {:status 404
+       :body {:message "File not found"
+              :success false}})))
+
+(defn download-view [request]
+  (let [uid (-> request :params :id)
+        filename (files/get-filename uid)]
+    (if filename
+      {:status 200
+       :headers {"Content-Type" "text/html"}
+       :body (h/html (base-layout [:div
+                                   title
+                                   (download-button uid filename)]))}
+      (response/redirect "/404"))))
 
 (defn index [_]
   {:status 200
@@ -85,9 +113,11 @@
                                  (copy-button link)]))}))
 
 (def handler
-  (make-handler ["/" {:get {"" index
-                            "api/ping" ping}
+  (make-handler ["/" {:get {"" index}
+                      "api/ping" ping
                       "upload" {:post upload}
+                      "download" {"/api/" {[:id ""] download-file}
+                                  "/" {[:id ""] download-view}}
                       "share" {:get share-handler}
                       true not-found}]))
 
