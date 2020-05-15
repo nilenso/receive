@@ -43,7 +43,7 @@
         result (files/save-file tempfile filename uid)]
     {:status 200
      :body {:name filename
-            :uid (:file_storage/uid result)
+            :uid result
             :success true
             :message "File saved successfully!"}}))
 
@@ -70,7 +70,7 @@
 
 (defn download-file
   [request]
-  (let [uid (-> request :route-params :id)
+  (let [uid (-> request :params :id)
         abs-filename (files/get-absolute-filename uid)]
     (if abs-filename
       {:status 200
