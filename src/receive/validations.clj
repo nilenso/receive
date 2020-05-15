@@ -1,7 +1,7 @@
 (ns receive.validations
   (:require [receive.config :as config]))
 
-(defn file-too-large?
+(defn validate-file-too-large
   [handler]
   (fn [{params :params :as request}]
     (let [file (:file params)
@@ -12,7 +12,7 @@
                 :message "File too big"}}
         (handler request)))))
 
-(defn file-param-exists?
+(defn validate-upload-request-params
   [handler]
   (fn [{params :params :as request}]
     (if (:file params)
@@ -21,7 +21,7 @@
        :body {:success false
               :message "No file uploaded"}})))
 
-(defn file-exists?
+(defn validate-file-exists
   [handler]
   (fn [{params :params :as request}]
     (let [file (:file params)
@@ -32,7 +32,7 @@
          :body {:success false
                 :message "File not provided"}}))))
 
-(defn valid-filename-length?
+(defn validate-filename-length
   [handler]
   (fn [{params :params :as request}]
     (let [file (:file params)
@@ -42,11 +42,3 @@
          :body {:success false
                 :message "File name is too long"}}
         (handler request)))))
-
-(defn upload-validation
-  [handler]
-  (-> handler
-      file-param-exists?
-      file-exists?
-      valid-filename-length?
-      file-too-large?))

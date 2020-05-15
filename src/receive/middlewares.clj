@@ -1,6 +1,7 @@
 (ns receive.middlewares
   (:require [clojure.string :as string]
-            [clojure.tools.logging :as log]))
+            [clojure.tools.logging :as log]
+            [receive.validations :as v]))
 
 (defn wrap-fallback-exception
   [handler]
@@ -33,3 +34,11 @@
     (if-let [rewrite (f uri)]
       (handler (assoc request :uri rewrite))
       (handler request))))
+
+(defn upload-validation
+  [handler]
+  (-> handler
+      v/validate-upload-request-params
+      v/validate-file-exists
+      v/validate-file-too-large
+      v/validate-filename-length))
