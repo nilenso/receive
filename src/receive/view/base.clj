@@ -6,15 +6,16 @@
   (page/html5
    [:head
     [:base {:href (:base-url config/config) :target "_blank"}]
-    [:title "Receive UI"]
+    [:link {:rel "shortcut icon" :type "image/png" :href "favicon.svg"}]
     [:title (:ui-title config/config)]
     [:meta {:charset "utf-8"}]
     [:meta {:name "theme-color" :content "#5CDb95"}]
-    (page/include-css "css/style.css")]
+    (page/include-css "css/style.css")
+    (page/include-js "https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js")
+    (page/include-js "js/main.js")]
    [:body (if config/staging? {:class "env-staging"} {})
     [:div {:class "container"}
-     children
-     (page/include-js "js/main.js")]]))
+     children]]))
 
 (def title
   [:a {:href (:base-url config/config)}
@@ -25,10 +26,14 @@
   [:form {:action "/upload/"
           :method "post"
           :enctype "multipart/form-data"
-          :name "myForm"}
+          :name "uploadForm"}
    [:div {:class "upload-input" :onclick "getFile()"} "Upload"]
    [:div {:style "height: 0px; width: 0px; overflow: hidden"}
-    [:input {:id "upfile" :type "file" :name "file" :value "file" :onchange "uploadFile(this)"}]]])
+    [:input {:id "upfile"
+             :type "file"
+             :name "file"
+             :value "file"
+             :onchange "uploadFile(this)"}]]])
 
 (defn download-link [uid]
   (format "/download/api/%s/" uid))
@@ -37,3 +42,10 @@
   [:a {:download filename :href (download-link uid)}
    [:button "Download"]
    [:p filename]])
+
+(defn copy-button
+  [download-link]
+  [:div {:class "download-link"}
+   [:button {:id "copy-button"
+             :onclick "copyLink()"} download-link]
+   [:p "Click to copy"]])
