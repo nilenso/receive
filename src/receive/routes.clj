@@ -14,14 +14,19 @@
             [ring.middleware.keyword-params :refer [wrap-keyword-params]]
             [ring.logger :refer [wrap-with-logger]]))
 
+(def api-routes
+  {"/ping" (wrap-json-response api-handlers/ping)
+   "/download/" {[:id ""] file-handlers/download-file}
+   "/upload" {:post {"" (-> file-handlers/upload
+                            (upload-validation)
+                            (wrap-json-response))}}})
+
 (def routes
-  ["/" {:get {"" file-handlers/index}
-        "api/ping" api-handlers/ping
-        "upload" {:post {"" (upload-validation file-handlers/upload)}}
-        "download" {"/api/" {[:id ""] file-handlers/download-file}
-                    "/" {[:id ""] file-handlers/download-view}}
+  ["/" {"" file-handlers/index
+        "api" api-routes
+        "download/"  {[:id ""] file-handlers/download-view}
         "share" {:get file-handlers/share-handler}
-        true api-handlers/not-found}])
+        true (wrap-json-response api-handlers/not-found)}])
 
 (def handler
   (-> routes
@@ -29,9 +34,8 @@
       (wrap-keyword-params)
       (wrap-postgres-exception)
       (wrap-fallback-exception)
-      (wrap-json-response)
       (wrap-params)
       (wrap-multipart-params)
-      (wrap-with-logger)
       (wrap-with-uri-rewrite trim-trailing-slash)
-      (wrap-resource "public")))
+      (wrap-resource "public")
+      (wrap-with-logger)))

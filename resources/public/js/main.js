@@ -22,7 +22,7 @@ function uploadFile(obj) {
     uploadInput.innerHTML = name
     const form = document.uploadForm
     const formData = new FormData(form)
-    axios.post('/upload', formData, {
+    axios.post('/api/upload', formData, {
         onUploadProgress: ({ loaded, total }) =>
             uploadInput[0].innerText =
             `Uploading ${Math.floor(loaded / total * 100)}%`

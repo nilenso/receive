@@ -33,7 +33,7 @@
     "> Receive"]])
 
 (def upload-button
-  [:form {:action "/upload/"
+  [:form {:action "/api/upload/"
           :method "post"
           :enctype "multipart/form-data"
           :name "uploadForm"}
@@ -47,7 +47,7 @@
    [:span {:class "upload-error"} "File size is too big!"]])
 
 (defn download-link [uid]
-  (format "/download/api/%s/" uid))
+  (format "/api/download/%s/" uid))
 
 (defn download-button [uid filename]
   [:a {:download filename :href (download-link uid)}
