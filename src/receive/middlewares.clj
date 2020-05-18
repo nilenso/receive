@@ -39,6 +39,6 @@
   [handler]
   (-> handler
       v/validate-upload-request-params
-      v/validate-file-exists
-      v/validate-file-too-large
+      v/validate-min-file-size
+      v/validate-max-file-size
       v/validate-filename-length))

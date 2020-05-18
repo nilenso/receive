@@ -1,7 +1,7 @@
 (ns receive.validations
   (:require [receive.config :as config]))
 
-(defn validate-file-too-large
+(defn validate-max-file-size
   [handler]
   (fn [{params :params :as request}]
     (let [file (:file params)
@@ -21,7 +21,7 @@
        :body {:success false
               :message "No file uploaded"}})))
 
-(defn validate-file-exists
+(defn validate-min-file-size
   [handler]
   (fn [{params :params :as request}]
     (let [file (:file params)
