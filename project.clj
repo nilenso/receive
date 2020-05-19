@@ -13,7 +13,9 @@
                  [seancorfield/next.jdbc "1.0.409"]
                  [org.postgresql/postgresql "42.2.12"]
                  [hiccup "1.0.5"]
-                 [ragtime "0.8.0"]]
+                 [ragtime "0.8.0"]
+                 [org.clojure/data.json "1.0.0"]
+                 [com.google.api-client/google-api-client "1.30.9"]]
   :profiles {:test {:dependencies [[ring/ring-mock "0.4.0"]]}}
   :main receive.core
   :plugins [[lein-ring "0.12.5"]]
