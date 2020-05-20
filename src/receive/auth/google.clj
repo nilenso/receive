@@ -1,4 +1,4 @@
-(ns receive.auth-google
+(ns receive.auth.google
  (:require [receive.config :refer [config]])
   (:import [com.google.api.client.googleapis.auth.oauth2
             #_GoogleIdToken
@@ -18,13 +18,12 @@
 (defn payload->user-data
   [payload]
   {:email (.getEmail payload)
-   :user-id (.getUserId payload)
+   :google-id (.getUserId payload)
    :first-name (.get payload "given_name")
    :last-name (.get payload "family_name")})
 
 (defn verify-token [token]
-  (if-let [verified-token (.verify verifier token)]
+  (when-let [verified-token (.verify verifier token)]
     (-> verified-token
         (.getPayload)
-        (payload->user-data))
-    nil))
+        (payload->user-data))))

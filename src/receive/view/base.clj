@@ -1,6 +1,16 @@
 (ns receive.view.base
-  (:require [hiccup.page :as page]
+  (:require [clojure.data.json :as json]
+            [clojure.walk :refer [stringify-keys]]
+            [hiccup.page :as page]
             [receive.config :as config]))
+
+(defn global-config-script []
+  (-> (-> config/config :secrets :google-credentials)
+      (select-keys [:client-id])
+      (stringify-keys)
+      (json/write-str)
+      (#(format "window.config = %s" %))))
+
 
 (defn base [children]
   (page/html5
@@ -10,9 +20,18 @@
     [:title (:ui-title config/config)]
     [:meta {:charset "utf-8"}]
     [:meta {:name "theme-color" :content "#5CDb95"}]
+    [:meta {:name "google-signin-client_id"
+            :content (-> config/config
+                         :secrets
+                         :google-credentials
+                         :client-id)}]
     (page/include-css "css/style.css")
     (page/include-js "https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js")
-    (page/include-js "js/main.js")]
+    [:script (global-config-script)]
+    (page/include-js "js/main.js")
+    [:script {:src "https://apis.google.com/js/api:client.js" }]
+    (page/include-js "js/signin.js")
+    [:script "startApp()"]]
    [:body (if config/staging? {:class "env-staging"} {})
     [:div {:class "container"}
      children]]))
@@ -34,6 +53,10 @@
              :name "file"
              :value "file"
              :onchange "uploadFile(this)"}]]])
+
+(def signin-button
+  [:div {:id "btn_signin"}
+   "Sign in with Google"])
 
 (defn download-link [uid]
   (format "/download/api/%s/" uid))

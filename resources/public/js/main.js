@@ -11,14 +11,14 @@ function uploadFile(obj) {
     const formData = new FormData(form)
     axios.post('/upload', formData, {
         onUploadProgress: ({ loaded, total }) =>
-            uploadInput[0].innerText = 
-                `Uploading ${Math.floor(loaded / total * 100)}%`
+            uploadInput[0].innerText =
+            `Uploading ${Math.floor(loaded / total * 100)}%`
     })
         .then(({ data }) => data.uid)
         .then(uid => `/share?uid=${uid}`)
         .then(link => window.location.href = link)
         .catch(console.error)
-        //TODO: Redirect to error page
+    //TODO: Redirect to error page
 }
 
 function copyLink() {
@@ -33,4 +33,14 @@ function copyLink() {
     document.execCommand('copy')
     document.body.removeChild(el)
     label.innerText = "Copied ✔"
-} 
+}
+
+function renderButton() {
+    gapi.signin2.render('my-signin2', {
+        'scope': 'profile email',
+        'longtitle': false,
+        'theme': 'light',
+        'onsuccess': onSignIn,
+        'onfailure': onFailure
+    })
+}

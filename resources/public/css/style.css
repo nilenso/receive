@@ -43,7 +43,7 @@ button {
     min-width: 200px;
 }
 
-button:hover, button:active{
+button:hover, button:active {
     padding: 14px;
     border-radius: 40px;
 }
@@ -82,4 +82,13 @@ p {
     color: var(--accent);
     font-weight: 900;
     border-radius: 4px;
+}
+
+#btn_signin {
+    margin: 10px;
+    padding: 4px;
+    cursor: pointer;
+    position: fixed;
+    top: 0;
+    right: 0;
 }

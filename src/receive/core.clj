@@ -6,12 +6,16 @@
    [hiccup.core :as h]
    [receive.config :refer [config]]
    [receive.service.files :as files]
+   [receive.service.user :as user-service]
    [receive.view.base
     :refer [base upload-button title
-            download-button copy-button]
+            download-button copy-button
+            signin-button]
     :rename {base base-layout}]
    [ring.adapter.jetty :as jetty]
-   [ring.middleware.json :refer [wrap-json-response]]
+   [ring.middleware.cookies :refer [wrap-cookies]]
+   [ring.middleware.json :refer [wrap-json-response
+                                 wrap-json-params]]
    [ring.middleware.params :refer [wrap-params]]
    [ring.middleware.multipart-params :refer [wrap-multipart-params]]
    [ring.middleware.keyword-params :refer [wrap-keyword-params]]
@@ -93,12 +97,29 @@
                                    (download-button uid filename)]))}
       (response/redirect "/404"))))
 
+(defn signup [request]
+  (try
+    (let [id-token (-> request :params :id_token)
+          token (user-service/signin-with-google id-token)]
+      {:status 200
+       :cookies {"access_token" {:value token
+                                 ;; TODO: set :secure true after HTTPS is enabled
+                                 :http-only true}}
+       :body {:data token
+              :success true
+              :message "User authenticated"}})
+    (catch Exception e
+      {:status 401
+       :body {:success false
+              :message (.getMessage e)}})))
+
 (defn index [_]
   {:status 200
    :headers {"Content-Type" "text/html"}
    :body (h/html (base-layout [:div
                                title
-                               upload-button]))})
+                               upload-button
+                               signin-button]))})
 
 (defn download-link
   [uid]
@@ -119,6 +140,7 @@
                       "download" {"/api/" {[:id ""] download-file}
                                   "/" {[:id ""] download-view}}
                       "share" {:get share-handler}
+                      "signup" {:post signup}
                       true not-found}]))
 
 (defn trim-trailing-slash [uri]
@@ -135,9 +157,11 @@
 (def app (-> handler
              (wrap-postgres-exception)
              (wrap-fallback-exception)
+             (wrap-cookies)
              (wrap-keyword-params)
+             (wrap-json-params)
              (wrap-json-response)
-             (wrap-params)
+             (wrap-params :params)
              (wrap-multipart-params)
              (wrap-with-logger)
              (wrap-keyword-params)
