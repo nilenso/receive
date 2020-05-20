@@ -1,10 +1,7 @@
 (ns receive.auth.google
   (:require [receive.config :refer [config]])
   (:import [com.google.api.client.googleapis.auth.oauth2
-            #_GoogleIdToken
-            #_GoogleIdToken$Payload
-            GoogleIdTokenVerifier$Builder
-            #_GoogleIdTokenVerifier]
+            GoogleIdTokenVerifier$Builder]
            [com.google.api.client.json.jackson2 JacksonFactory]
            [com.google.api.client.http.javanet NetHttpTransport]))
 
