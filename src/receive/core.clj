@@ -161,7 +161,7 @@
              (wrap-keyword-params)
              (wrap-json-params)
              (wrap-json-response)
-             (wrap-params :params)
+             (wrap-params)
              (wrap-multipart-params)
              (wrap-with-logger)
              (wrap-keyword-params)
