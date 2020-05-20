@@ -51,7 +51,7 @@
   "If Google `id-token` verified, returns a JWT token"
   [id-token]
   (if-let [user-data (auth/verify-token id-token)]
-    (-> user-data 
+    (-> user-data
         (create-or-fetch-user)
         (jwt/sign))
     (throw (ex-info "Verification failed"

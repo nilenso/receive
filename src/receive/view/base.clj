@@ -11,7 +11,6 @@
       (json/write-str)
       (#(format "window.config = %s" %))))
 
-
 (defn base [children]
   (page/html5
    [:head
@@ -29,7 +28,7 @@
     (page/include-js "https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js")
     [:script (global-config-script)]
     (page/include-js "js/main.js")
-    [:script {:src "https://apis.google.com/js/api:client.js" }]
+    [:script {:src "https://apis.google.com/js/api:client.js"}]
     (page/include-js "js/signin.js")
     [:script "startApp()"]]
    [:body (if config/staging? {:class "env-staging"} {})
