@@ -4,6 +4,7 @@
             [receive.core :as core]
             [receive.service.files-test :as files]
             [receive.service.files :as file-service]
+            [receive.service.user :as user-service]
             [ring.mock.request :as mock]))
 
 (def tempfile-name "tempfile.dat")
@@ -93,6 +94,15 @@
   (let [mock-response (core/index (mock/request :get "/"))
         mock-status (:status mock-response)]
     (is (= mock-status 200))))
+
+(deftest signup-handler
+  (with-redefs [user-service/signin-with-google (constantly "jwt_token")]
+    (is (=
+         (core/signup (-> (mock/request :post "/signup")
+                          (assoc :params {:id_token "mock_token"})))
+         {:status 200
+          :cookies {"access_token" {:value "jwt_token", :http-only true}}
+          :body {:data "jwt_token", :success true, :message "User authenticated"}}))))
 
 (defn cleanup-tempfile [f]
   (f)
