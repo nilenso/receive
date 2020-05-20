@@ -3,14 +3,15 @@
    [bidi.ring :refer [make-handler]]
    [clojure.java.io :as io]
    [clojure.string :as string]
+   [clojure.walk :refer [keywordize-keys]]
    [hiccup.core :as h]
+   [receive.auth.jwt :as jwt]
    [receive.config :refer [config]]
    [receive.service.files :as files]
    [receive.service.user :as user-service]
    [receive.view.base
-    :refer [base upload-button title
-            download-button copy-button
-            signin-button]
+    :refer [base toolbar upload-button
+            download-button copy-button]
     :rename {base base-layout}]
    [ring.adapter.jetty :as jetty]
    [ring.middleware.cookies :refer [wrap-cookies]]
@@ -93,7 +94,7 @@
       {:status 200
        :headers {"Content-Type" "text/html"}
        :body (h/html (base-layout [:div
-                                   title
+                                   (toolbar (:auth request))
                                    (download-button uid filename)]))}
       (response/redirect "/404"))))
 
@@ -113,13 +114,12 @@
        :body {:success false
               :message (.getMessage e)}})))
 
-(defn index [_]
-  {:status 200
-   :headers {"Content-Type" "text/html"}
-   :body (h/html (base-layout [:div
-                               title
-                               upload-button
-                               signin-button]))})
+(defn index [request]
+  (let [auth (:auth request)]
+   {:status 200
+    :headers {"Content-Type" "text/html"}
+    :body (h/html (base-layout upload-button
+                               (toolbar auth)))}))
 
 (defn download-link
   [uid]
@@ -130,7 +130,7 @@
         link (download-link uid)]
     {:status 200
      :body (h/html (base-layout [:div
-                                 title
+                                 (toolbar (:auth request))
                                  (copy-button link)]))}))
 
 (def handler
@@ -154,16 +154,33 @@
       (handler (assoc request :uri rewrite))
       (handler request))))
 
+(defn verified-user [handler]
+  (fn [request]
+    (if-let [access-token (-> request
+                              :cookies
+                              :access_token
+                              :value)]
+      (handler (assoc request :auth (jwt/verify access-token)))
+      (handler (assoc request :auth nil)))))
+
+(defn wrap-cookies-keyword [handler]
+  (fn [request]
+    (handler (assoc request 
+                    :cookies 
+                    (keywordize-keys (:cookies request))))))
+
 (def app (-> handler
+             (wrap-with-logger)
+             (verified-user)
              (wrap-postgres-exception)
              (wrap-fallback-exception)
+             (wrap-cookies-keyword)
              (wrap-cookies)
              (wrap-keyword-params)
              (wrap-json-params)
              (wrap-json-response)
              (wrap-params)
              (wrap-multipart-params)
-             (wrap-with-logger)
              (wrap-keyword-params)
              (wrap-with-uri-rewrite trim-trailing-slash)
              (wrap-resource "public")))

@@ -53,6 +53,6 @@
   (if-let [user-data (auth/verify-token id-token)]
     (-> user-data
         (create-or-fetch-user)
-        (jwt/sign))
+        (#(jwt/sign {:user-id (:users/id %) :email (:users/email %)})))
     (throw (ex-info "Verification failed"
                     {:message "Can't verify user"}))))

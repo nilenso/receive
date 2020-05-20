@@ -11,7 +11,7 @@
       (json/write-str)
       (#(format "window.config = %s" %))))
 
-(defn base [children]
+(defn base [& children]
   (page/html5
    [:head
     [:base {:href (:base-url config/config) :target "_blank"}]
@@ -36,9 +36,24 @@
      children]]))
 
 (def title
-  [:a {:href (:base-url config/config)}
-   [:div {:class "title-section"}
-    "> Receive"]])
+  [:a {:class "title-section"
+       :href (:base-url config/config)}
+   [:div "> Receive"]])
+
+(def signin-button
+  [:div {:id "btn_signin"}
+   "Sign in"])
+
+(defn user-button [auth]
+  [:div {:id "btn_user"}
+   (:email auth)])
+
+(defn toolbar [auth]
+  [:div {:class "toolbar"}
+   title
+   (if auth
+     (user-button auth)
+     signin-button)])
 
 (def upload-button
   [:form {:action "/upload/"
@@ -52,10 +67,6 @@
              :name "file"
              :value "file"
              :onchange "uploadFile(this)"}]]])
-
-(def signin-button
-  [:div {:id "btn_signin"}
-   "Sign in with Google"])
 
 (defn download-link [uid]
   (format "/download/api/%s/" uid))

@@ -72,10 +72,20 @@ p {
     text-decoration: underline;
 }
 
-.title-section {
+.toolbar {
+    display: flex;
     position: fixed;
     top: 0;
     left: 0;
+    width: 100%;
+    justify-content: space-between;
+}
+
+.title-section {
+    text-decoration: none;
+}
+
+.title-section>div {
     margin: 10px;
     border: 2px solid var(--accent);
     padding: 6px;
@@ -86,9 +96,12 @@ p {
 
 #btn_signin {
     margin: 10px;
-    padding: 4px;
+    padding: 6px;
     cursor: pointer;
-    position: fixed;
-    top: 0;
-    right: 0;
+}
+
+#btn_user {
+    margin: 10px;
+    padding: 6px;
+    cursor: pointer;
 }

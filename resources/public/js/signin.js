@@ -24,6 +24,7 @@ function onSignIn(googleUser) {
     const idToken = googleUser.getAuthResponse().id_token
     axios.post('/signup', {id_token: idToken})
     .then(response => {
+        window.location.reload()
         console.log('--------------------')
         //TODO: Add signin handler
         console.log('--------------------')
