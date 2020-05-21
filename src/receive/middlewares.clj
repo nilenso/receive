@@ -36,7 +36,10 @@
       (handler (assoc request :uri rewrite))
       (handler request))))
 
-(defn verified-user [handler]
+(defn verified-user
+  "Adds :auth data to request if user is authenticated
+   :auth in request will be used throughout the application for authorization"
+  [handler]
   (fn [request]
     (if-let [access-token (-> request
                               :cookies
@@ -45,7 +48,9 @@
       (handler (assoc request :auth (jwt/verify access-token)))
       (handler (assoc request :auth nil)))))
 
-(defn wrap-cookies-keyword [handler]
+(defn wrap-cookies-keyword 
+  "Converts :cookies in request to keywordized map"
+  [handler]
   (fn [request]
     (handler (assoc request
                     :cookies
