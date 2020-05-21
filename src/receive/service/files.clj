@@ -1,9 +1,9 @@
 (ns receive.service.files
-  (:require [next.jdbc :as jdbc]
+  (:require [clojure.java.io :as io]
+            [clojure.string :as string]
+            [next.jdbc :as jdbc]
             [receive.db.connection :as connection]
             [receive.db.sql :as sql]
-            [clojure.java.io :as io]
-            [clojure.string :as string]
             [receive.config :as conf]))
 
 (defn expand-home

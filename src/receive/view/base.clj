@@ -10,9 +10,10 @@
     [:title (:ui-title config/config)]
     [:meta {:charset "utf-8"}]
     [:meta {:name "theme-color" :content "#5CDb95"}]
+    (page/include-js "js/config.js")
     (page/include-css "css/style.css")
-    (page/include-js "https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js")
-    (page/include-js "js/main.js")]
+    (page/include-js "js/main.js")
+    (page/include-js "https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js")]
    [:body (if config/staging? {:class "env-staging"} {})
     [:div {:class "container"}
      children]]))
@@ -23,7 +24,7 @@
     "> Receive"]])
 
 (def upload-button
-  [:form {:action "/upload/"
+  [:form {:action "/api/upload/"
           :method "post"
           :enctype "multipart/form-data"
           :name "uploadForm"}
@@ -33,10 +34,11 @@
              :type "file"
              :name "file"
              :value "file"
-             :onchange "uploadFile(this)"}]]])
+             :onchange "uploadFile(this)"}]]
+   [:span {:class "upload-error"} "File size is too big!"]])
 
 (defn download-link [uid]
-  (format "/download/api/%s/" uid))
+  (format "/api/download/%s/" uid))
 
 (defn download-button [uid filename]
   [:a {:download filename :href (download-link uid)}
