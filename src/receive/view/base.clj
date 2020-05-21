@@ -1,15 +1,6 @@
 (ns receive.view.base
-  (:require [clojure.data.json :as json]
-            [clojure.walk :refer [stringify-keys]]
-            [hiccup.page :as page]
+  (:require [hiccup.page :as page]
             [receive.config :as config]))
-
-(defn global-config-script []
-  (-> (-> config/config :secrets :google-credentials)
-      (select-keys [:client-id])
-      (stringify-keys)
-      (json/write-str)
-      (#(format "window.config = %s" %))))
 
 (defn base [& children]
   (page/html5
@@ -26,7 +17,7 @@
                          :client-id)}]
     (page/include-css "css/style.css")
     (page/include-js "https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js")
-    [:script (global-config-script)]
+    (page/include-js "js/config.js")
     (page/include-js "js/main.js")
     [:script {:src "https://apis.google.com/js/api:client.js"}]
     (page/include-js "js/signin.js")

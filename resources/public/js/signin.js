@@ -1,4 +1,4 @@
-const CLIENT_ID = window.config['client-id']
+const CLIENT_ID = window.config.GOOGLE_CLIENT_ID
 
 const googleUser = {};
 
