@@ -5,8 +5,7 @@
             [receive.middlewares :refer [wrap-fallback-exception
                                          wrap-postgres-exception
                                          wrap-with-uri-rewrite
-                                         trim-trailing-slash
-                                         upload-validation]]
+                                         trim-trailing-slash]]
             [ring.middleware.json :refer [wrap-json-response]]
             [ring.middleware.params :refer [wrap-params]]
             [ring.middleware.multipart-params :refer [wrap-multipart-params]]
@@ -18,7 +17,6 @@
   {"/ping" (wrap-json-response api-handlers/ping)
    "/download/" {[:id ""] file-handlers/download-file}
    "/upload" {:post {"" (-> file-handlers/upload
-                            (upload-validation)
                             (wrap-json-response))}}})
 
 (def routes

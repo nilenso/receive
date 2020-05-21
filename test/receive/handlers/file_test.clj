@@ -4,7 +4,8 @@
             [receive.handlers.file :as handler]
             [receive.service.files :as file-service]
             [receive.service.files-test :as files]
-            [ring.mock.request :as mock]))
+            [ring.mock.request :as mock]
+            [receive.config :refer [config]]))
 
 (def tempfile-name "tempfile.dat")
 (def tempfolder-path "/tmp/")
@@ -84,6 +85,49 @@
   (let [mock-response (handler/index (mock/request :get "/"))
         mock-status (:status mock-response)]
     (is (= mock-status 200))))
+
+(deftest upload-validate-file-too-big
+  (with-redefs
+   [file-service/save-file (constantly "file.dat")]
+    (let [file (-> "/tmp/tempfile.dat"
+                   files/create-temp-file
+                   tempfile->file
+                   (assoc :size (inc (:max-file-size config))))
+          mock-request (mock-upload-request file)]
+      (is (= (handler/upload mock-request)
+             {:status 413
+              :body {:success false
+                     :message "File too big"}})))))
+
+(deftest upload-validate-file-exists
+  (with-redefs
+   [file-service/save-file (constantly "file.dat")]
+    (let [file (-> "/tmp/tempfile.dat"
+                   files/create-temp-file
+                   tempfile->file
+                   (assoc :size 0))
+          mock-request (mock-upload-request file)]
+      (is (= (handler/upload mock-request)
+             {:status 400
+              :body {:success false
+                     :message "File not provided"}})))))
+
+(defn rand-str [len]
+  (apply str (take len (repeatedly #(char (+ (rand 26) 65))))))
+
+(deftest upload-validate-filename
+  (with-redefs
+   [file-service/save-file (constantly "file.dat")]
+    (let [filename (rand-str (inc (:max-filename-length config)))
+          file (-> "/tmp/tempfile.dat"
+                   files/create-temp-file
+                   tempfile->file
+                   (assoc :filename filename))
+          mock-request (mock-upload-request file)]
+      (is (= (handler/upload mock-request)
+             {:status 400
+              :body {:success false
+                     :message "File name is too long"}})))))
 
 (defn cleanup-tempfile [f]
   (f)
