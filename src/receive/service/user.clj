@@ -1,5 +1,6 @@
 (ns receive.service.user
   (:require [next.jdbc :as jdbc]
+            [next.jdbc.result-set :as result-set]
             [receive.auth.google :as auth]
             [receive.auth.jwt :as jwt]
             [receive.db.connection :as connection]
@@ -15,7 +16,8 @@
   [user-id]
   (jdbc/execute-one! connection/datasource
                      (sql/get-user user-id)
-                     {:return-keys true}))
+                     {:return-keys true
+                      :builder-fn result-set/as-unqualified-maps}))
 
 (defn create-google-user
   [tx user-id google-id]
@@ -31,13 +33,14 @@
                      (sql/create-user first-name
                                       last-name
                                       email)
-                     {:return-keys true}))
+                     {:return-keys true
+                      :builder-fn result-set/as-unqualified-maps}))
 
 (defn register-user
   [{google-id :google-id :as user}]
   (jdbc/with-transaction [tx connection/datasource]
     (let [user (create-user tx user)
-          id (:users/id user)
+          id (:id user)
           _ (create-google-user tx id google-id)]
       user)))
 
@@ -53,6 +56,12 @@
   (if-let [user-data (auth/verify-token id-token)]
     (-> user-data
         (create-or-fetch-user)
-        (#(jwt/sign {:user-id (:users/id %) :email (:users/email %)})))
+        (#(jwt/sign {:user-id (:id %)
+                     :email (:email %)})))
     (throw (ex-info "Verification failed"
                     {:message "Can't verify user"}))))
+
+(defn auth->user
+  "Fetches the user data for authenticated user"
+  [{user-id :user_id}]
+  (get-user user-id))

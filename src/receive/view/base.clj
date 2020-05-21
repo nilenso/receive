@@ -1,6 +1,7 @@
 (ns receive.view.base
   (:require [hiccup.page :as page]
-            [receive.config :as config]))
+            [receive.config :as config]
+            [receive.service.user :as user]))
 
 (defn base [& children]
   (page/html5
@@ -36,8 +37,12 @@
    "Sign in"])
 
 (defn user-button [auth]
-  [:div {:id "btn_user" :class (if auth "" "no-display")}
-   (:email auth)])
+  (let [user (user/auth->user auth)
+        first-name (:first_name user)
+        last-name (:last_name user)
+        name (format "%s %s" first-name last-name)]
+    [:div {:id "btn_user" :class (if auth "" "no-display")}
+     name]))
 
 (defn toolbar [auth]
   [:div {:class "toolbar"}
