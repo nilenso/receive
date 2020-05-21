@@ -31,20 +31,19 @@
        :href (:base-url config/config)}
    [:div "> Receive"]])
 
-(def signin-button
-  [:div {:id "btn_signin"}
+(defn signin-button [auth]
+  [:div {:id "btn_signin" :class (if auth "no-display" "")}
    "Sign in"])
 
 (defn user-button [auth]
-  [:div {:id "btn_user"}
+  [:div {:id "btn_user" :class (if auth "" "no-display")}
    (:email auth)])
 
 (defn toolbar [auth]
   [:div {:class "toolbar"}
    title
-   (if auth
-     (user-button auth)
-     signin-button)])
+   (user-button auth)
+   (signin-button auth)])
 
 (def upload-button
   [:form {:action "/upload/"
