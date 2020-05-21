@@ -101,7 +101,9 @@
          (core/signup (-> (mock/request :post "/signup")
                           (assoc :params {:id_token "mock_token"})))
          {:status 200
-          :cookies {"access_token" {:value "jwt_token", :http-only true}}
+          :cookies {"access_token" {:value "jwt_token"
+                                    :http-only true
+                                    :same-site :strict}}
           :body {:data "jwt_token", :success true, :message "User authenticated"}}))))
 
 (defn cleanup-tempfile [f]
