@@ -16,10 +16,10 @@
           :body {:success false
                  :message "Not found"}})))
 
-(deftest signup-handler
+(deftest sign-in-handler
   (with-redefs [user-service/signin-with-google (constantly "jwt_token")]
     (is (=
-         (handler/signup (-> (mock/request :post "/signup")
+         (handler/sign-in (-> (mock/request :put "/user")
                           (assoc :params {:id_token "mock_token"})))
          {:status 200
           :cookies {"access_token" {:value "jwt_token"

@@ -22,8 +22,10 @@
    "/download/" {[:id ""] file-handlers/download-file}
    "/upload" {:post {"" (-> file-handlers/upload
                             (wrap-json-response))}}
-   "/signup" {:post (-> api-handlers/signup
-                        (wrap-json-response))}})
+   "/user" {:put (-> api-handlers/sign-in
+                     (wrap-json-response))
+            :get (-> api-handlers/fetch-user
+                     (wrap-json-response))}})
 
 (def routes
   ["/" {"" file-handlers/index

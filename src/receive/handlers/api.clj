@@ -11,7 +11,7 @@
                :body {:success false
                       :message "Not found"}}))
 
-(defn signup [request]
+(defn sign-in [request]
   (try
     (let [id-token (-> request :params :id_token)
           token (user/signin-with-google id-token)]
@@ -28,3 +28,9 @@
       {:status 401
        :body {:success false
               :message (.getMessage e)}})))
+
+(defn fetch-user [{auth :auth}]
+  {:status 200
+   :body {:success true
+          :data
+          (user/get-user (:user_id auth))}})

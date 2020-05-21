@@ -18,16 +18,15 @@ function attachSignin(element) {
 
 function onFailure(error) {
     console.error(error)
+    // TODO: Add error handler
 }
 
 function onSignIn(googleUser) {
     const idToken = googleUser.getAuthResponse().id_token
-    axios.post('/api/signup', {id_token: idToken})
+    axios.put('/api/user', {id_token: idToken})
     .then(response => {
+        console.log(response)
         window.location.reload()
-        console.log('--------------------')
-        //TODO: Add signin handler
-        console.log('--------------------')
     })
     .catch(console.error)
 }
