@@ -6,6 +6,7 @@
     --accent: #05386B;
     --accent-light: #EDF5E1;
     --primary-staging: #DE8143;
+    --error: #4e244f;
 }
 
 body {
@@ -108,4 +109,18 @@ p {
     margin: 10px;
     padding: 6px;
     cursor: pointer;
+}
+
+.upload-error {
+    display: block;
+    opacity: 0;
+    width: 100%;
+    text-align: center;
+    color: var(--error);
+    font-style: italic;
+    transition: opacity .4s;
+}
+
+.upload-error.show {
+    opacity: 1;
 }

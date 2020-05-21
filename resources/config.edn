@@ -9,4 +9,6 @@
  :ui-title #profile {:development "Receive [Development]"
                      :staging "Receive [Staging]"
                      :production "Receive"}
- :jwt-token-expiry 86400}
+ :jwt-token-expiry 86400
+ :max-file-size 536870912
+ :max-filename-length 255}

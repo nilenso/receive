@@ -1,8 +1,8 @@
 (ns receive.service.files-test
   (:require [clojure.test :refer [deftest is]]
-            [receive.service.files :as files]
             [clojure.java.io :as io]
-            [receive.core :refer [uuid-str]]))
+            [receive.handlers.file :refer [uuid-str]]
+            [receive.service.files :as files]))
 
 (defn create-temp-file
   "Creates a file given a filename"
