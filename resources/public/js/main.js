@@ -3,8 +3,8 @@ function getFile() {
 }
 
 function uploadFile(obj) {
-    const MAX_FILE_SIZE = window.config['max-file-size']
-    const MAX_FILENAME_LENGTH = window.config['max-filename-length']
+    const MAX_FILE_SIZE = window.config.MAX_FILE_SIZE
+    const MAX_FILENAME_LENGTH = window.config.MAX_FILENAME_LENGTH
 
     const [file] = obj.files
     if (!file)

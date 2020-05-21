@@ -1,15 +1,6 @@
 (ns receive.view.base
-  (:require [clojure.data.json :as json]
-            [clojure.walk :refer [stringify-keys]]
-            [hiccup.page :as page]
+  (:require [hiccup.page :as page]
             [receive.config :as config]))
-
-(defn global-config-script []
-  (-> config/config
-      (select-keys [:max-file-size :max-filename-length])
-      (stringify-keys)
-      (json/write-str)
-      (#(format "window.config = %s" %))))
 
 (defn base [children]
   (page/html5
@@ -19,9 +10,9 @@
     [:title (:ui-title config/config)]
     [:meta {:charset "utf-8"}]
     [:meta {:name "theme-color" :content "#5CDb95"}]
+    (page/include-js "js/config.js")
     (page/include-css "css/style.css")
     (page/include-js "js/main.js")
-    [:script (global-config-script)]
     (page/include-js "https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js")]
    [:body (if config/staging? {:class "env-staging"} {})
     [:div {:class "container"}
