@@ -105,7 +105,8 @@
       {:status 200
        :cookies {"access_token" {:value token
                                  ;; TODO: set :secure true after HTTPS is enabled
-                                 :http-only true}}
+                                 :http-only true
+                                 :same-site :strict}}
        :body {:data token
               :success true
               :message "User authenticated"}})
