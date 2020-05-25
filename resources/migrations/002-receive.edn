@@ -1,15 +1,13 @@
 {:up ["CREATE TABLE users (
-       id serial NOT NULL,
+       id serial NOT NULL PRIMARY KEY,
        first_name varchar NOT NULL,
        last_name varchar NULL,
        email varchar NOT NULL UNIQUE,
-       dt_created timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-       CONSTRAINT user_pk PRIMARY KEY (id));"
+       dt_created timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP);"
 
       "CREATE TABLE account_google (
-       user_id serial NOT NULL,
+       user_id serial NOT NULL PRIMARY KEY,
        google_id varchar NOT NULL,
-       CONSTRAINT account_google_pk PRIMARY KEY (google_id),
        CONSTRAINT account_google_fk FOREIGN KEY (user_id) REFERENCES users (id));"]
  
  :down ["DROP TABLE account_google;"
