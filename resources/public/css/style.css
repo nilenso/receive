@@ -99,13 +99,7 @@ p {
     border-radius: 4px;
 }
 
-#btn_signin {
-    margin: 10px;
-    padding: 6px;
-    cursor: pointer;
-}
-
-#btn_user {
+.toolbar_btn {
     margin: 10px;
     padding: 6px;
     cursor: pointer;

@@ -33,7 +33,9 @@
    [:div "> Receive"]])
 
 (defn signin-button [auth]
-  [:div {:id "btn_signin" :class (if auth "no-display" "")}
+  [:div {:id "btn_signin"
+         :class (str "toolbar_btn "
+                     (if auth "no-display" ""))}
    "Sign in"])
 
 (defn user-button [auth]
@@ -41,7 +43,9 @@
         first-name (:first_name user)
         last-name (:last_name user)
         full-name (format "%s %s" first-name last-name)]
-    [:div {:id "btn_user" :class (if auth "" "no-display")}
+    [:div {:id "btn_user"
+           :class (str "toolbar_btn "
+                       (if auth "" "no-display"))}
      full-name]))
 
 (defn toolbar [auth]
