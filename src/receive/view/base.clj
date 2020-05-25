@@ -40,9 +40,9 @@
   (let [user (user/auth->user auth)
         first-name (:first_name user)
         last-name (:last_name user)
-        name (format "%s %s" first-name last-name)]
+        full-name (format "%s %s" first-name last-name)]
     [:div {:id "btn_user" :class (if auth "" "no-display")}
-     name]))
+     full-name]))
 
 (defn toolbar [auth]
   [:div {:class "toolbar"}
