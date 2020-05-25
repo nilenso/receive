@@ -38,17 +38,19 @@
 
 (defn verified-user
   "Adds :auth data to request if user is authenticated
-   :auth in request will be used throughout the application for authorization"
+   :auth in request will be used throughout the application for authorization
+   :auth is nil if no JWT token is provided by the client"
   [handler]
   (fn [request]
-    (if-let [access-token (-> request
-                              :cookies
-                              :access_token
-                              :value)]
-      (handler (assoc request :auth (jwt/verify access-token)))
-      (handler (assoc request :auth nil)))))
+    (let [access-token (-> request
+                           :cookies
+                           :access_token
+                           :value)
+          auth (when access-token
+                 (jwt/verify access-token))]
+      (handler (assoc request :auth auth)))))
 
-(defn wrap-cookies-keyword 
+(defn wrap-cookies-keyword
   "Converts :cookies in request to keywordized map"
   [handler]
   (fn [request]
