@@ -40,8 +40,8 @@
   [{google-id :google-id :as user}]
   (jdbc/with-transaction [tx connection/datasource]
     (let [user (create-user tx user)
-          id (:id user)
-          _ (create-google-user tx id google-id)]
+          id (:id user)]
+      (create-google-user tx id google-id)
       user)))
 
 (defn create-or-fetch-user
