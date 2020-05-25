@@ -3,8 +3,7 @@
             [clj-time.core :as time]
             [receive.config :refer [config]]))
 
-(defn sign [{user-id :user-id
-             email :email}]
+(defn sign [{:keys [email user-id]}]
   (let [dt-expire (time/plus (time/now)
                              (time/seconds
                               (:jwt-token-expiry config)))]

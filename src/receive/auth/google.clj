@@ -12,7 +12,7 @@
                       (setAudience (list client-id))
                       (build)))
 
-(defn payload->user-data
+(defn payload->user-info
   [payload]
   {:email (.getEmail payload)
    :google-id (.getUserId payload)
@@ -23,4 +23,4 @@
   (when-let [verified-token (.verify verifier token)]
     (-> verified-token
         (.getPayload)
-        (payload->user-data))))
+        (payload->user-info))))
