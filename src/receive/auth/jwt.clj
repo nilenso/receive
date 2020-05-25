@@ -5,12 +5,13 @@
 
 (defn sign [{user-id :user-id
              email :email}]
-  (jwt/sign
-   {:user_id user-id
-    :email email
-    :exp (time/plus (time/now)
-                    (time/seconds (:jwt-token-expiry config)))}
-   (-> config :secrets :jwt-secret)))
+  (let [dt-expire (time/plus (time/now)
+                             (time/seconds
+                              (:jwt-token-expiry config)))]
+    (jwt/sign {:user_id user-id
+               :email email
+               :exp dt-expire}
+              (-> config :secrets :jwt-secret))))
 
 (defn verify [token]
   (jwt/unsign token (-> config :secrets :jwt-secret)))
