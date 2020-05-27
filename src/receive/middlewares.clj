@@ -2,6 +2,9 @@
   (:require [clojure.string :as string]
             [clojure.tools.logging :as log]
             [clojure.walk :refer [keywordize-keys]]
+            [clojure.data.json :refer [write-str]]
+            [receive.error-handler :refer [not-error?
+                                           error->http-response]]
             [receive.auth.jwt :as jwt]))
 
 (defn wrap-fallback-exception
@@ -46,8 +49,8 @@
                            :cookies
                            :access_token
                            :value)
-          auth (when access-token
-                 (jwt/verify access-token))]
+          verified-token (jwt/verify access-token)
+          auth (when (not-error? verified-token) verified-token)]
       (handler (assoc request :auth auth)))))
 
 (defn wrap-cookies-keyword

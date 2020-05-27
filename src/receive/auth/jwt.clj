@@ -13,4 +13,9 @@
               (-> config :secrets :jwt-secret))))
 
 (defn verify [token]
-  (jwt/unsign token (-> config :secrets :jwt-secret)))
+  (try 
+    (jwt/unsign token (-> config :secrets :jwt-secret))
+    (catch java.lang.NullPointerException _
+      {:error :jwt-no-token})
+    (catch Exception _
+      {:error :jwt-expired})))

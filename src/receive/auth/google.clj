@@ -20,7 +20,15 @@
    :last-name (.get payload "family_name")})
 
 (defn verify-token [token]
-  (when-let [verified-token (.verify verifier token)]
-    (-> verified-token
-        (.getPayload)
-        (payload->user-info))))
+  (try
+    (if-let [verified-token (.verify verifier token)]
+      (-> verified-token
+          (.getPayload)
+          (payload->user-info))
+      {:error :jwt-expired})
+    (catch java.lang.IllegalArgumentException _
+      {:error :jwt-invalid-input})
+    (catch java.lang.NullPointerException _
+      {:error :jwt-no-token})
+    (catch Exception _
+      {:error :jwt-bad-token})))
