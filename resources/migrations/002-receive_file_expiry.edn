@@ -1,0 +1,11 @@
+{:up ["ALTER TABLE file_storage 
+       DROP COLUMN id,
+       ALTER COLUMN uid TYPE uuid USING uid::uuid,
+       ADD dt_expire timestamp NULL,
+       ADD CONSTRAINT file_storage_pk PRIMARY KEY (uid),
+       ALTER COLUMN uid SET DEFAULT uuid_generate_v1 ();"]
+ :down ["ALTER TABLE file_storage
+         ADD id serial NOT NULL,
+         ALTER COLUMN uid TYPE varchar USING uid::varchar,
+         DROP column dt_expire,
+         DROP CONSTRAINT file_storage_pk;"]}
