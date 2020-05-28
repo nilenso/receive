@@ -2,6 +2,7 @@
   (:require [bidi.ring :refer [make-handler]]
             [receive.handlers.api :as api-handlers]
             [receive.handlers.file :as file-handlers]
+            [receive.handlers.ui :as ui-handlers]
             [receive.middlewares :refer [wrap-fallback-exception
                                          wrap-postgres-exception
                                          wrap-with-uri-rewrite
@@ -24,6 +25,7 @@
         "api" api-routes
         "download/"  {[:id ""] file-handlers/download-view}
         "share" {:get file-handlers/share-handler}
+        "404" {:get ui-handlers/error-page}
         true (wrap-json-response api-handlers/not-found)}])
 
 (def handler
