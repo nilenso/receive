@@ -1,6 +1,6 @@
 (ns receive.error-handler)
 
-(def errors
+(defonce error-map
   {:jwt-invalid-input {:message "Invalid JWT"
                        :status  400}
    :jwt-no-token      {:message "No token provided"
@@ -8,7 +8,9 @@
    :jwt-bad-token     {:message "JWT format is incorrect"
                        :status  400}
    :jwt-expired       {:message "Token has expired"
-                       :status  401}})
+                       :status  401}
+   :default           {:message "Unknown Error"
+                       :status  500}})
 
 (defn error? [data]
   (keyword? (:error data)))
@@ -16,11 +18,16 @@
 (def not-error? (complement error?))
 
 (defn error->http-response
+  "Returns a ring error response based on error key.
+   Defaults to server error"
   [{error-code :error}]
-  (let [response-data (error-code errors)]
-    {:status (:status response-data)
-     :body {:success false
-            :message (:message response-data)}}))
+  (if error-code
+    (if-let [response-data (error-code error-map)]
+      {:status (:status response-data)
+       :body {:success false
+              :message (:message response-data)}}
+      (error->http-response {:error :default}))
+    (error->http-response {:error :default})))
 
 (defmacro if-error
   "Macro. Evaluates test on the data.
