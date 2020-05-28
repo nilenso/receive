@@ -12,13 +12,15 @@
             [ring.middleware.multipart-params :refer [wrap-multipart-params]]
             [ring.middleware.resource :refer [wrap-resource]]
             [ring.middleware.keyword-params :refer [wrap-keyword-params]]
-            [ring.logger :refer [wrap-with-logger]]))
+            [ring.logger :refer [wrap-with-logger]]
+            [ring.util.response :as response]))
 
 (def api-routes
   {"/ping" (wrap-json-response api-handlers/ping)
    "/download/" {[:id ""] file-handlers/download-file}
    "/upload" {:post {"" (-> file-handlers/upload
-                            (wrap-json-response))}}})
+                            (wrap-json-response))}}
+   true (wrap-json-response api-handlers/not-found)})
 
 (def routes
   ["/" {"" file-handlers/index
@@ -26,7 +28,7 @@
         "download/"  {[:id ""] file-handlers/download-view}
         "share" {:get file-handlers/share-handler}
         "404" {:get ui-handlers/error-page}
-        true (wrap-json-response api-handlers/not-found)}])
+        true (constantly (response/redirect "/404"))}])
 
 (def handler
   (-> routes
