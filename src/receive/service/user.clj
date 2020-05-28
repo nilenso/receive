@@ -2,7 +2,7 @@
   (:require [next.jdbc :as jdbc]
             [next.jdbc.result-set :as result-set]
             [receive.auth.google :as auth]
-            [receive.error-handler :refer [error?]]
+            [receive.error-handler :refer [if-error]]
             [receive.auth.jwt :as jwt]
             [receive.db.connection :as connection]
             [receive.db.sql :as sql]))
@@ -55,12 +55,12 @@
   "If Google `id-token` verified, returns a JWT token"
   [id-token]
   (let [user-data (auth/verify-token id-token)]
-    (if (error? user-data)
-      user-data
-      (-> user-data
-          (create-or-fetch-user)
-          (#(jwt/sign {:user-id (:id %)
-                       :email (:email %)}))))))
+    (if-error user-data
+              :raise
+              (-> user-data
+                  (create-or-fetch-user)
+                  (#(jwt/sign {:user-id (:id %)
+                               :email (:email %)}))))))
 
 (defn auth->user
   "Fetches the user data for authenticated user"

@@ -1,7 +1,6 @@
 (ns receive.handlers.api
   (:require [receive.service.user :as user]
-            [receive.error-handler :refer [error?
-                                           error->http-response]]))
+            [receive.error-handler :refer [if-error]]))
 
 (def ping (constantly
            {:status 200
@@ -16,17 +15,17 @@
 (defn sign-in [request]
   (let [id-token (-> request :params :id_token)
         token (user/signin-with-google id-token)]
-    (if (error? token)
-      (error->http-response token)
-      {:status 200
-       :cookies {"access_token" {:value token
+    (if-error token
+              :http-response
+              {:status 200
+               :cookies {"access_token" {:value token
                                  ;; TODO: set :secure true after HTTPS is enabled
-                                 :http-only true
-                                 :same-site :strict
-                                 :path "/"}}
-       :body {:data token
-              :success true
-              :message "User authenticated"}})))
+                                         :http-only true
+                                         :same-site :strict
+                                         :path "/"}}
+               :body {:data token
+                      :success true
+                      :message "User authenticated"}})))
 
 (defn fetch-user [{auth :auth}]
   (if auth
