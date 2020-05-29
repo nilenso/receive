@@ -1,5 +1,6 @@
 (ns receive.view.base
-  (:require [hiccup.page :as page]
+  (:require [hiccup.core :as h]
+            [hiccup.page :as page]
             [receive.config :as config]))
 
 (defn base [children]
@@ -51,3 +52,15 @@
    [:button {:id "copy-button"
              :onclick "copyLink()"} download-link]
    [:p "Click to copy"]])
+
+(defn error-message
+  [error-code error-message]
+  [:div {:class "error-message"}
+   [:h1 error-code]
+   [:span error-message]])
+
+(defn error-ui
+  [code message]
+  (h/html
+   (base [:div
+          (error-message code message)])))
