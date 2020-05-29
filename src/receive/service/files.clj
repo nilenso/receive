@@ -1,10 +1,12 @@
 (ns receive.service.files
   (:require [clojure.java.io :as io]
             [clojure.string :as string]
+            [clj-time.core :as time]
             [next.jdbc :as jdbc]
             [receive.db.connection :as connection]
             [receive.db.sql :as sql]
-            [receive.config :as conf]))
+            [receive.config :as conf]
+            [clj-time.coerce :as time-coerce]))
 
 (defn expand-home
   "Replaces the tilde in file path with the user's home directory"
@@ -25,11 +27,19 @@
 
 (defn save-file
   "Adds a new database entry and saves file to disk and returns the uid"
-  [file filename uid]
+  [file filename]
   (jdbc/with-transaction [tx connection/datasource]
-    (let [result (jdbc/execute-one! tx (sql/save-file filename uid) {:return-keys true})]
+    (let [expire-in (-> conf/config :public-file :expire-in)
+          dt-expire (-> expire-in
+                        (time/seconds)
+                        (#(time/plus (time/now) %))
+                        (time-coerce/to-sql-time))
+          result (jdbc/execute-one! tx
+                                    (sql/save-file filename dt-expire)
+                                    {:return-keys true})
+          uid (:file_storage/uid result)]
       (save-to-disk file (file-save-path uid filename))
-      (:file_storage/uid result))))
+      uid)))
 
 (defn get-filename
   "Finds the file name given a uid"

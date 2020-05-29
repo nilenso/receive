@@ -6,9 +6,9 @@
   (is (= (sql/save-file
           "filename"
           "bb5c2dd1-26d7-4f64-9957-09932e4ede41")
-         ["INSERT INTO file_storage (filename, uid) VALUES (?, ?)" "filename" "bb5c2dd1-26d7-4f64-9957-09932e4ede41"])))
+         ["INSERT INTO file_storage (filename, dt_expire) VALUES (?, CAST(? AS timestamp))" "filename" "bb5c2dd1-26d7-4f64-9957-09932e4ede41"])))
 
 (deftest find-file
   (is (= (sql/find-file
           "bb5c2dd1-26d7-4f64-9957-09932e4ede41")
-         ["SELECT filename FROM file_storage WHERE uid = ?" "bb5c2dd1-26d7-4f64-9957-09932e4ede41"])))
+         ["SELECT filename FROM file_storage WHERE uid = CAST(? AS uuid)" "bb5c2dd1-26d7-4f64-9957-09932e4ede41"])))

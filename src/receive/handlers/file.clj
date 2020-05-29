@@ -47,8 +47,7 @@
     (let [file (-> request :params :file)
           tempfile (:tempfile file)
           filename (:filename file)
-          uid (uuid-str)
-          result (files/save-file tempfile filename uid)]
+          result (files/save-file tempfile filename)]
       {:status 200
        :body {:name filename
               :uid result

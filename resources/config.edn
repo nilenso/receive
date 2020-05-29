@@ -1,12 +1,13 @@
-{:port #long #or [#env PORT 3000]
- :storage-path "~/uploads/"
- :db #include "database.edn"
- :base-url #profile {:development "http://localhost:3000"
-                     :staging "http://receive-staging.nilenso.com"
-                     :production "http://receive.nilenso.com"}
- :env #or [#env ENV "development"]
- :ui-title #profile {:development "Receive [Development]"
-                     :staging "Receive [Staging]"
-                     :production "Receive"}
- :max-file-size 536870912
- :max-filename-length 255}
+{:port                #long #or [#env PORT 3000]
+ :storage-path        "~/uploads/"
+ :db                  #include "database.edn"
+ :base-url            #profile {:development "http://localhost:3000"
+                                :staging     "http://receive-staging.nilenso.com"
+                                :production  "http://receive.nilenso.com"}
+ :env                 #or [#env ENV "development"]
+ :ui-title            #profile {:development "Receive [Development]"
+                                :staging     "Receive [Staging]"
+                                :production  "Receive"}
+ :max-file-size       536870912
+ :max-filename-length 255
+ :public-file         {:expire-in 172800}}
