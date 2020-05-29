@@ -2,14 +2,16 @@
   (:require [clojure.java.io :as io]
             [hiccup.core :as h]
             [receive.config :refer [config]]
+            [receive.error-handler :refer [error?
+                                           error->http-response
+                                           error->ui-response]]
             [receive.service.files :as files]
             [receive.spec.file :as spec]
             [receive.view.base
              :refer [base upload-button
                      title download-button
                      copy-button]
-             :rename {base base-layout}]
-            [ring.util.response :as response])
+             :rename {base base-layout}])
   (:import java.util.UUID))
 
 (defn uuid-str []
@@ -58,23 +60,21 @@
   [request]
   (let [uid (-> request :params :id)
         abs-filename (files/get-absolute-filename uid)]
-    (if abs-filename
+    (if (error? abs-filename)
+      (error->http-response abs-filename)
       {:status 200
-       :body (io/file abs-filename)}
-      {:status 404
-       :body {:message "File not found"
-              :success false}})))
+       :body (io/file abs-filename)})))
 
 (defn download-view [request]
   (let [uid (-> request :params :id)
         filename (files/get-filename uid)]
-    (if filename
+    (if (error? filename)
+      (error->ui-response filename)
       {:status 200
        :headers {"Content-Type" "text/html"}
        :body (h/html (base-layout [:div
                                    title
-                                   (download-button uid filename)]))}
-      (response/redirect "/404"))))
+                                   (download-button uid filename)]))})))
 
 (defn index [_]
   {:status 200

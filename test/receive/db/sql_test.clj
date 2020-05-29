@@ -11,4 +11,5 @@
 (deftest find-file
   (is (= (sql/find-file
           "bb5c2dd1-26d7-4f64-9957-09932e4ede41")
-         ["SELECT filename FROM file_storage WHERE uid = CAST(? AS uuid)" "bb5c2dd1-26d7-4f64-9957-09932e4ede41"])))
+         ["SELECT filename, dt_expire < now() AS expired FROM file_storage WHERE uid = CAST(? AS uuid)"
+          "bb5c2dd1-26d7-4f64-9957-09932e4ede41"])))

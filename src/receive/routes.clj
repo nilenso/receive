@@ -17,7 +17,7 @@
 
 (def api-routes
   {"/ping" (wrap-json-response api-handlers/ping)
-   "/download/" {[:id ""] file-handlers/download-file}
+   "/download/" {[:id ""] (wrap-json-response file-handlers/download-file)}
    "/upload" {:post {"" (-> file-handlers/upload
                             (wrap-json-response))}}
    true (wrap-json-response api-handlers/not-found)})
@@ -34,10 +34,10 @@
   (-> routes
       (make-handler)
       (wrap-keyword-params)
-      (wrap-postgres-exception)
-      (wrap-fallback-exception)
       (wrap-params)
       (wrap-multipart-params)
       (wrap-with-uri-rewrite trim-trailing-slash)
       (wrap-resource "public")
+      (wrap-postgres-exception)
+      (wrap-fallback-exception)
       (wrap-with-logger)))

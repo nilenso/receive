@@ -24,7 +24,8 @@
         tempfile (create-temp-file "/tmp/tempfile.dat")
         filename (str uid "_tempfile.dat")]
     (files/save-file tempfile filename)
-    (is (nil? (files/get-filename (uuid-str))))))
+    (is (= (files/get-filename (uuid-str))
+           {:error :not-found}))))
 
 (deftest save-file-to-disk
   (let [filename "/tmp/save-to-file-test"

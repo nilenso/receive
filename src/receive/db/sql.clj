@@ -14,7 +14,8 @@
 
 (defn find-file
   [uid]
-  (sql/format {:select [:filename]
+  (sql/format {:select [:filename
+                        [(sql/call :< :dt_expire (sql/call :now)) :expired]]
                :from   [:file-storage]
                :where  [:= :uid
                         (sql/call :cast uid :uuid)]}))
