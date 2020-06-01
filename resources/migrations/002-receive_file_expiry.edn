@@ -1,4 +1,5 @@
-{:up ["ALTER TABLE file_storage 
+{:up ["CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";"
+      "ALTER TABLE file_storage 
        DROP COLUMN id,
        ALTER COLUMN uid TYPE uuid USING uid::uuid,
        ADD dt_expire timestamp NULL,
