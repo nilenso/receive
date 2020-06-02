@@ -1,6 +1,11 @@
 (ns receive.middlewares
   (:require [clojure.string :as string]
-            [clojure.tools.logging :as log]))
+            [clojure.tools.logging :as log]
+            [clojure.walk :refer [keywordize-keys]]
+            [clojure.data.json :refer [write-str]]
+            [receive.error-handler :refer [not-error?
+                                           error->http-response]]
+            [receive.auth.jwt :as jwt]))
 
 (defn wrap-fallback-exception
   [handler]
@@ -33,3 +38,25 @@
     (if-let [rewrite (f uri)]
       (handler (assoc request :uri rewrite))
       (handler request))))
+
+(defn verified-user
+  "Adds :auth data to request if user is authenticated
+   :auth in request will be used throughout the application for authorization
+   :auth is nil if no JWT token is provided by the client"
+  [handler]
+  (fn [request]
+    (let [access-token (-> request
+                           :cookies
+                           :access_token
+                           :value)
+          verified-token (jwt/verify access-token)
+          auth (when (not-error? verified-token) verified-token)]
+      (handler (assoc request :auth auth)))))
+
+(defn wrap-cookies-keyword
+  "Converts :cookies in request to keywordized map"
+  [handler]
+  (fn [request]
+    (handler (assoc request
+                    :cookies
+                    (keywordize-keys (:cookies request))))))

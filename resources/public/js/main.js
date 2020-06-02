@@ -53,4 +53,14 @@ function copyLink() {
     document.execCommand('copy')
     document.body.removeChild(el)
     label.innerText = "Copied ✔"
-} 
+}
+
+function renderButton() {
+    gapi.signin2.render('my-signin2', {
+        'scope': 'profile email',
+        'longtitle': false,
+        'theme': 'light',
+        'onsuccess': onSignIn,
+        'onfailure': onFailure
+    })
+}

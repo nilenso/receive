@@ -6,7 +6,7 @@
             [receive.spec.file :as spec]
             [receive.view.base
              :refer [base upload-button
-                     title download-button
+                     toolbar download-button
                      copy-button]
              :rename {base base-layout}]
             [ring.util.response :as response])
@@ -68,21 +68,23 @@
 
 (defn download-view [request]
   (let [uid (-> request :params :id)
-        filename (files/get-filename uid)]
+        filename (files/get-filename uid)
+        auth (:auth request)]
     (if filename
       {:status 200
        :headers {"Content-Type" "text/html"}
        :body (h/html (base-layout [:div
-                                   title
+                                   (toolbar auth)
                                    (download-button uid filename)]))}
       (response/redirect "/404"))))
 
-(defn index [_]
-  {:status 200
-   :headers {"Content-Type" "text/html"}
-   :body (h/html (base-layout [:div
-                               title
-                               upload-button]))})
+(defn index [request]
+  (let [auth (:auth request)]
+    {:status 200
+     :headers {"Content-Type" "text/html"}
+     :body (h/html (base-layout [:div
+                                 (toolbar auth)
+                                 upload-button]))}))
 
 (defn download-link
   [uid]
@@ -90,8 +92,9 @@
 
 (defn share-handler [request]
   (let [uid (-> request :params :uid)
-        link (download-link uid)]
+        link (download-link uid)
+        auth (:auth request)]
     {:status 200
      :body (h/html (base-layout [:div
-                                 title
+                                 (toolbar auth)
                                  (copy-button link)]))}))
