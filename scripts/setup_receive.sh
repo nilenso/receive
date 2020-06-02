@@ -15,6 +15,7 @@ mkdir /opt/$env/
 mv receive /opt/$env/
 cd /opt/$env/receive
 cp /opt/database.$env.edn /opt/$env/receive/resources/database.edn
+cp /opt/secrets.$env.edn /opt/$env/receive/resources/secrets.edn
 
 echo "Running lein deps"
 lein deps > /dev/null
