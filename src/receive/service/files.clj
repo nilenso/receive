@@ -31,7 +31,7 @@
   "Adds a new database entry and saves file to disk and returns the uid"
   [file filename]
   (jdbc/with-transaction [tx connection/datasource]
-    (let [expire-in (-> conf/config :public-file :expire-in)
+    (let [expire-in (-> conf/config :public-file :expire-in-sec)
           dt-expire (-> expire-in
                         (time/seconds)
                         (#(time/plus (time/now) %))
