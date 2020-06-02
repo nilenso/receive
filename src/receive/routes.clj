@@ -2,6 +2,7 @@
   (:require [bidi.ring :refer [make-handler]]
             [receive.handlers.api :as api-handlers]
             [receive.handlers.file :as file-handlers]
+            [receive.handlers.ui :as ui-handlers]
             [receive.middlewares :refer [wrap-fallback-exception
                                          wrap-postgres-exception
                                          wrap-with-uri-rewrite
@@ -15,7 +16,8 @@
             [ring.middleware.multipart-params :refer [wrap-multipart-params]]
             [ring.middleware.resource :refer [wrap-resource]]
             [ring.middleware.keyword-params :refer [wrap-keyword-params]]
-            [ring.logger :refer [wrap-with-logger]]))
+            [ring.logger :refer [wrap-with-logger]]
+            [ring.util.response :as response]))
 
 (def api-routes
   {"/ping" (wrap-json-response api-handlers/ping)
@@ -25,14 +27,16 @@
    "/user" {:put (-> api-handlers/sign-in
                      (wrap-json-response))
             :get (-> api-handlers/fetch-user
-                     (wrap-json-response))}})
+                     (wrap-json-response))}
+   true (wrap-json-response api-handlers/not-found)})
 
 (def routes
   ["/" {"" file-handlers/index
         "api" api-routes
         "download/"  {[:id ""] file-handlers/download-view}
         "share" {:get file-handlers/share-handler}
-        true (wrap-json-response api-handlers/not-found)}])
+        "404" {:get ui-handlers/error-page}
+        true (constantly (response/redirect "/404"))}])
 
 (def handler
   (-> routes
