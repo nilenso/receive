@@ -1,0 +1,7 @@
+{:up ["ALTER TABLE file_storage 
+         ADD \"owner\" int4 NULL,
+         ADD CONSTRAINT file_storage_fk FOREIGN KEY (\"owner\") 
+           REFERENCES users (id);"]
+ :down ["ALTER TABLE file_storage 
+           DROP CONSTRAINT file_storage_fk,
+           DROP COLUMN \"owner\";"]}
