@@ -1,9 +1,11 @@
 (ns receive.view.base
-  (:require [hiccup.core :as h]
-            [hiccup.page :as page]
-            [receive.config :as config]))
+  (:require
+   [hiccup.core :as h]
+   [hiccup.page :as page]
+   [receive.config :as config]
+   [receive.service.user :as user]))
 
-(defn base [children]
+(defn base [& children]
   (page/html5
    [:head
     [:base {:href (:base-url config/config) :target "_blank"}]
@@ -11,18 +13,48 @@
     [:title (:ui-title config/config)]
     [:meta {:charset "utf-8"}]
     [:meta {:name "theme-color" :content "#5CDb95"}]
-    (page/include-js "js/config.js")
+    [:meta {:name "google-signin-client_id"
+            :content (-> config/config
+                         :secrets
+                         :google-credentials
+                         :client-id)}]
     (page/include-css "css/style.css")
+    (page/include-js "https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js")
+    (page/include-js "js/config.js")
     (page/include-js "js/main.js")
-    (page/include-js "https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js")]
+    [:script {:src "https://apis.google.com/js/api:client.js"}]
+    (page/include-js "js/signin.js")
+    [:script "startApp()"]]
    [:body (if config/staging? {:class "env-staging"} {})
     [:div {:class "container"}
      children]]))
 
 (def title
-  [:a {:href (:base-url config/config)}
-   [:div {:class "title-section"}
-    "> Receive"]])
+  [:a {:class "title-section"
+       :href (:base-url config/config)}
+   [:div "> Receive"]])
+
+(defn signin-button [auth]
+  [:div {:id "btn_signin"
+         :class (str "toolbar_btn "
+                     (if auth "no-display" ""))}
+   "Sign in"])
+
+(defn user-button [auth]
+  (let [user (user/auth->user auth)
+        first-name (:first_name user)
+        last-name (:last_name user)
+        full-name (format "%s %s" first-name last-name)]
+    [:div {:id "btn_user"
+           :class (str "toolbar_btn "
+                       (if auth "" "no-display"))}
+     full-name]))
+
+(defn toolbar [auth]
+  [:div {:class "toolbar"}
+   title
+   (user-button auth)
+   (signin-button auth)])
 
 (def upload-button
   [:form {:action "/api/upload/"

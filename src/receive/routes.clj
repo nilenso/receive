@@ -6,8 +6,12 @@
             [receive.middlewares :refer [wrap-fallback-exception
                                          wrap-postgres-exception
                                          wrap-with-uri-rewrite
-                                         trim-trailing-slash]]
-            [ring.middleware.json :refer [wrap-json-response]]
+                                         trim-trailing-slash
+                                         verified-user
+                                         wrap-cookies-keyword]]
+            [ring.middleware.cookies :refer [wrap-cookies]]
+            [ring.middleware.json :refer [wrap-json-response
+                                          wrap-json-params]]
             [ring.middleware.params :refer [wrap-params]]
             [ring.middleware.multipart-params :refer [wrap-multipart-params]]
             [ring.middleware.resource :refer [wrap-resource]]
@@ -20,6 +24,10 @@
    "/download/" {[:id ""] (wrap-json-response file-handlers/download-file)}
    "/upload" {:post {"" (-> file-handlers/upload
                             (wrap-json-response))}}
+   "/user" {:put (-> api-handlers/sign-in
+                     (wrap-json-response))
+            :get (-> api-handlers/fetch-user
+                     (wrap-json-response))}
    true (wrap-json-response api-handlers/not-found)})
 
 (def routes
@@ -33,11 +41,15 @@
 (def handler
   (-> routes
       (make-handler)
+      (verified-user)
+      (wrap-cookies-keyword)
+      (wrap-cookies)
       (wrap-keyword-params)
       (wrap-params)
       (wrap-multipart-params)
-      (wrap-with-uri-rewrite trim-trailing-slash)
-      (wrap-resource "public")
+      (wrap-json-params)
       (wrap-postgres-exception)
       (wrap-fallback-exception)
+      (wrap-with-uri-rewrite trim-trailing-slash)
+      (wrap-resource "public")
       (wrap-with-logger)))

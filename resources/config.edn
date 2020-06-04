@@ -1,6 +1,7 @@
 {:port                #long #or [#env PORT 3000]
  :storage-path        "~/uploads/"
  :db                  #include "database.edn"
+ :secrets             #include "secrets.edn"
  :base-url            #profile {:development "http://localhost:3000"
                                 :staging     "http://receive-staging.nilenso.com"
                                 :production  "http://receive.nilenso.com"}
@@ -10,4 +11,5 @@
                                 :production  "Receive"}
  :max-file-size       536870912
  :max-filename-length 255
- :public-file         {:expire-in-sec 172800}}
+ :public-file         {:expire-in-sec 172800}
+ :jwt-token-expiry    86400}

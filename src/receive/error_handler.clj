@@ -1,8 +1,4 @@
-(ns receive.error-handler
-  (:require [hiccup.core :as h]
-            [receive.view.base
-             :refer [base error-ui]
-             :rename {base base-layout}]))
+(ns receive.error-handler)
 
 (defonce error-map
   {:jwt-invalid-input {:message "Invalid JWT"
@@ -38,13 +34,36 @@
     (error->http-response {:error :default})))
 
 (defn error->ui-response
-  [{error-code :error}]
+  "Returns a ring HTML error response
+   
+   Accepts the error hash-map and and function `error-body-builder`
+   
+   `error-body-builder` function should accept `status` and `message`
+   `status`:     HTTP status code
+   `message`:    Message to be displayed"
+  [{error-code :error} error-body-builder]
   (if error-code
     (if-let [response-data (error-code error-map)]
       (let [status (:status response-data)
             message (:message response-data)]
         {:status (:status response-data)
-         :body (h/html (base-layout [:div
-                                     (error-ui status message)]))})
-      (error->ui-response {:error :default}))
-    (error->ui-response {:error :default})))
+         :body (error-body-builder status message)})
+      (error->ui-response {:error :default} error-body-builder))
+    (error->ui-response {:error :default} error-body-builder)))
+
+(defmacro if-error
+  "Macro. Evaluates test on the data.
+   If error, evaluates `error-condition` otherwise evaluates
+   the `else-condition`
+   
+   `error-condition` can have either an expression or `:raise` or `:http-response`
+   `:raise`           returns the data
+   `:http-response`   returns data wrapped with HTTP respone"
+  [data error-condition else-condition]
+  `(if (error? ~data)
+     (let [error-condition# ~error-condition]
+       (case error-condition#
+         :raise ~data
+         :http-response (error->http-response ~data)
+         error-condition#))
+     ~else-condition))

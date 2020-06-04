@@ -9,8 +9,9 @@
             [receive.spec.file :as spec]
             [receive.view.base
              :refer [base upload-button
-                     title download-button
-                     copy-button]
+                     toolbar download-button
+                     copy-button
+                     error-ui]
              :rename {base base-layout}])
   (:import java.util.UUID))
 
@@ -65,23 +66,28 @@
       {:status 200
        :body (io/file abs-filename)})))
 
+(defn error-body-builder [status message]
+  (h/html (base-layout [:div
+                        (error-ui status message)])))
+
 (defn download-view [request]
   (let [uid (-> request :params :id)
         filename (files/get-filename uid)]
     (if (error? filename)
-      (error->ui-response filename)
+      (error->ui-response filename error-body-builder)
       {:status 200
        :headers {"Content-Type" "text/html"}
        :body (h/html (base-layout [:div
-                                   title
+                                   (toolbar (:auth request))
                                    (download-button uid filename)]))})))
 
-(defn index [_]
-  {:status 200
-   :headers {"Content-Type" "text/html"}
-   :body (h/html (base-layout [:div
-                               title
-                               upload-button]))})
+(defn index [request]
+  (let [auth (:auth request)]
+    {:status 200
+     :headers {"Content-Type" "text/html"}
+     :body (h/html (base-layout [:div
+                                 (toolbar auth)
+                                 upload-button]))}))
 
 (defn download-link
   [uid]
@@ -89,8 +95,9 @@
 
 (defn share-handler [request]
   (let [uid (-> request :params :uid)
-        link (download-link uid)]
+        link (download-link uid)
+        auth (:auth request)]
     {:status 200
      :body (h/html (base-layout [:div
-                                 title
+                                 (toolbar auth)
                                  (copy-button link)]))}))
