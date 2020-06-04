@@ -1,6 +1,5 @@
 (ns receive.service.files
   (:require [clojure.java.io :as io]
-            [clojure.tools.logging :as log]
             [clojure.string :as string]
             [clj-time.coerce :as time-coerce]
             [clj-time.core :as time]
