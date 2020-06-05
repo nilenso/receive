@@ -1,18 +1,15 @@
 (ns receive.handlers.file
   (:require [clojure.java.io :as io]
-            [hiccup.core :as h]
             [receive.config :refer [config]]
             [receive.error-handler :refer [error?
                                            error->http-response
                                            error->ui-response]]
             [receive.service.files :as files]
             [receive.spec.file :as spec]
-            [receive.view.base
-             :refer [base upload-button
-                     toolbar download-button
-                     copy-button
-                     error-ui]
-             :rename {base base-layout}])
+            [receive.view.base :as base-view]
+            [receive.view.components :as component-view]
+            [receive.view.download :as download-view]
+            [receive.view.upload :as upload-view])
   (:import java.util.UUID))
 
 (defn uuid-str []
@@ -38,11 +35,6 @@
    :body {:success false
           :message "File name is too long"}})
 
-(def response-bad-uid
-  {:status 400
-   :body {:success false
-          :messsage "Not valid UUID"}})
-
 (defn upload
   "Handles file upload and saves to the location specified in the config"
   [{params :params :as request}]
@@ -65,7 +57,8 @@
 (defn download-file
   [{params :params}]
   (cond
-    (not (spec/uuid-valid? params)) response-bad-uid
+    (not (spec/uuid-valid? params)) (error->http-response
+                                     {:error :invalid-uuid})
     :else (let [uid (:id params)
                 abs-filename (files/get-absolute-filename uid)]
             (if (error? abs-filename)
@@ -73,32 +66,23 @@
               {:status 200
                :body (io/file abs-filename)}))))
 
-(defn error-body-builder [status message]
-  (h/html (base-layout [:div
-                        (error-ui status message)])))
-
 (defn download-view [{params :params :as request}]
   (cond
-    (not (spec/uuid-valid? params)) response-bad-uid
-    :else
-    (let [uid (:id params)
-          filename (files/get-filename uid)]
-      (if (error? filename)
-        (error->ui-response filename error-body-builder)
-        {:status 200
-         :headers {"Content-Type" "text/html"}
-         :body (h/html
-                (base-layout [:div
-                              (toolbar (:auth request))
-                              (download-button uid filename)]))}))))
+    (not (spec/uuid-valid? params)) (error->ui-response
+                                     {:error :invalid-uuid})
+    :else (let [uid (:id params)
+                filename (files/get-filename uid)]
+            (if (error? filename)
+              (error->ui-response filename)
+              (base-view/success-body-builder
+               (component-view/toolbar (:auth request))
+               (download-view/download-button uid filename))))))
 
 (defn index [request]
   (let [auth (:auth request)]
-    {:status 200
-     :headers {"Content-Type" "text/html"}
-     :body (h/html (base-layout [:div
-                                 (toolbar auth)
-                                 upload-button]))}))
+    (base-view/success-body-builder
+     (component-view/toolbar auth)
+     upload-view/upload-button)))
 
 (defn download-link
   [uid]
@@ -108,7 +92,6 @@
   (let [uid (-> request :params :uid)
         link (download-link uid)
         auth (:auth request)]
-    {:status 200
-     :body (h/html (base-layout [:div
-                                 (toolbar auth)
-                                 (copy-button link)]))}))
+    (base-view/success-body-builder
+     (component-view/toolbar auth)
+     (upload-view/copy-button link))))

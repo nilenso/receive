@@ -1,4 +1,5 @@
-(ns receive.error-handler)
+(ns receive.error-handler
+  (:require [receive.view.base :refer [error-body-builder]]))
 
 (defonce error-map
   {:jwt-invalid-input {:message "Invalid JWT"
@@ -13,6 +14,8 @@
                        :status  410}
    :not-found         {:message "File not found"
                        :status  404}
+   :invalid-uuid      {:message "Not valid UUID"
+                       :status   400}
    :default           {:message "Unknown Error"
                        :status  500}})
 
@@ -41,15 +44,15 @@
    `error-body-builder` function should accept `status` and `message`
    `status`:     HTTP status code
    `message`:    Message to be displayed"
-  [{error-code :error} error-body-builder]
+  [{error-code :error}]
   (if error-code
     (if-let [response-data (error-code error-map)]
       (let [status (:status response-data)
             message (:message response-data)]
         {:status (:status response-data)
          :body (error-body-builder status message)})
-      (error->ui-response {:error :default} error-body-builder))
-    (error->ui-response {:error :default} error-body-builder)))
+      (error->ui-response {:error :default}))
+    (error->ui-response {:error :default})))
 
 (defmacro if-error
   "Macro. Evaluates test on the data.
