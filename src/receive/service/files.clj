@@ -7,7 +7,8 @@
             [receive.db.connection :as connection]
             [receive.error-handler :refer [error?]]
             [receive.db.sql :as sql]
-            [receive.config :as conf]))
+            [receive.config :as conf])
+  (:import [java.util UUID]))
 
 (defn expand-home
   "Replaces the tilde in file path with the user's home directory"
@@ -40,16 +41,12 @@
                                     {:return-keys true})
           uid (:file_storage/uid result)]
       (save-to-disk file (file-save-path uid filename))
-      uid)))
+      (str uid))))
 
 (defn find-file
   [uid]
-  (try
-    (jdbc/execute-one!
-     connection/datasource
-     (sql/find-file uid))
-    (catch org.postgresql.util.PSQLException _
-      {:error :not-found})))
+  (jdbc/execute-one! connection/datasource
+                     (sql/find-file (UUID/fromString uid))))
 
 (defn get-filename
   "Finds the file name given a uid"

@@ -50,6 +50,7 @@
       (wrap-json-params)
       (wrap-postgres-exception)
       (wrap-fallback-exception)
+      (wrap-json-response)
       (wrap-with-uri-rewrite trim-trailing-slash)
       (wrap-resource "public")
       (wrap-with-logger)))

@@ -1,6 +1,7 @@
 (ns receive.spec.file
   (:require [clojure.spec.alpha :as s]
-            [receive.config :as config]))
+            [receive.config :as config])
+  (:import [java.util UUID]))
 
 (s/def ::min-file-size #(> % 0))
 (s/def ::max-file-size #(< % (:max-file-size config/config)))
@@ -13,6 +14,9 @@
 (s/def ::tempfile #(.exists %))
 (s/def ::size (s/and ::min-file-size
                      ::max-file-size))
+(s/def ::uid (fn [uuid] 
+               (uuid? (try (UUID/fromString uuid)
+                           (catch Exception _ false)))))
 
 (s/def ::file (s/keys :req-un [::filename
                                ::content-type
@@ -30,3 +34,6 @@
 
 (defn max-filename-length-valid? [params]
   (s/valid? ::max-filename-length (-> params :file :filename)))
+
+(defn uuid-valid? [params]
+  (s/valid? ::uid (-> params :id)))

@@ -38,6 +38,11 @@
    :body {:success false
           :message "File name is too long"}})
 
+(def response-bad-uid
+  {:status 400
+   :body {:success false
+          :messsage "Not valid UUID"}})
+
 (defn upload
   "Handles file upload and saves to the location specified in the config"
   [{params :params :as request}]
@@ -58,28 +63,34 @@
               :message "File saved successfully!"}})))
 
 (defn download-file
-  [request]
-  (let [uid (-> request :params :id)
-        abs-filename (files/get-absolute-filename uid)]
-    (if (error? abs-filename)
-      (error->http-response abs-filename)
-      {:status 200
-       :body (io/file abs-filename)})))
+  [{params :params}]
+  (cond
+    (not (spec/uuid-valid? params)) response-bad-uid
+    :else (let [uid (:id params)
+                abs-filename (files/get-absolute-filename uid)]
+            (if (error? abs-filename)
+              (error->http-response abs-filename)
+              {:status 200
+               :body (io/file abs-filename)}))))
 
 (defn error-body-builder [status message]
   (h/html (base-layout [:div
                         (error-ui status message)])))
 
-(defn download-view [request]
-  (let [uid (-> request :params :id)
-        filename (files/get-filename uid)]
-    (if (error? filename)
-      (error->ui-response filename error-body-builder)
-      {:status 200
-       :headers {"Content-Type" "text/html"}
-       :body (h/html (base-layout [:div
-                                   (toolbar (:auth request))
-                                   (download-button uid filename)]))})))
+(defn download-view [{params :params :as request}]
+  (cond
+    (not (spec/uuid-valid? params)) response-bad-uid
+    :else
+    (let [uid (:id params)
+          filename (files/get-filename uid)]
+      (if (error? filename)
+        (error->ui-response filename error-body-builder)
+        {:status 200
+         :headers {"Content-Type" "text/html"}
+         :body (h/html
+                (base-layout [:div
+                              (toolbar (:auth request))
+                              (download-button uid filename)]))}))))
 
 (defn index [request]
   (let [auth (:auth request)]
