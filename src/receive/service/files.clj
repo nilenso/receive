@@ -5,7 +5,7 @@
             [clj-time.core :as time]
             [next.jdbc :as jdbc]
             [receive.db.connection :as connection]
-            [receive.error-handler :refer [error?]]
+            [receive.error-handler :refer [if-error]]
             [receive.db.sql :as sql]
             [receive.config :as conf])
   (:import [java.util UUID]))
@@ -51,18 +51,17 @@
 (defn get-filename
   "Finds the file name given a uid"
   [uid]
-  (let [response (find-file uid)
-        file (:file_storage/filename response)
-        expired? (:expired response)]
-    (if (or file (error? file))
+  (if-let [response (find-file uid)]
+    (let [file (:file_storage/filename response)
+          expired? (:expired response)]
       (if expired?
         {:error :file-expired}
-        file)
-      {:error :not-found})))
+        file))
+    {:error :not-found}))
 
 (defn get-absolute-filename
   [uid]
   (let [filename (get-filename uid)]
-    (if (error? filename)
-      filename
-      (file-save-path uid filename))))
+    (if-error filename
+              :raise
+              (file-save-path uid filename))))
