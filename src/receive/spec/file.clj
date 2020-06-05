@@ -14,7 +14,7 @@
 (s/def ::tempfile #(.exists %))
 (s/def ::size (s/and ::min-file-size
                      ::max-file-size))
-(s/def ::uid (fn [uuid] 
+(s/def ::uid (fn [uuid]
                (uuid? (try (UUID/fromString uuid)
                            (catch Exception _ false)))))
 

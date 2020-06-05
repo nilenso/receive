@@ -52,8 +52,8 @@
   "Finds the file name given a uid"
   [uid]
   (let [response (find-file uid)
-        file (-> response :file_storage/filename)
-        expired? (-> response :expired)]
+        file (:file_storage/filename response)
+        expired? (:expired response)]
     (if (or file (error? file))
       (if expired?
         {:error :file-expired}

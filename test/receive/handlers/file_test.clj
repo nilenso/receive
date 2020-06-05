@@ -69,7 +69,7 @@
 (deftest download-ui-expired-test
   (with-redefs [file-service/get-filename (constantly {:error :file-expired})]
     (let [uid (handler/uuid-str)
-          mock-request (assoc 
+          mock-request (assoc
                         (mock/request :get (format "/download/%s/" uid))
                         :params {:id uid})
           mock-response (handler/download-view mock-request)
@@ -82,7 +82,7 @@
 (deftest download-ui-bad-link-test
   (with-redefs [file-service/find-file (constantly nil)]
     (let [uid (handler/uuid-str)
-          mock-request (assoc 
+          mock-request (assoc
                         (mock/request :get (format "/download/%s/" uid))
                         :params {:id uid})
           mock-response (handler/download-view mock-request)
