@@ -13,12 +13,17 @@
 (s/def ::tempfile #(.exists %))
 (s/def ::size (s/and ::min-file-size
                      ::max-file-size))
+(s/def ::uid #(uuid? (java.util.UUID/fromString %)))
 
 (s/def ::file (s/keys :req-un [::filename
                                ::content-type
                                ::size]))
 
 (s/def ::params #(contains? % :file))
+
+(s/def ::find-file (s/keys :req-un [::filename
+                                    ::uid]
+                           :opt-un [:receive.spec.user/user-id]))
 
 (defn params-valid? [params] (s/valid? ::params params))
 
@@ -30,3 +35,6 @@
 
 (defn max-filename-length-valid? [params]
   (s/valid? ::max-filename-length (-> params :file :filename)))
+
+(defn find-file-valid? [file-data]
+  (s/explain ::find-file file-data))

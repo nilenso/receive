@@ -25,9 +25,9 @@
 
 (defn save-file
   "Adds a new database entry and saves file to disk and returns the uid"
-  [file filename uid]
+  [file {:keys [filename uid] :as file-data}]
   (jdbc/with-transaction [tx connection/datasource]
-    (let [result (jdbc/execute-one! tx (sql/save-file filename uid) {:return-keys true})]
+    (let [result (jdbc/execute-one! tx (sql/save-file file-data) {:return-keys true})]
       (save-to-disk file (file-save-path uid filename))
       (:file_storage/uid result))))
 

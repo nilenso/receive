@@ -5,10 +5,10 @@
                                        columns
                                        values]]))
 (defn save-file
-  [filename uid]
+  [{:keys [filename uid user-id]}]
   (-> (insert-into :file-storage)
-      (columns :filename :uid)
-      (values [[filename uid]])
+      (columns :filename :uid :user_id)
+      (values [[filename uid user-id]])
       sql/format))
 
 (defn find-file
