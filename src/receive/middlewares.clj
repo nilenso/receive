@@ -2,9 +2,7 @@
   (:require [clojure.string :as string]
             [clojure.tools.logging :as log]
             [clojure.walk :refer [keywordize-keys]]
-            [clojure.data.json :refer [write-str]]
-            [receive.error-handler :refer [not-error?
-                                           error->http-response]]
+            [receive.error-handler :refer [not-error?]]
             [receive.auth.jwt :as jwt]))
 
 (defn wrap-fallback-exception
