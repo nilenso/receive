@@ -2,6 +2,7 @@
   (:require [clojure.java.io :as io]
             [clojure.string :as string]
             [next.jdbc :as jdbc]
+            [next.jdbc.sql :refer [find-by-keys]]
             [receive.db.connection :as connection]
             [receive.db.sql :as sql]
             [receive.config :as conf]))
@@ -43,3 +44,8 @@
   (if-let [filename (get-filename uid)]
     (file-save-path uid filename)
     nil))
+
+(defn get-uploaded-files [user-id]
+  (find-by-keys connection/datasource
+                :file_storage
+                {:user_id user-id}))

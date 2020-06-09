@@ -28,6 +28,7 @@
                      (wrap-json-response))
             :get (-> api-handlers/fetch-user
                      (wrap-json-response))}
+   "/user/files" (wrap-json-response api-handlers/uploaded-files)
    true (wrap-json-response api-handlers/not-found)})
 
 (def routes

@@ -8,7 +8,8 @@
    [receive.db.connection :refer [datasource]]
    [receive.factory :as factory]
    [receive.fixtures :as fixtures]
-   [receive.service.files :as files]))
+   [receive.service.files :as files]
+   [receive.spec.file :as spec]))
 
 (def ^:dynamic *user-id* nil)
 (def ^:dynamic *tempfile* nil)
@@ -57,6 +58,12 @@
       (is (= (:file_storage/user_id file)
              nil)))))
 
+(deftest get-uploaded-files-test
+  (testing "should return a list of files uploaded by a user"
+    (let [uploaded-files (files/get-uploaded-files *user-id*)]
+      (is (= (count uploaded-files) 1))
+      (is (every? spec/valid-db-entry? uploaded-files)))))
+
 (defn keywords->sql-keywords [data]
   (into {}
         (for [[k v] data]
@@ -86,8 +93,10 @@
   (io/delete-file file))
 
 (defn create-file [file-data]
-  (insert! datasource :file_storage (keywords->sql-keywords
-                                     file-data)))
+  (insert! datasource :file_storage
+           (keywords->sql-keywords
+            (assoc file-data
+                   :user_id *user-id*))))
 
 (defn delete-file [{id :file_storage/id}]
   (delete! datasource :file_storage {:id id}))
@@ -111,4 +120,6 @@
            (:file_storage/filename
             (create-file (factory/generate-file))))))
    (def ^:dynamic *file-data*
-     (create-file (factory/generate-file))))
+     (create-file (factory/generate-file)))
+   (def ^:dynamic *user-id*
+     (create-user)))
