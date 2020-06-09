@@ -1,8 +1,79 @@
 (ns receive.service.files-test
-  (:require [clojure.test :refer [deftest is]]
-            [clojure.java.io :as io]
-            [receive.handlers.file :refer [uuid-str]]
-            [receive.service.files :as files]))
+  (:require
+   [camel-snake-kebab.core :as csk]
+   [clojure.test :refer [deftest is testing use-fixtures]]
+   [clojure.java.io :as io]
+   [receive.handlers.file :refer [uuid-str]]
+   [next.jdbc.sql :refer [insert! delete! find-by-keys]]
+   [receive.db.connection :refer [datasource]]
+   [receive.factory :as factory]
+   [receive.fixtures :as fixtures]
+   [receive.service.files :as files]))
+
+(def ^:dynamic *user-id* nil)
+(def ^:dynamic *tempfile* nil)
+(def ^:dynamic *file-data* nil)
+
+(defn tempfile-location [filename]
+  (str "/tmp/" filename))
+
+(defn get-file [uid]
+  (find-by-keys datasource :file_storage {:uid uid}))
+
+(deftest get-filename-test
+  (testing "should return an existing file"
+    (is (= (files/get-filename (:file_storage/uid *file-data*))
+           (:file_storage/filename *file-data*))))
+  (testing "should return nil when file does not exists"
+    (is (nil? (files/get-filename (uuid-str))))))
+
+(deftest save-file-to-disk
+  (testing "should save file to the specified location"
+    (let [filename (tempfile-location
+                    (:file_storage/filename *file-data*))]
+      (files/save-to-disk *tempfile* filename)
+      (is (.exists (io/file filename))))))
+
+(deftest save-file-test
+  (testing "should add user-id to db when save-file with auth"
+    (let [filename (:file_storage/filename *file-data*)
+          uid      (files/save-file *tempfile*
+                                    {:filename filename
+                                     :uid      (uuid-str)
+                                     :user-id  *user-id*})
+          [file]   (get-file uid)]
+      (is (not= *user-id* nil))
+      (is (= (:file_storage/user_id file)
+             *user-id*)))))
+
+(deftest save-file-no-auth-test
+  (testing "should not add user-id when there's no auth"
+    (let [filename (:file_storage/filename *file-data*)
+          uid      (files/save-file *tempfile*
+                                    {:filename filename
+                                     :uid      (uuid-str)})
+          [file]   (get-file uid)]
+      (is (not= *user-id* nil))
+      (is (= (:file_storage/user_id file)
+             nil)))))
+
+(defn keywords->sql-keywords [data]
+  (into {}
+        (for [[k v] data]
+          [(csk/->snake_case k) v])))
+
+(defn create-user []
+  (insert! datasource :users (keywords->sql-keywords
+                              (factory/generate-user))))
+
+(defn delete-user [{id :id}]
+  (delete! datasource :users {:id id}))
+
+(defn user-fixture [f]
+  (let [user (create-user)]
+    (binding [*user-id* (:users/id user)]
+      (f))
+    (delete-user user)))
 
 (defn create-temp-file
   "Creates a file given a filename"
@@ -11,23 +82,33 @@
     (.write file "Some data"))
   (io/file file))
 
-(deftest find-file-test
-  (let [uid (uuid-str)
-        tempfile (create-temp-file "/tmp/tempfile.dat")
-        filename (str uid "_tempfile.dat")]
-    (files/save-file tempfile filename uid)
-    (is (= (files/get-filename uid)
-           filename))))
+(defn delete-tempfile [file]
+  (io/delete-file file))
 
-(deftest find-file-bad-uid-test
-  (let [uid (uuid-str)
-        tempfile (create-temp-file "/tmp/tempfile.dat")
-        filename (str uid "_tempfile.dat")]
-    (files/save-file tempfile filename uid)
-    (is (nil? (files/get-filename (uuid-str))))))
+(defn create-file [file-data]
+  (insert! datasource :file_storage (keywords->sql-keywords
+                                     file-data)))
 
-(deftest save-file-to-disk
-  (let [filename "/tmp/save-to-file-test"
-        tempfile (create-temp-file "/tmp/test_tempfile.dat")]
-    (files/save-to-disk tempfile filename)
-    (is (.exists (io/file filename)))))
+(defn delete-file [{id :file_storage/id}]
+  (delete! datasource :file_storage {:id id}))
+
+(defn file-fixture [f]
+  (let [file-data (create-file (factory/generate-file))
+        tempfile (create-temp-file
+                  (tempfile-location
+                   (:file_storage/filename file-data)))]
+    (binding [*tempfile* tempfile
+              *file-data* file-data]
+      (f))
+    (delete-tempfile tempfile)
+    (delete-file file-data)))
+
+(use-fixtures :each user-fixture file-fixture)
+
+#_((def ^:dynamic *tempfile*
+     (create-temp-file
+      (str "/tmp/"
+           (:file_storage/filename
+            (create-file (factory/generate-file))))))
+   (def ^:dynamic *file-data*
+     (create-file (factory/generate-file))))

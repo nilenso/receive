@@ -22,7 +22,8 @@
                  [org.clojure/data.json "1.0.0"]
                  [com.google.api-client/google-api-client "1.30.9"]
                  [buddy/buddy-sign "3.1.0"]
-                 [clj-time "0.15.2"]]
+                 [clj-time "0.15.2"]
+                 [camel-snake-kebab "0.4.1"]]
   :profiles {:test {:dependencies [[ring/ring-mock "0.4.0"]]}}
   :main receive.core
   :plugins [[lein-ring "0.12.5"]]

@@ -18,17 +18,17 @@
   (is (=
        (error-handler/error->http-response {:error :jwt-invalid-input})
        {:status 400, :body {:success false, :message "Invalid JWT"}}))
-  (is (= 
+  (is (=
        (error-handler/error->http-response {:error nil})
        {:status 500, :body {:success false, :message "Unknown Error"}})))
 
 (deftest if-error-macro-test
-  (is (= 
+  (is (=
        (error-handler/if-error {:error :error-code} :error-fn :else-fn)
        :error-fn))
-  (is (= 
+  (is (=
        (error-handler/if-error {:error :error-code} :raise :else-fn)
        {:error :error-code}))
-  (is (= 
+  (is (=
        (error-handler/if-error {:error :error-code} :http-response :else-fn)
        {:status 500, :body {:success false, :message "Unknown Error"}})))

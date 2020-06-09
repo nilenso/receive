@@ -13,7 +13,7 @@
               (-> config :secrets :jwt-secret))))
 
 (defn verify [token]
-  (try 
+  (try
     (jwt/unsign token (-> config :secrets :jwt-secret))
     (catch java.lang.NullPointerException _
       {:error :jwt-no-token})
