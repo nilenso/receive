@@ -1,14 +1,14 @@
 (ns receive.fixtures
-  (:require [next.jdbc :as jdbc]
-            [receive.db.connection :refer [datasource]]
-            [receive.factory :as factory]
-            [next.jdbc.sql :refer [insert! delete!]]
-            [camel-snake-kebab.core :as csk]))
+  (:require
+   [next.jdbc :as jdbc]
+   [receive.db.connection :refer [datasource]]
+   [receive.db.migration :as migration]))
 
-(defn clear-all-db-tables []
-  (clojure.tools.logging/info "Clearing all DB tables"))
+(defn drop-all-user-tables []
+  (jdbc/execute-one! datasource
+                     ["DROP OWNED BY CURRENT_USER"]))
 
 (defn clear-state [f]
-  (f)
-  (clear-all-db-tables)
-  #_(clear-all-files))
+  (drop-all-user-tables)
+  (migration/migrate)
+  (f))
