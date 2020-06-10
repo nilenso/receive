@@ -36,6 +36,7 @@
         "api" api-routes
         "download/"  {[:id ""] file-handlers/download-view}
         "share" {:get file-handlers/share-handler}
+        "user/files" {:get file-handlers/uploaded-files}
         "404" {:get ui-handlers/error-page}
         true (constantly (response/redirect "/404"))}])
 

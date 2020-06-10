@@ -13,6 +13,8 @@
     [:title (:ui-title config/config)]
     [:meta {:charset "utf-8"}]
     [:meta {:name "theme-color" :content "#5CDb95"}]
+    [:meta {:name "viewport"
+            :content "width=device-width, initial-scale=1"}]
     [:meta {:name "google-signin-client_id"
             :content (-> config/config
                          :secrets
@@ -23,6 +25,7 @@
     (page/include-js "js/config.js")
     (page/include-js "js/main.js")
     [:script {:src "https://apis.google.com/js/api:client.js"}]
+    [:script {:src "https://kit.fontawesome.com/3547196ebb.js"}]
     (page/include-js "js/signin.js")
     [:script "startApp()"]]
    [:body (if config/staging? {:class "env-staging"} {})
@@ -48,7 +51,10 @@
     [:div {:id "btn_user"
            :class (str "toolbar_btn "
                        (if auth "" "no-display"))}
-     full-name]))
+     full-name
+     [:ul {:class "user_menu"}
+      [:li [:a {:href "/user/files" :target "_self"} "My Files"]]
+      [:li [:a {:href "/logout" :target "_self"}  "Logout"]]]]))
 
 (defn toolbar [auth]
   [:div {:class "toolbar"}
@@ -84,6 +90,24 @@
    [:button {:id "copy-button"
              :onclick "copyLink()"} download-link]
    [:p "Click to copy"]])
+
+(defn file-item [{:keys [filename link]}]
+  [:div {:class "file-item"}
+   [:div {:class "filename"}
+    [:span "Filename"]
+    [:h4 filename]]
+   [:div {:class "icons"}
+    [:i.far.fa-copy
+     {:onclick (format "copyToClipboard('%s')"
+                       link)}]
+    [:i.fas.fa-file-download
+     {:onclick (format "window.open('%s')"
+                       link)}]]])
+
+(defn file-listing
+  [files]
+  [:div {:class "file-listing"}
+   (map file-item files)])
 
 (defn error-message
   [error-code error-message]

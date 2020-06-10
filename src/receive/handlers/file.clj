@@ -7,7 +7,9 @@
             [receive.view.base
              :refer [base upload-button
                      toolbar download-button
-                     copy-button]
+                     copy-button
+                     error-ui
+                     file-listing]
              :rename {base base-layout}]
             [ring.util.response :as response])
   (:import java.util.UUID))
@@ -98,3 +100,20 @@
      :body (h/html (base-layout [:div
                                  (toolbar auth)
                                  (copy-button link)]))}))
+
+(defn map-file-data [files]
+  (map
+   (fn [file]
+     {:filename (:file_storage/filename file)
+      :link (download-link (:file_storage/uid file))})
+   files))
+
+(defn uploaded-files [{auth :auth}]
+  (if auth
+    (let [files (map-file-data
+                 (files/get-uploaded-files (:user_id auth)))]
+      {:status 200
+       :body (h/html (base-layout
+                      (toolbar auth)
+                      (file-listing files)))})
+    (error-ui 401 "Not authenticated")))
