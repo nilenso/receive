@@ -92,6 +92,32 @@
       (is (string/includes? body
                             "<h1>404</h1><span>File not found</span>")))))
 
+(deftest download-link-bad-uuid-test
+  (with-redefs [file-service/find-file (constantly nil)]
+    (let [uid "bad_uuid"
+          mock-request (assoc
+                        (mock/request :get (format "/api/download/%s/" uid))
+                        :params {:id uid})
+          mock-response (handler/download-file mock-request)
+          status (:status mock-response)
+          body (:body mock-response)]
+      (is (= status 400))
+      (is (= body {:success false, :message "Not valid UUID"})))))
+
+
+(deftest download-ui-bad-uuid-test
+  (with-redefs [file-service/find-file (constantly nil)]
+    (let [uid "bad_uuid"
+          mock-request (assoc
+                        (mock/request :get (format "/download/%s/" uid))
+                        :params {:id uid})
+          mock-response (handler/download-view mock-request)
+          status (:status mock-response)
+          body (:body mock-response)]
+      (is (= status 400))
+      (is (string/includes? body
+                            "<h1>400</h1><span>Not valid UUID</span>")))))
+
 (deftest share-handler
   (let [tempfile (files/create-temp-file "/tmp/tempfile.dat")
         file (tempfile->file tempfile)
