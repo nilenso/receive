@@ -12,10 +12,10 @@
   (io/file file))
 
 (deftest find-file-test
-  (let [uid (uuid-str)
+  (let [temp-uid (uuid-str)
         tempfile (create-temp-file "/tmp/tempfile.dat")
-        filename (str uid "_tempfile.dat")]
-    (files/save-file tempfile filename uid)
+        filename (str temp-uid "_tempfile.dat")
+        uid (files/save-file tempfile filename)]
     (is (= (files/get-filename uid)
            filename))))
 
@@ -23,8 +23,9 @@
   (let [uid (uuid-str)
         tempfile (create-temp-file "/tmp/tempfile.dat")
         filename (str uid "_tempfile.dat")]
-    (files/save-file tempfile filename uid)
-    (is (nil? (files/get-filename (uuid-str))))))
+    (files/save-file tempfile filename)
+    (is (= (files/get-filename (uuid-str))
+           {:error :not-found}))))
 
 (deftest save-file-to-disk
   (let [filename "/tmp/save-to-file-test"

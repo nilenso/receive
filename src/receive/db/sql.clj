@@ -5,17 +5,19 @@
                                        columns
                                        values]]))
 (defn save-file
-  [filename uid]
+  [filename dt-expire]
   (-> (insert-into :file-storage)
-      (columns :filename :uid)
-      (values [[filename uid]])
+      (columns :filename :dt_expire)
+      (values [[filename (sql/call :cast dt-expire
+                                   :timestamp)]])
       sql/format))
 
 (defn find-file
   [uid]
-  (sql/format {:select [:filename]
-               :from [:file-storage]
-               :where [:= :uid uid]}))
+  (sql/format {:select [:filename
+                        [(sql/call :< :dt_expire (sql/call :now)) :expired]]
+               :from   [:file-storage]
+               :where  [:= :uid uid]}))
 
 (defn get-google-user
   [google-id]

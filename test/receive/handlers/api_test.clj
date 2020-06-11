@@ -35,5 +35,5 @@
          (handler/sign-in (-> (mock/request :put "/user")
                               (assoc :params {:id_token "mock_token"})))
          {:status 400
-          :body {:success false 
+          :body {:success false
                  :message "No token provided"}}))))
