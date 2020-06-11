@@ -17,10 +17,10 @@
 (deftest error->http-response-test
   (is (=
        (error-handler/error->http-response {:error :jwt-invalid-input})
-       {:status 400 :body {:success false :message "Invalid JWT"}}))
+       {:status 400, :body {:success false, :message "Invalid JWT"}}))
   (is (=
        (error-handler/error->http-response {:error nil})
-       {:status 500 :body {:success false :message "Unknown Error"}})))
+       {:status 500, :body {:success false, :message "Unknown Error"}})))
 
 (deftest if-error-macro-test
   (is (=
@@ -31,4 +31,4 @@
        {:error :error-code}))
   (is (=
        (error-handler/if-error {:error :error-code} :http-response :else-fn)
-       {:status 500 :body {:success false :message "Unknown Error"}})))
+       {:status 500, :body {:success false, :message "Unknown Error"}})))
