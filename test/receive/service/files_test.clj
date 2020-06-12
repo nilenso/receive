@@ -7,9 +7,9 @@
    [next.jdbc.sql :refer [insert! delete! find-by-keys]]
    [receive.db.connection :refer [datasource]]
    [receive.factory :as factory]
-   [receive.fixtures :as fixtures]
    [receive.service.files :as files]
-   [receive.spec.file :as spec]))
+   [receive.spec.file :as spec])
+  (:import (java.util UUID)))
 
 (def ^:dynamic *user-id* nil)
 (def ^:dynamic *tempfile* nil)
@@ -19,14 +19,15 @@
   (str "/tmp/" filename))
 
 (defn get-file [uid]
-  (find-by-keys datasource :file_storage {:uid uid}))
+  (find-by-keys datasource :file_storage {:uid (UUID/fromString uid)}))
 
 (deftest get-filename-test
   (testing "should return an existing file"
-    (is (= (files/get-filename (:file_storage/uid *file-data*))
+    (is (= (files/get-filename (str (:file_storage/uid *file-data*)))
            (:file_storage/filename *file-data*))))
-  (testing "should return nil when file does not exists"
-    (is (nil? (files/get-filename (uuid-str))))))
+  (testing "should return error when file does not exists"
+    (is (= (files/get-filename (uuid-str))
+           {:error :not-found}))))
 
 (deftest save-file-to-disk
   (testing "should save file to the specified location"
@@ -89,6 +90,16 @@
     (.write file "Some data"))
   (io/file file))
 
+(deftest find-file-test
+  (let [filename (:file_storage/filename *file-data*)
+        uid (files/save-file *tempfile* {:filename filename})]
+    (is (= (files/get-filename uid)
+           filename))))
+
+(deftest find-file-bad-uid-test
+  (is (= (files/get-filename (uuid-str))
+         {:error :not-found})))
+
 (defn delete-tempfile [file]
   (io/delete-file file))
 
@@ -98,8 +109,8 @@
             (assoc file-data
                    :user_id *user-id*))))
 
-(defn delete-file [{id :file_storage/id}]
-  (delete! datasource :file_storage {:id id}))
+(defn delete-file [{uid :file_storage/uid}]
+  (delete! datasource :file_storage {:uid uid}))
 
 (defn file-fixture [f]
   (let [file-data (create-file (factory/generate-file))
@@ -123,4 +134,4 @@
    (def ^:dynamic *file-data*
      (create-file (factory/generate-file)))
    (def ^:dynamic *user-id*
-     (create-user)))
+     (:users/id create-user)))

@@ -39,8 +39,7 @@
 
 (defn generate-file []
   (generate-data
-   {:filename (s/gen :receive.spec.file/filename)
-    :uid      (gen/fmap #(str %) (gen/uuid))}))
+   {:filename (s/gen :receive.spec.file/filename)}))
 
 (comment
   (generate-user)

@@ -1,11 +1,15 @@
 (ns receive.service.files
   (:require [clojure.java.io :as io]
             [clojure.string :as string]
+            [clj-time.coerce :as time-coerce]
+            [clj-time.core :as time]
             [next.jdbc :as jdbc]
             [next.jdbc.sql :refer [find-by-keys]]
             [receive.db.connection :as connection]
+            [receive.error-handler :refer [if-error]]
             [receive.db.sql :as sql]
-            [receive.config :as conf]))
+            [receive.config :as conf])
+  (:import [java.util UUID]))
 
 (defn expand-home
   "Replaces the tilde in file path with the user's home directory"
@@ -28,22 +32,40 @@
   "Adds a new database entry and saves file to disk and returns the uid"
   [file {:keys [filename uid] :as file-data}]
   (jdbc/with-transaction [tx connection/datasource]
-    (let [result (jdbc/execute-one! tx (sql/save-file file-data) {:return-keys true})]
+    (let [expire-in (-> conf/config :public-file :expire-in-sec)
+          dt-expire (-> expire-in
+                        (time/seconds)
+                        (#(time/plus (time/now) %))
+                        (time-coerce/to-sql-time))
+          result (jdbc/execute-one! tx
+                                    (sql/save-file file-data dt-expire)
+                                    {:return-keys true})
+          uid (:file_storage/uid result)]
       (save-to-disk file (file-save-path uid filename))
-      (:file_storage/uid result))))
+      (str uid))))
+
+(defn find-file
+  [uid]
+  (jdbc/execute-one! connection/datasource
+                     (sql/find-file (UUID/fromString uid))))
 
 (defn get-filename
   "Finds the file name given a uid"
   [uid]
-  (if-let [file (jdbc/execute-one! connection/datasource (sql/find-file uid))]
-    (-> file :file_storage/filename)
-    nil))
+  (if-let [response (find-file uid)]
+    (let [file (:file_storage/filename response)
+          expired? (:expired response)]
+      (if expired?
+        {:error :file-expired}
+        file))
+    {:error :not-found}))
 
 (defn get-absolute-filename
   [uid]
-  (if-let [filename (get-filename uid)]
-    (file-save-path uid filename)
-    nil))
+  (let [filename (get-filename uid)]
+    (if-error filename
+              :raise
+              (file-save-path uid filename))))
 
 (defn get-uploaded-files [user-id]
   (find-by-keys connection/datasource

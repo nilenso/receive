@@ -1,6 +1,7 @@
 (ns receive.spec.file
   (:require [clojure.spec.alpha :as s]
-            [receive.config :as config]))
+            [receive.config :as config])
+  (:import [java.util UUID]))
 
 (s/def ::min-file-size #(> % 0))
 (s/def ::max-file-size #(< % (:max-file-size config/config)))
@@ -13,10 +14,17 @@
 (s/def ::tempfile #(.exists %))
 (s/def ::size (s/and ::min-file-size
                      ::max-file-size))
-(s/def ::uid #(uuid? (java.util.UUID/fromString %)))
+(s/def ::uid (fn [uuid]
+               (uuid? (try (UUID/fromString uuid)
+                           (catch Exception _ false)))))
+(s/def ::db-uid uuid?)
 
 (s/def ::id integer?)
-(s/def ::created-at inst?)
+(s/def ::dt-created inst?)
+(s/def ::date inst?)
+(s/def ::nil nil?)
+(s/def ::dt-expire (s/or ::date ::nil))
+(s/def ::user-id (s/or ::id ::nil))
 (s/def ::file (s/keys :req-un [::filename
                                ::content-type
                                ::size]))
@@ -27,11 +35,12 @@
                                     ::uid]
                            :opt-un [:receive.spec.user/user-id]))
 
-(s/def ::db-entry (s/keys :req-un [::id
-                                   ::filename
-                                   ::uid
-                                   ::created-at]
-                          :opt-un [:receive.spec.user/user-id]))
+(s/def ::db-entry (s/keys :req-un [::filename
+                                   ::db-uid
+                                   ::dt-created
+                                   ::user-id]
+                          :opt-un [:receive.spec.user/user-id
+                                   ::dt-expire]))
 
 (defn params-valid? [params] (s/valid? ::params params))
 
@@ -45,10 +54,10 @@
   (s/valid? ::max-filename-length (-> params :file :filename)))
 
 (defn db-entry->spec [data]
-  {:id         (:file_storage/id data)
-   :filename   (:file_storage/filename data)
-   :uid        (:file_storage/uid data)
-   :created-at (:file_storage/created_at data)
+  {:filename   (:file_storage/filename data)
+   :db-uid     (:file_storage/uid data)
+   :dt-created (:file_storage/dt_created data)
+   :dt-expire  (:file_storage/dt_expire data)
    :user-id    (:file_storage/user_id data)})
 
 (defn valid-db-entry? [data]
@@ -57,3 +66,6 @@
 
 (defn find-file-valid? [file-data]
   (s/explain ::find-file file-data))
+
+(defn uuid-valid? [params]
+  (s/valid? ::uid (-> params :id)))

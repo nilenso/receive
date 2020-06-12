@@ -28,6 +28,7 @@
   :main receive.core
   :plugins [[lein-ring "0.12.5"]]
   :ring {:handler receive.core/app}
-  :repl-options {:init-ns receive.core}
+  :repl-options {:init-ns receive.core
+                 :init (require '[clojure.repl :refer :all])}
   :aliases {"migrate"  ["run" "-m" "receive.db.migration/migrate"]
             "rollback" ["run" "-m" "receive.db.migration/rollback"]})

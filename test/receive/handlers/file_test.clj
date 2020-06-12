@@ -1,5 +1,6 @@
 (ns receive.handlers.file-test
   (:require [clojure.java.io :as io]
+            [clojure.string :as string]
             [clojure.test :refer [deftest is use-fixtures]]
             [receive.handlers.file :as handler]
             [receive.service.files :as file-service]
@@ -65,13 +66,57 @@
       (is (= headers {"Content-Type" "text/html"}))
       (is (= status 200)))))
 
-(deftest download-ui-bad-link-test
-  (with-redefs [file-service/get-filename (constantly nil)]
+(deftest download-ui-expired-test
+  (with-redefs [file-service/get-filename (constantly {:error :file-expired})]
     (let [uid (handler/uuid-str)
-          mock-request (mock/request :get (format "/download/%s/" uid))
-          mock-response (handler/download-view mock-request)]
-      (is (= mock-response
-             {:status 302, :headers {"Location" "/404"}, :body ""})))))
+          mock-request (assoc
+                        (mock/request :get (format "/download/%s/" uid))
+                        :params {:id uid})
+          mock-response (handler/download-view mock-request)
+          status (:status mock-response)
+          body (:body mock-response)]
+      (is (= status 410))
+      (is (string/includes? body
+                            "<h1>410</h1><span>Link has expired</span>")))))
+
+(deftest download-ui-bad-link-test
+  (with-redefs [file-service/find-file (constantly nil)]
+    (let [uid (handler/uuid-str)
+          mock-request (assoc
+                        (mock/request :get (format "/download/%s/" uid))
+                        :params {:id uid})
+          mock-response (handler/download-view mock-request)
+          status (:status mock-response)
+          body (:body mock-response)]
+      (is (= status 404))
+      (is (string/includes? body
+                            "<h1>404</h1><span>File not found</span>")))))
+
+(deftest download-link-bad-uuid-test
+  (with-redefs [file-service/find-file (constantly nil)]
+    (let [uid "bad_uuid"
+          mock-request (assoc
+                        (mock/request :get (format "/api/download/%s/" uid))
+                        :params {:id uid})
+          mock-response (handler/download-file mock-request)
+          status (:status mock-response)
+          body (:body mock-response)]
+      (is (= status 400))
+      (is (= body {:success false, :message "Not valid UUID"})))))
+
+
+(deftest download-ui-bad-uuid-test
+  (with-redefs [file-service/find-file (constantly nil)]
+    (let [uid "bad_uuid"
+          mock-request (assoc
+                        (mock/request :get (format "/download/%s/" uid))
+                        :params {:id uid})
+          mock-response (handler/download-view mock-request)
+          status (:status mock-response)
+          body (:body mock-response)]
+      (is (= status 400))
+      (is (string/includes? body
+                            "<h1>400</h1><span>Not valid UUID</span>")))))
 
 (deftest share-handler
   (let [tempfile (files/create-temp-file "/tmp/tempfile.dat")
