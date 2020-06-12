@@ -1,0 +1,31 @@
+{:up   ["ALTER TABLE file_storage
+         ADD COLUMN dt_updated timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+         ADD COLUMN is_private BOOLEAN DEFAULT FALSE;"
+        
+        "CREATE TRIGGER on_file_storage_update_modtime
+         BEFORE UPDATE ON file_storage
+         FOR EACH ROW EXECUTE PROCEDURE update_modified_column();"
+        
+        "CREATE TYPE user_status AS ENUM ('active', 'unregistered');"
+        
+        "ALTER TABLE users
+         ADD COLUMN status user_status DEFAULT 'unregistered';"
+        
+        "CREATE TABLE file_user (
+         file_uid uuid NOT NULL,
+         user_id int4 NOT NULL,
+         CONSTRAINT file_user_uid_fk FOREIGN KEY (file_uid) REFERENCES file_storage (uid),
+         CONSTRAINT file_user_user_fk FOREIGN KEY (user_id) REFERENCES users (id));"]
+ 
+ :down ["DROP TABLE file_user;"
+        
+        "ALTER TABLE users
+         DROP COLUMN status;"
+        
+        "DROP TYPE user_status;"
+        
+        "DROP TRIGGER on_file_storage_update_modtime ON file_storage;"
+        
+        "ALTER TABLE file_storage
+         DROP COLUMN dt_updated,
+         DROP COLUMN is_private"]}
