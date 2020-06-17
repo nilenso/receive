@@ -37,7 +37,7 @@
 
 (defn upload
   "Handles file upload and saves to the location specified in the config"
-  [{params :params :as request}]
+  [{params :params auth :auth :as request}]
   (cond
     (not (spec/params-valid? params)) response-no-file-uploaded
     (not (spec/max-file-size-valid? params)) response-file-too-large
@@ -47,7 +47,7 @@
     (let [file (-> request :params :file)
           tempfile (:tempfile file)
           filename (:filename file)
-          result (files/save-file tempfile filename)]
+          result (files/save-file auth tempfile filename)]
       {:status 200
        :body {:name filename
               :uid result

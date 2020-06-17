@@ -15,7 +15,7 @@
   (let [temp-uid (uuid-str)
         tempfile (create-temp-file "/tmp/tempfile.dat")
         filename (str temp-uid "_tempfile.dat")
-        uid (files/save-file tempfile filename)]
+        uid (files/save-file nil tempfile filename)]
     (is (= (files/get-filename uid)
            filename))))
 
@@ -23,7 +23,7 @@
   (let [uid (uuid-str)
         tempfile (create-temp-file "/tmp/tempfile.dat")
         filename (str uid "_tempfile.dat")]
-    (files/save-file tempfile filename)
+    (files/save-file nil tempfile filename)
     (is (= (files/get-filename (uuid-str))
            {:error :not-found}))))
 

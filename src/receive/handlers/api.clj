@@ -1,5 +1,6 @@
 (ns receive.handlers.api
   (:require [receive.service.user :as user]
+            [receive.service.files :as files]
             [receive.error-handler :refer [if-error]]))
 
 (def ping (constantly
@@ -36,3 +37,14 @@
     {:status 401
      :body {:status false
             :message "Not authenticated"}}))
+
+(defn update-file [{:keys [params route-params auth]}]
+  (let [result (files/find-and-update-file auth
+                                           (:id route-params)
+                                           {:private? (:is_private params)
+                                            :shared-with-user-emails (:shared_with_users params)})]
+    (if-error result
+              :http-response
+              {:status 200
+               :body {:success true
+                      :data result}})))

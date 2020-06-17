@@ -20,6 +20,13 @@
                      {:return-keys true
                       :builder-fn result-set/as-unqualified-maps}))
 
+(defn get-user-by-email
+  [tx email]
+  (jdbc/execute-one! tx
+                     (sql/get-user-by-email email)
+                     {:return-keys true
+                      :builder-fn result-set/as-unqualified-maps}))
+
 (defn create-google-user
   [tx user-id google-id]
   (jdbc/execute-one! tx
@@ -27,15 +34,18 @@
                      {:return-keys true}))
 
 (defn create-user
-  [tx {email :email
-       first-name :first-name
-       last-name :last-name}]
+  [tx user-data]
   (jdbc/execute-one! tx
-                     (sql/create-user first-name
-                                      last-name
-                                      email)
+                     (sql/create-user user-data)
                      {:return-keys true
                       :builder-fn result-set/as-unqualified-maps}))
+
+(defn create-unregistered-user
+  "Creates a user with unregistered status"
+  [tx email]
+  (create-user tx  {:first-name email
+                    :email email
+                    :status "unregistered"}))
 
 (defn register-user
   [{google-id :google-id :as user}]
@@ -66,3 +76,9 @@
   "Fetches the user data for authenticated user"
   [{user-id :user_id}]
   (get-user user-id))
+
+(defn find-or-create
+  "Search for a user by email or creates an unregistered user"
+  [tx email]
+  (or (get-user-by-email tx email)
+      (create-unregistered-user tx email)))

@@ -20,23 +20,26 @@
             [ring.util.response :as response]))
 
 (def api-routes
-  {"/ping" (wrap-json-response api-handlers/ping)
+  {"/ping"      (wrap-json-response api-handlers/ping)
    "/download/" {[:id ""] (wrap-json-response file-handlers/download-file)}
-   "/upload" {:post {"" (-> file-handlers/upload
-                            (wrap-json-response))}}
-   "/user" {:put (-> api-handlers/sign-in
-                     (wrap-json-response))
-            :get (-> api-handlers/fetch-user
-                     (wrap-json-response))}
-   true (wrap-json-response api-handlers/not-found)})
+   "/upload"    {:post {"" (-> file-handlers/upload
+                               (wrap-json-response))}}
+   "/user"      {""        {:put (-> api-handlers/sign-in
+                                     (wrap-json-response))
+                            :get (-> api-handlers/fetch-user
+                                     (wrap-json-response))}
+                 "/files/" {[:id ""]
+                            {:put (wrap-json-response
+                                   api-handlers/update-file)}}}
+   true       (wrap-json-response api-handlers/not-found)})
 
 (def routes
-  ["/" {"" file-handlers/index
-        "api" api-routes
-        "download/"  {[:id ""] file-handlers/download-view}
-        "share" {:get file-handlers/share-handler}
-        "404" {:get ui-handlers/error-page}
-        true (constantly (response/redirect "/404"))}])
+  ["/" {""          file-handlers/index
+        "api"       api-routes
+        "download/" {[:id ""] file-handlers/download-view}
+        "share"     {:get file-handlers/share-handler}
+        "404"       {:get ui-handlers/error-page}
+        true      (constantly (response/redirect "/404"))}])
 
 (def handler
   (-> routes

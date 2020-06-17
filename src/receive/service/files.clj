@@ -4,8 +4,10 @@
             [clj-time.coerce :as time-coerce]
             [clj-time.core :as time]
             [next.jdbc :as jdbc]
+            [next.jdbc.result-set :as result-set]
             [receive.db.connection :as connection]
             [receive.error-handler :refer [if-error]]
+            [receive.service.user :as user]
             [receive.db.sql :as sql]
             [receive.config :as conf])
   (:import [java.util UUID]))
@@ -29,7 +31,7 @@
 
 (defn save-file
   "Adds a new database entry and saves file to disk and returns the uid"
-  [file filename]
+  [{user-id :user_id} file filename]
   (jdbc/with-transaction [tx connection/datasource]
     (let [expire-in (-> conf/config :public-file :expire-in-sec)
           dt-expire (-> expire-in
@@ -37,7 +39,7 @@
                         (#(time/plus (time/now) %))
                         (time-coerce/to-sql-time))
           result (jdbc/execute-one! tx
-                                    (sql/save-file filename dt-expire)
+                                    (sql/save-file filename dt-expire user-id)
                                     {:return-keys true})
           uid (:file_storage/uid result)]
       (save-to-disk file (file-save-path uid filename))
@@ -65,3 +67,27 @@
     (if-error filename
               :raise
               (file-save-path uid filename))))
+
+(defn update-file-data [tx uid {:keys [private? shared-with-user-ids]}]
+  (-> (jdbc/execute-one! tx
+                         (sql/update-file (UUID/fromString uid)
+                                          {:private? private?
+                                           :shared-with-users shared-with-user-ids})
+                         {:return-keys true
+                          :builder-fn result-set/as-unqualified-maps})
+      (update :shared_with_users (comp
+                                  #(map int %)
+                                  #(.getArray %)))))
+
+(defn find-and-update-file
+  [{user-id :user_id :as _auth} uid {:keys [private? shared-with-user-emails]}]
+  (jdbc/with-transaction [tx connection/datasource]
+    (if-let [file (find-file uid)]
+      (if (= user-id (:file_storage/owner_id file))
+        (let [shared-with-user-ids (->> shared-with-user-emails
+                                        (map #(user/find-or-create tx %))
+                                        (map :id))]
+          (update-file-data tx uid {:private? private?
+                                    :shared-with-user-ids shared-with-user-ids}))
+        {:error :forbidden})
+      {:error :not-found})))
