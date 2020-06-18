@@ -4,6 +4,7 @@
             [clj-time.coerce :as time-coerce]
             [clj-time.core :as time]
             [next.jdbc :as jdbc]
+            [next.jdbc.result-set :as result-set]
             [receive.db.connection :as connection]
             [receive.error-handler :refer [if-error]]
             [receive.db.sql :as sql]
@@ -65,3 +66,22 @@
     (if-error filename
               :raise
               (file-save-path uid filename))))
+
+(defn find-expired-files []
+  (jdbc/execute! connection/datasource
+                 (sql/find-expired-files)
+                 {:builder-fn result-set/as-unqualified-maps}))
+
+(defn delete-db-entry [tx uid]
+  (jdbc/execute-one! tx (sql/delete-file uid)))
+
+(defn delete-file-and-db-entry [{:keys [filename uid]}]
+  (let [file-path (file-save-path uid filename)]
+    (jdbc/with-transaction [tx connection/datasource]
+      (delete-db-entry tx uid)
+      (when (.exists (io/file file-path))
+        (io/delete-file file-path)))))
+
+(defn purge-expired-files []
+  (let [files (find-expired-files)]
+    (map delete-file-and-db-entry files)))
