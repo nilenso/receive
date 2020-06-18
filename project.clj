@@ -10,6 +10,7 @@
                  [ring-logger "1.0.1"]
                  [aero "1.1.6"]
                  [honeysql "0.9.10"]
+                 [nilenso/honeysql-postgres "0.2.6"]
                  [seancorfield/next.jdbc "1.0.409"]
                  [org.postgresql/postgresql "42.2.12"]
                  [hiccup "1.0.5"]

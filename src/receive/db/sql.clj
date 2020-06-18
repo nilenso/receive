@@ -7,7 +7,9 @@
                                        values
                                        where
                                        update
-                                       sset]]))
+                                       sset]]
+             [honeysql-postgres.helpers :as psqlh]))
+
 (defn save-file
   [filename dt-expire user-id]
   (-> (insert-into :file-storage)
@@ -52,6 +54,8 @@
                 email
                 (sql/call :cast (or status "active")
                           :user_status)]])
+      (psqlh/upsert (-> (psqlh/on-conflict :email)
+                        (psqlh/do-update-set :first_name :last_name :status)))
       (sql/format)))
 
 (defn create-google-user
