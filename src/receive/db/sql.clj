@@ -7,8 +7,7 @@
                                        values
                                        where
                                        update
-                                       sset]]
-             [honeysql-postgres.helpers :as psqlh]))
+                                       sset]]))
 
 (defn save-file
   [filename dt-expire user-id]
@@ -47,16 +46,26 @@
 
 (defn create-user
   [{:keys [first-name last-name email status]}]
-  (-> (insert-into :users)
-      (columns :first_name :last_name :email :status)
-      (values [[first-name
-                last-name
-                email
-                (sql/call :cast (or status "active")
-                          :user_status)]])
-      (psqlh/upsert (-> (psqlh/on-conflict :email)
-                        (psqlh/do-update-set :first_name :last_name :status)))
-      (sql/format)))
+  ["INSERT INTO users (first_name, last_name, email, status) 
+    VALUES (?, ?, ?, CAST(? AS user_status)) 
+    ON CONFLICT (email) 
+       DO UPDATE SET first_name = EXCLUDED.first_name, 
+                    last_name = EXCLUDED.last_name,
+                     status = EXCLUDED.status"
+   first-name
+   last-name
+   email
+   (or status "active")]
+  #_(-> (insert-into :users)
+        (columns :first_name :last_name :email :status)
+        (values [[first-name
+                  last-name
+                  email
+                  (sql/call :cast (or status "active")
+                            :user_status)]])
+        (psqlh/upsert (-> (psqlh/on-conflict :email)
+                          (psqlh/do-update-set :first_name :last_name :status)))
+        (sql/format)))
 
 (defn create-google-user
   [user-id google-id]
