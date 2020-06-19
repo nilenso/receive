@@ -80,10 +80,11 @@
                                   #(.getArray %)))))
 
 (defn find-and-update-file
-  [{user-id :user_id :as _auth} uid {:keys [private? shared-with-user-emails]}]
+  [{user-id :user_id :as auth} uid {:keys [private? shared-with-user-emails]}]
   (jdbc/with-transaction [tx connection/datasource]
     (if-let [file (find-file uid)]
-      (if (= user-id (:file_storage/owner_id file))
+      (if (and auth
+               (= user-id (:file_storage/owner_id file)))
         (let [shared-with-user-ids (->> shared-with-user-emails
                                         (map #(user/find-or-create tx %))
                                         (map :id))]
