@@ -1,7 +1,9 @@
 (ns receive.handlers.api
   (:require [receive.service.user :as user]
             [receive.service.files :as files]
-            [receive.error-handler :refer [if-error]]))
+            [receive.error-handler :refer [if-error
+                                           error->http-response]]
+            [receive.model.file :as file-model]))
 
 (def ping (constantly
            {:status 200
@@ -48,3 +50,15 @@
               {:status 200
                :body {:success true
                       :data result}})))
+
+(defn get-shared-with-users [{:keys [route-params auth]}]
+  (let [uid (:id route-params)
+        is-owner? (file-model/is-file-owner? auth uid)]
+    (if is-owner?
+      (let [result (files/get-shared-user-details (:id route-params))]
+        (if-error result
+                  :http-response
+                  {:status 200
+                   :body {:success true
+                          :data result}}))
+      (error->http-response {:error :forbidden}))))

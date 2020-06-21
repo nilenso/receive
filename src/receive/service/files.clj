@@ -92,3 +92,15 @@
                                     :shared-with-user-ids shared-with-user-ids}))
         {:error :forbidden})
       {:error :not-found})))
+
+(defn get-shared-with-user-ids [uid]
+  (-> (jdbc/execute-one! connection/datasource
+                         (sql/get-shared-with-users (UUID/fromString uid)))
+      :file_storage/shared_with_users
+      (->> (.getArray)
+           (map int))))
+
+(defn get-shared-user-details [uid]
+  (->> uid
+       get-shared-with-user-ids
+       (map user/get-user)))

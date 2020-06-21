@@ -80,3 +80,8 @@
              :shared_with_users (array shared-with-users)})
       (where [:= :uid uid])
       (sql/format)))
+
+(defn get-shared-with-users [uid]
+  (sql/format {:select [:shared-with-users :owner-id]
+               :from [:file-storage]
+               :where [:= :uid uid]}))

@@ -28,9 +28,9 @@
                                      (wrap-json-response))
                             :get (-> api-handlers/fetch-user
                                      (wrap-json-response))}
-                 "/files/" {[:id ""]
-                            {:put (wrap-json-response
-                                   api-handlers/update-file)}}}
+                 "/files/" {[:id ""]        {:put (wrap-json-response
+                                                   api-handlers/update-file)}
+                            [:id "/shared"] {:get (wrap-json-response api-handlers/get-shared-with-users)}}}
    true       (wrap-json-response api-handlers/not-found)})
 
 (def routes

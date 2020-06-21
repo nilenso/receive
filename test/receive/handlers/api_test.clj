@@ -3,6 +3,7 @@
             [receive.handlers.api :as handler]
             [receive.service.files :as file-service]
             [receive.service.user :as user-service]
+            [receive.handlers.file :refer [uuid-str]]
             [ring.mock.request :as mock]))
 
 (deftest ping-handler
@@ -71,3 +72,25 @@
           is-private (-> mock-response :body :data :is_private)]
       (is (= 200 status))
       (is (true? is-private)))))
+
+(def shared-with-user-details
+  [{:id 69
+    :first_name "email@something.com"
+    :last_name nil
+    :email "email@something.com"
+    :dt_created #inst "2020-06-19T09:36:57.277049000-00:00"
+    :dt_updated #inst "2020-06-19T09:36:57.277049000-00:00"
+    :status "unregistered"}])
+
+(deftest get-shared-with-users-test
+  (with-redefs [file-service/get-shared-user-details
+                (constantly shared-with-user-details)]
+    (let [uid (uuid-str)
+          mock-response (-> (mock/request :get
+                                          (str "/api/user/files/" uid "/shared"))
+                            (assoc :route-params {:id uid}
+                                   :auth {:user_id 11})
+                            (handler/get-shared-with-users))]
+      (is (= 200 (:status mock-response)))
+      (is (= (-> mock-response :body :data)
+             shared-with-user-details)))))
