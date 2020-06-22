@@ -1,7 +1,8 @@
 (ns receive.handlers.api
-  (:require [receive.service.files :as files]
-            [receive.service.user :as user]
-            [receive.error-handler :refer [if-error]]))
+  (:require [receive.error-handler :refer [if-error]]
+            [receive.handlers.helper :refer [map-response-data]]
+            [receive.service.files :as files]
+            [receive.service.user :as user]))
 
 (def ping (constantly
            {:status 200
@@ -40,18 +41,6 @@
             :data
             (user/get-user (:user_id auth))}}
     not-auth-response))
-
-(defn map-response-data
-  "Returns a fn that maps over data and returns un-qualified keywords
-   Accepts a list of keywords, only the supplied keys will be returned
-   in the hash-map"
-  [& keys]
-  (fn [data]
-    (select-keys
-     (into {}
-           (for [[k v] data]
-             [(-> k name keyword) v]))
-     keys)))
 
 (defn uploaded-files [{auth :auth}]
   (if auth
