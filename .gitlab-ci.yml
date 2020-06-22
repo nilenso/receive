@@ -17,11 +17,11 @@ test:
   before_script:
     - PATH=$PATH:.
     - mv resources/database.sample.edn resources/database.edn
+    - mv resources/database.sample.edn resources/database_test.edn
     - mv resources/secrets.sample.edn resources/secrets.edn
     - lein deps
     - mkdir /root/uploads
   script:
-    - lein migrate
     - lein test
 
 deploy_staging:

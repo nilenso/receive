@@ -5,10 +5,12 @@
 
 (s/def ::min-file-size #(> % 0))
 (s/def ::max-file-size #(< % (:max-file-size config/config)))
+(s/def ::min-filename-length #(> (count %) 0))
 (s/def ::max-filename-length #(< (count %)
                                  (:max-filename-length config/config)))
 
 (s/def ::filename (s/and string?
+                         ::min-filename-length
                          ::max-filename-length))
 (s/def ::content-type string?)
 (s/def ::tempfile #(.exists %))

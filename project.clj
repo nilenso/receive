@@ -24,11 +24,13 @@
                  [buddy/buddy-sign "3.1.0"]
                  [clj-time "0.15.2"]
                  [camel-snake-kebab "0.4.1"]]
-  :profiles {:test {:dependencies [[ring/ring-mock "0.4.0"]]}}
+  :profiles {:test {:prep-tasks [["reset-test-db"]]
+                    :dependencies [[ring/ring-mock "0.4.0"]]}}
   :main receive.core
   :plugins [[lein-ring "0.12.5"]]
   :ring {:handler receive.core/app}
   :repl-options {:init-ns receive.core
                  :init (require '[clojure.repl :refer :all])}
   :aliases {"migrate"  ["run" "-m" "receive.db.migration/migrate"]
-            "rollback" ["run" "-m" "receive.db.migration/rollback"]})
+            "rollback" ["run" "-m" "receive.db.migration/rollback"]
+            "reset-test-db" ["run" "-m" "receive.fixtures/clear-state"]})
