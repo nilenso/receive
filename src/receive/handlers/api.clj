@@ -4,6 +4,11 @@
             [receive.service.files :as files]
             [receive.service.user :as user]))
 
+(defn success [data]
+  {:status 200
+   :body {:success true
+          :data data}})
+
 (def ping (constantly
            {:status 200
             :body {:success true
@@ -31,19 +36,14 @@
 
 (defn fetch-user [{auth :auth}]
   (if auth
-    {:status 200
-     :body {:success true
-            :data
-            (user/get-user (:user_id auth))}}
+    (success (user/get-user (:user_id auth)))
     (error->http-response {:error :unauthorized})))
 
 (defn uploaded-files [{auth :auth}]
   (if auth
-    {:status 200
-     :body {:success true
-            :data (->> (:user_id auth)
-                       (files/get-uploaded-files)
-                       (map (map-response-data :filename
-                                               :uid
-                                               :created_at)))}}
+    (success (->> (:user_id auth)
+                  (files/get-uploaded-files)
+                  (map (map-response-data :filename
+                                          :uid
+                                          :created_at))))
     (error->http-response {:error :unauthorized})))
