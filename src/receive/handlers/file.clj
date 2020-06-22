@@ -98,17 +98,15 @@
      (component-view/toolbar auth)
      (upload-view/copy-button link))))
 
-(defn map-file-data [files]
-  (map
-   (fn [file]
-     {:filename (:file_storage/filename file)
-      :link (download-link (:file_storage/uid file))})
-   files))
+(defn file->file-data [file]
+  {:filename (:file_storage/filename file)
+   :link (download-link (:file_storage/uid file))})
 
 (defn uploaded-files [{auth :auth}]
   (if auth
-    (let [files (map-file-data
-                 (files/get-uploaded-files (:user_id auth)))]
+    (let [files (->> (:user_id auth)
+                     (files/get-uploaded-files)
+                     (map file->file-data))]
       (base-view/success-body-builder
        (component-view/toolbar auth)
        (file-view/file-listing files)))
