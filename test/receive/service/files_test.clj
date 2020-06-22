@@ -123,7 +123,6 @@
     (delete-tempfile tempfile)
     (delete-file file-data)))
 
-#_(use-fixtures :once fixtures/clear-state)
 (use-fixtures :each user-fixture file-fixture)
 
 #_((def ^:dynamic *tempfile*

@@ -30,7 +30,7 @@
 
 (defn save-file
   "Adds a new database entry and saves file to disk and returns the uid"
-  [file {:keys [filename uid] :as file-data}]
+  [file {:keys [filename] :as file-data}]
   (jdbc/with-transaction [tx connection/datasource]
     (let [expire-in (-> conf/config :public-file :expire-in-sec)
           dt-expire (-> expire-in
