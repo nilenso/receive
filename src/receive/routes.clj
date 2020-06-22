@@ -1,5 +1,5 @@
 (ns receive.routes
-  (:require [bidi.ring :refer [make-handler]]
+  (:require [bidi.ring :refer [make-handler ->WrapMiddleware]]
             [receive.handlers.api :as api-handlers]
             [receive.handlers.file :as file-handlers]
             [receive.handlers.ui :as ui-handlers]
@@ -29,26 +29,23 @@
               :body ""}))
 
 (def api-routes
-  {"/ping" (wrap-json-response api-handlers/ping)
-   "/download/" {[:id ""] (wrap-json-response file-handlers/download-file)}
-   "/upload" {:post {"" (-> file-handlers/upload
-                            (wrap-json-response))}}
-   "/user" {:put (-> api-handlers/sign-in
-                     (wrap-json-response))
-            :get (-> api-handlers/fetch-user
-                     (wrap-json-response))}
-   "/user/files" (wrap-json-response api-handlers/uploaded-files)
-   true (wrap-json-response api-handlers/not-found)})
+  {"/ping"       api-handlers/ping
+   "/download/"  {[:id ""] file-handlers/download-file}
+   "/upload"     {:post {"" file-handlers/upload}}
+   "/user"       {:put api-handlers/sign-in
+                  :get api-handlers/fetch-user}
+   "/user/files" api-handlers/uploaded-files
+   true          api-handlers/not-found})
 
 (def routes
-  ["/" {"" file-handlers/index
-        "api" api-routes
+  ["/" {""           file-handlers/index
+        "api"        (->WrapMiddleware api-routes wrap-json-response)
         "download/"  {[:id ""] file-handlers/download-view}
-        "share" {:get file-handlers/share-handler}
+        "share"      {:get file-handlers/share-handler}
         "user/files" {:get file-handlers/uploaded-files}
-        "404" {:get ui-handlers/error-page}
-        "logout" logout
-        true (constantly (response/redirect "/404"))}])
+        "404"        {:get ui-handlers/error-page}
+        "logout"     logout
+        true         (constantly (response/redirect "/404"))}])
 
 (def handler
   (-> routes
