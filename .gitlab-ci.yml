@@ -16,9 +16,9 @@ test:
     POSTGRES_HOST_AUTH_METHOD: trust
   before_script:
     - PATH=$PATH:.
-    - mv resources/database.sample.edn resources/database.edn
-    - mv resources/database.sample.edn resources/database_test.edn
-    - mv resources/secrets.sample.edn resources/secrets.edn
+    - cp resources/database.sample.edn resources/database.edn
+    - cp resources/database.sample.edn resources/database_test.edn
+    - cp resources/secrets.sample.edn resources/secrets.edn
     - lein deps
     - mkdir /root/uploads
   script:
