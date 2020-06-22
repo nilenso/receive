@@ -5,13 +5,11 @@
    [clojure.spec.gen.alpha :as gen]
    [receive.spec.user]))
 
-(def non-blank-str?
-  (fn [s]
-    (not (string/blank? s))))
+(defn non-blank-str? [s]
+  (not (string/blank? s)))
 
-(def lower-case?
-  (fn [s]
-    (every? #(Character/isLowerCase %) s)))
+(defn lower-case? [s]
+  (every? #(Character/isLowerCase %) s))
 
 (def email-gen
   (s/gen
