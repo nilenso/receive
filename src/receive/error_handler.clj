@@ -15,7 +15,9 @@
    :not-found         {:message "File not found"
                        :status  404}
    :invalid-uuid      {:message "Not valid UUID"
-                       :status   400}
+                       :status  400}
+   :unauthorized      {:message "Not authenticated"
+                       :status  401}
    :default           {:message "Unknown Error"
                        :status  500}})
 

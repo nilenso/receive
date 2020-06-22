@@ -1,5 +1,5 @@
 (ns receive.handlers.api
-  (:require [receive.error-handler :refer [if-error]]
+  (:require [receive.error-handler :refer [if-error error->http-response]]
             [receive.handlers.helper :refer [map-response-data]]
             [receive.service.files :as files]
             [receive.service.user :as user]))
@@ -29,18 +29,13 @@
                       :success true
                       :message "User authenticated"}})))
 
-(def not-auth-response
-  {:status 401
-   :body {:status false
-          :message "Not authenticated"}})
-
 (defn fetch-user [{auth :auth}]
   (if auth
     {:status 200
      :body {:success true
             :data
             (user/get-user (:user_id auth))}}
-    not-auth-response))
+    (error->http-response {:error :unauthorized})))
 
 (defn uploaded-files [{auth :auth}]
   (if auth
@@ -51,4 +46,4 @@
                        (map (map-response-data :filename
                                                :uid
                                                :created_at)))}}
-    not-auth-response))
+    (error->http-response {:error :unauthorized})))

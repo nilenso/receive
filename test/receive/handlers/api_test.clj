@@ -68,7 +68,7 @@
       (is (= (handler/uploaded-files
               (mock/request :get "/api/user/files"))
              {:status 401
-              :body {:status false
+              :body {:success false
                      :message "Not authenticated"}}))))
   (testing "should return list of uploaded files for user"
     (with-redefs
