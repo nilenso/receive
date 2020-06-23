@@ -1,6 +1,7 @@
 (ns receive.service.files
   (:require [clojure.java.io :as io]
             [clojure.string :as string]
+            [clojure.tools.logging :as log]
             [clj-time.coerce :as time-coerce]
             [clj-time.core :as time]
             [next.jdbc :as jdbc]
@@ -75,13 +76,16 @@
 (defn delete-db-entry [tx uid]
   (jdbc/execute-one! tx (sql/delete-file uid)))
 
-(defn delete-file-and-db-entry [{:keys [filename uid]}]
+(defn delete-file-and-db-entry! [{:keys [filename uid]}]
+  (log/info "Deleting file" filename uid)
   (let [file-path (file-save-path uid filename)]
     (jdbc/with-transaction [tx connection/datasource]
       (delete-db-entry tx uid)
       (when (.exists (io/file file-path))
         (io/delete-file file-path)))))
 
-(defn purge-expired-files []
+(defn purge-expired-files! []
+  (log/info "Purging")
   (let [files (find-expired-files)]
-    (map delete-file-and-db-entry files)))
+    (doseq [file files]
+      (delete-file-and-db-entry! file))))
