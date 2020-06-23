@@ -1,6 +1,7 @@
 (ns receive.handlers.api-test
   (:require [clojure.test :refer [deftest is]]
             [receive.handlers.api :as handler]
+            [receive.model.file :as file-model]
             [receive.service.files :as file-service]
             [receive.service.user :as user-service]
             [ring.mock.request :as mock]))
@@ -50,15 +51,15 @@
    :owner_id 10})
 
 (def find-file-result
-  {:file_storage/filename "image1.png"
-   :file_storage/owner_id 10
-   :file_storage/shared_with_users []
+  {:filename "image1.png"
+   :owner_id 10
+   :shared_with_users []
    :expired false})
 
 (deftest update-file-test
   (with-redefs [user-service/find-or-create (constantly [{:id 11} {:id 12}])
                 file-service/update-file-data (constantly update-file-result)
-                file-service/find-file (constantly find-file-result)]
+                file-model/find-file (constantly find-file-result)]
     (let [uid (str (:uid update-file-result))
           mock-request (-> (mock/request :put (str "/api/user/files/" uid))
                            (assoc :params {:is_private true

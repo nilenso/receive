@@ -55,26 +55,29 @@
               :message "File saved successfully!"}})))
 
 (defn download-file
-  [{params :params}]
+  [{:keys [params auth]}]
   (if (spec/uuid-valid? params)
-    (let [uid (:id params)
-          abs-filename (files/get-absolute-filename uid)]
-      (if (error? abs-filename)
-        (error->http-response abs-filename)
-        {:status 200
-         :body (io/file abs-filename)}))
-    (error->http-response
-     {:error :invalid-uuid})))
+    (let [uid (:id params)]
+      (if (files/has-read-access? auth uid)
+        (let [abs-filename (files/get-absolute-filename uid)]
+          (if (error? abs-filename)
+            (error->http-response abs-filename)
+            {:status 200
+             :body (io/file abs-filename)}))
+        (error->http-response {:error :forbidden})))
+    (error->http-response {:error :invalid-uuid})))
 
-(defn download-view [{params :params :as request}]
+(defn download-view [{:keys [params auth] :as request}]
   (if (spec/uuid-valid? params)
-    (let [uid (:id params)
-          filename (files/get-filename uid)]
-      (if (error? filename)
-        (error->ui-response filename)
-        (base-view/success-body-builder
-         (component-view/toolbar (:auth request))
-         (download-view/download-button uid filename))))
+    (let [uid (:id params)]
+      (if (files/has-read-access? auth uid)
+        (let [filename (files/get-filename uid)]
+          (if (error? filename)
+            (error->ui-response filename)
+            (base-view/success-body-builder
+             (component-view/toolbar (:auth request))
+             (download-view/download-button uid filename))))
+        (error->ui-response {:error :forbidden})))
     (error->ui-response
      {:error :invalid-uuid})))
 

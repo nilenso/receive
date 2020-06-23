@@ -9,6 +9,7 @@
             [receive.error-handler :refer [if-error]]
             [receive.service.user :as user]
             [receive.db.sql :as sql]
+            [receive.model.file :as model]
             [receive.config :as conf])
   (:import [java.util UUID]))
 
@@ -45,16 +46,11 @@
       (save-to-disk file (file-save-path uid filename))
       (str uid))))
 
-(defn find-file
-  [uid]
-  (jdbc/execute-one! connection/datasource
-                     (sql/find-file (UUID/fromString uid))))
-
 (defn get-filename
   "Finds the file name given a uid"
   [uid]
-  (if-let [response (find-file uid)]
-    (let [file (:file_storage/filename response)
+  (if-let [response (model/find-file uid)]
+    (let [file (:filename response)
           expired? (:expired response)]
       (if expired?
         {:error :file-expired}
@@ -82,9 +78,9 @@
 (defn find-and-update-file
   [{user-id :user_id :as auth} uid {:keys [private? shared-with-user-emails]}]
   (jdbc/with-transaction [tx connection/datasource]
-    (if-let [file (find-file uid)]
+    (if-let [file (model/find-file uid)]
       (if (and auth
-               (= user-id (:file_storage/owner_id file)))
+               (= user-id (:owner_id file)))
         (let [shared-with-user-ids (->> shared-with-user-emails
                                         (map #(user/find-or-create tx %))
                                         (map :id))]
@@ -92,3 +88,29 @@
                                     :shared-with-user-ids shared-with-user-ids}))
         {:error :forbidden})
       {:error :not-found})))
+
+(defn is-owner? [user-id owner-id]
+  (= user-id owner-id))
+
+(defn is-file-owner? [{user-id :user_id} uid]
+  (->> (model/find-file uid)
+       :owner_id
+       (is-owner? user-id)))
+
+(defn is-shared-with? [user-id shared-with-users]
+  (if shared-with-users
+    (let [ids (->> shared-with-users
+                   (.getArray)
+                   (map int))]
+      (some #(= user-id %) ids))
+    false))
+
+(defn has-read-access? [{user-id :user_id} uid]
+  (let [file (model/find-file uid)]
+    (if (:is_private file)
+      (if (is-owner? user-id (:owner_id file))
+        true
+        (if (is-shared-with? user-id (:shared_with_users file))
+          true
+          false))
+      true)))

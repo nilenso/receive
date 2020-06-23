@@ -3,6 +3,7 @@
             [clojure.string :as string]
             [clojure.test :refer [deftest is use-fixtures]]
             [receive.handlers.file :as handler]
+            [receive.model.file :as file-model]
             [receive.service.files :as file-service]
             [receive.service.files-test :as files]
             [ring.mock.request :as mock]
@@ -80,7 +81,7 @@
                             "<h1>410</h1><span>Link has expired</span>")))))
 
 (deftest download-ui-bad-link-test
-  (with-redefs [file-service/find-file (constantly nil)]
+  (with-redefs [file-model/find-file (constantly nil)]
     (let [uid (handler/uuid-str)
           mock-request (assoc
                         (mock/request :get (format "/download/%s/" uid))
@@ -93,7 +94,7 @@
                             "<h1>404</h1><span>File not found</span>")))))
 
 (deftest download-link-bad-uuid-test
-  (with-redefs [file-service/find-file (constantly nil)]
+  (with-redefs [file-model/find-file (constantly nil)]
     (let [uid "bad_uuid"
           mock-request (assoc
                         (mock/request :get (format "/api/download/%s/" uid))
@@ -104,9 +105,8 @@
       (is (= status 400))
       (is (= body {:success false, :message "Not valid UUID"})))))
 
-
 (deftest download-ui-bad-uuid-test
-  (with-redefs [file-service/find-file (constantly nil)]
+  (with-redefs [file-model/find-file (constantly nil)]
     (let [uid "bad_uuid"
           mock-request (assoc
                         (mock/request :get (format "/download/%s/" uid))

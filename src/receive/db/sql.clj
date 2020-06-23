@@ -22,6 +22,7 @@
   (sql/format {:select [:filename
                         :owner_id
                         :shared_with_users
+                        :is_private
                         [(sql/call :< :dt_expire (sql/call :now)) :expired]]
                :from   [:file-storage]
                :where  [:= :uid uid]}))
