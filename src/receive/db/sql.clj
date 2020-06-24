@@ -5,11 +5,11 @@
                                        columns
                                        values]]))
 (defn save-file
-  [filename dt-expire]
+  [{:keys [filename user-id] :as _file-data} dt-expire]
   (-> (insert-into :file-storage)
-      (columns :filename :dt_expire)
-      (values [[filename (sql/call :cast dt-expire
-                                   :timestamp)]])
+      (columns :filename :user_id :dt_expire)
+      (values [[filename user-id (sql/call :cast dt-expire
+                                           :timestamp)]])
       sql/format))
 
 (defn find-file

@@ -1,6 +1,7 @@
 {:port                #long #or [#env PORT 3000]
  :storage-path        "~/uploads/"
- :db                  #include "database.edn"
+ :db                  #profile {:default #include "database.edn"
+                                :test    #include "database_test.edn"}
  :secrets             #include "secrets.edn"
  :base-url            #profile {:development "http://localhost:3000"
                                 :staging     "http://receive-staging.nilenso.com"

@@ -4,6 +4,7 @@
             [clj-time.coerce :as time-coerce]
             [clj-time.core :as time]
             [next.jdbc :as jdbc]
+            [next.jdbc.sql :refer [find-by-keys]]
             [receive.db.connection :as connection]
             [receive.error-handler :refer [if-error]]
             [receive.db.sql :as sql]
@@ -29,7 +30,7 @@
 
 (defn save-file
   "Adds a new database entry and saves file to disk and returns the uid"
-  [file filename]
+  [file {:keys [filename] :as file-data}]
   (jdbc/with-transaction [tx connection/datasource]
     (let [expire-in (-> conf/config :public-file :expire-in-sec)
           dt-expire (-> expire-in
@@ -37,7 +38,7 @@
                         (#(time/plus (time/now) %))
                         (time-coerce/to-sql-time))
           result (jdbc/execute-one! tx
-                                    (sql/save-file filename dt-expire)
+                                    (sql/save-file file-data dt-expire)
                                     {:return-keys true})
           uid (:file_storage/uid result)]
       (save-to-disk file (file-save-path uid filename))
@@ -65,3 +66,8 @@
     (if-error filename
               :raise
               (file-save-path uid filename))))
+
+(defn get-uploaded-files [user-id]
+  (find-by-keys connection/datasource
+                :file_storage
+                {:user_id user-id}))
