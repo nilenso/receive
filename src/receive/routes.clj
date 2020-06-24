@@ -40,13 +40,14 @@
    true        api-handlers/not-found})
 
 (def routes
-  ["/" {""          file-handlers/index
-        "api"       (->WrapMiddleware api-routes wrap-json-response)
-        "download/" {[:id ""] file-handlers/download-view}
-        "share"     {:get file-handlers/share-handler}
-        "404"       {:get ui-handlers/error-page}
-        "logout"    logout
-        true      (constantly (response/redirect "/404"))}])
+  ["/" {""           file-handlers/index
+        "api"        (->WrapMiddleware api-routes wrap-json-response)
+        "download/"  {[:id ""] file-handlers/download-view}
+        "share"      {:get file-handlers/share-handler}
+        "user/files" {:get file-handlers/uploaded-files}
+        "404"        {:get ui-handlers/error-page}
+        "logout"     logout
+        true       (constantly (response/redirect "/404"))}])
 
 (def handler
   (-> routes
