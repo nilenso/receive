@@ -1,7 +1,8 @@
 (ns receive.handlers.file-test
   (:require [clojure.java.io :as io]
             [clojure.string :as string]
-            [clojure.test :refer [deftest is use-fixtures]]
+            [clojure.test :refer [deftest is use-fixtures testing are]]
+            [hiccup.core :as h]
             [receive.handlers.file :as handler]
             [receive.service.files :as file-service]
             [receive.service.files-test :as files]
@@ -104,7 +105,6 @@
       (is (= status 400))
       (is (= body {:success false, :message "Not valid UUID"})))))
 
-
 (deftest download-ui-bad-uuid-test
   (with-redefs [file-service/find-file (constantly nil)]
     (let [uid "bad_uuid"
@@ -173,6 +173,36 @@
              {:status 400
               :body {:success false
                      :message "File name is too long"}})))))
+
+(def get-uploaded-files-data
+  [#:file_storage{:id 194
+                  :filename "saber1.png"
+                  :uid "3b24ceb1-42cd-459b-ba74-8a82dad5cbb6"
+                  :created_at #inst "2020-06-09T09:13:34.396941000-00:00"
+                  :user_id 111}
+   #:file_storage{:id 195
+                  :filename "saber2.png"
+                  :uid "33327486-9830-4c16-bbae-995d695195aa"
+                  :created_at #inst "2020-06-09T09:13:58.564455000-00:00"
+                  :user_id 111}])
+
+(defn filename->file-div [filename]
+  [:div {:class "filename"}
+   [:span "Filename"]
+   [:h4 filename]])
+
+(deftest uploaded-files-test
+  (testing "should return list of files that were uploaded by the user"
+    (with-redefs
+     [file-service/get-uploaded-files
+      (constantly get-uploaded-files-data)]
+      (let [mock-request (-> (mock/request :get "/api/user/files")
+                             (assoc :auth {:user_id 111}))
+            response (handler/uploaded-files mock-request)]
+        (is (= (:status response) 200))
+        (are [response html] (string/includes? response html)
+          (:body response) (h/html (filename->file-div "saber1.png"))
+          (:body response) (h/html (filename->file-div "saber1.png")))))))
 
 (defn cleanup-tempfile [f]
   (f)

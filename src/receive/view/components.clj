@@ -21,7 +21,10 @@
     [:div {:id "btn_user"
            :class (str "toolbar_btn "
                        (if auth "" "no-display"))}
-     full-name]))
+     full-name
+     [:ul {:class "user_menu"}
+      [:li [:a {:href "/user/files" :target "_self"} "My Files"]]
+      [:li [:a {:href "/logout" :target "_self"}  "Logout"]]]]))
 
 (defn toolbar [auth]
   [:div {:class "toolbar"}

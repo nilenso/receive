@@ -1,10 +1,12 @@
 (ns receive.handlers.api-test
-  (:require [clojure.test :refer [deftest is]]
-            [receive.handlers.api :as handler]
-            [receive.service.files :as file-service]
-            [receive.service.user :as user-service]
-            [receive.handlers.file :refer [uuid-str]]
-            [ring.mock.request :as mock]))
+  (:require
+   [clojure.test :refer [deftest is testing]]
+   [receive.handlers.api :as handler]
+   [receive.service.files :as file-service]
+   [receive.model.file :as file-model]
+   [receive.service.user :as user-service]
+   [receive.handlers.file :refer [uuid-str]]
+   [ring.mock.request :as mock]))
 
 (deftest ping-handler
   (is (= (handler/ping (mock/request :get "/ping"))
@@ -57,8 +59,10 @@
    :expired false})
 
 (deftest update-file-test
-  (with-redefs [user-service/find-or-create (constantly [{:id 11} {:id 12}])
-                file-service/update-file-data (constantly update-file-result)
+  (with-redefs [user-service/find-or-create
+                (constantly [{:id 11} {:id 12}])
+                file-service/update-file-data
+                (constantly update-file-result)
                 file-service/find-file (constantly find-file-result)]
     (let [uid (str (:uid update-file-result))
           mock-request (-> (mock/request :put (str "/api/user/files/" uid))
@@ -84,7 +88,8 @@
 
 (deftest get-shared-with-users-test
   (with-redefs [file-service/get-shared-user-details
-                (constantly shared-with-user-details)]
+                (constantly shared-with-user-details)
+                file-model/is-file-owner? (constantly true)]
     (let [uid (uuid-str)
           mock-response (-> (mock/request :get
                                           (str "/api/user/files/" uid "/shared"))
@@ -94,3 +99,46 @@
       (is (= 200 (:status mock-response)))
       (is (= (-> mock-response :body :data)
              shared-with-user-details)))))
+
+(def get-uploaded-files-data
+  [#:file_storage{:id 194
+                  :filename "saber.png"
+                  :uid "3b24ceb1-42cd-459b-ba74-8a82dad5cbb6"
+                  :created_at #inst "2020-06-09T09:13:34.396941000-00:00"
+                  :user_id 111}
+   #:file_storage{:id 195
+                  :filename "saber.png"
+                  :uid "33327486-9830-4c16-bbae-995d695195aa"
+                  :created_at #inst "2020-06-09T09:13:58.564455000-00:00"
+                  :user_id 111}])
+
+(def uploaded-file-response
+  {:status 200
+   :body {:success true
+          :data ({:filename "saber.png"
+                  :uid "3b24ceb1-42cd-459b-ba74-8a82dad5cbb6", :created_at #inst "2020-06-09T09:13:34.396-00:00"}
+                 {:filename "saber.png"
+                  :uid "33327486-9830-4c16-bbae-995d695195aa"
+                  :created_at #inst "2020-06-09T09:13:58.564-00:00"})}})
+
+(deftest uploaded-files-test
+  (testing "should return body for not authenticated when no auth provided"
+    (with-redefs
+     [file-service/get-uploaded-files
+      (constantly get-uploaded-files-data)]
+      (is (= (handler/uploaded-files
+              (mock/request :get "/api/user/files"))
+             {:status 401
+              :body {:success false
+                     :message "Not authenticated"}}))))
+  (testing "should return list of uploaded files for user"
+    (with-redefs
+     [file-service/get-uploaded-files
+      (constantly get-uploaded-files-data)]
+      (let [response (handler/uploaded-files
+                      (assoc
+                       (mock/request :get "/api/user/files")
+                       :auth {}))]
+        (is (= 200 (:status  response)))
+        (is (-> response :body :success))
+        (is (= (-> response :body :data count) 2))))))
