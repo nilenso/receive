@@ -15,5 +15,7 @@
 
 (defn file-listing
   [files]
-  [:div {:class "file-listing"}
-   (map file-item files)])
+  (if (= 0 (count files))
+    [:div "You have no files ¯ \\_ (ツ) _/¯"]
+    [:div {:class "file-listing"}
+     (map file-item files)]))
