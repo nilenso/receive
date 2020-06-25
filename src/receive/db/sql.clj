@@ -10,7 +10,7 @@
                                        sset]]))
 
 (defn save-file
-  [user-id {filename :filename :as _file-data} dt-expire]
+  [user-id filename dt-expire]
   (-> (insert-into :file-storage)
       (columns :filename :owner_id :dt_expire)
       (values [[filename user-id (sql/call :cast dt-expire

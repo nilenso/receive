@@ -3,7 +3,6 @@
    [receive.error-handler :refer [if-error
                                   error->http-response]]
    [receive.handlers.helper :refer [map-response-data]]
-   [receive.model.file :as file-model]
    [receive.service.files :as files]
    [receive.service.user :as user]))
 
@@ -56,7 +55,7 @@
 
 (defn get-shared-with-users [{:keys [route-params auth]}]
   (let [uid (:id route-params)
-        is-owner? (file-model/is-file-owner? auth uid)]
+        is-owner? (files/is-file-owner? auth uid)]
     (if is-owner?
       (let [result (files/get-shared-user-details (:id route-params))]
         (if-error result

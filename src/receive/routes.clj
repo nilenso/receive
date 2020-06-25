@@ -34,9 +34,9 @@
    "/upload"     {:post {"" file-handlers/upload}}
    "/user"       {:put api-handlers/sign-in
                   :get api-handlers/fetch-user}
-   "/user/files" {""                api-handlers/uploaded-files
-                  [:id ""]        {:put api-handlers/update-file}
-                  [:id "/shared"] {:get api-handlers/get-shared-with-users}}
+   "/user/files" {""  api-handlers/uploaded-files
+                  "/" {[:id ""]        {:put api-handlers/update-file}
+                       [:id "/shared"] {:get api-handlers/get-shared-with-users}}}
    true        api-handlers/not-found})
 
 (def routes
