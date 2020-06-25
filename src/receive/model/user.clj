@@ -31,12 +31,8 @@
                      {:return-keys true}))
 
 (defn create-user
-  [tx {email :email
-       first-name :first-name
-       last-name :last-name}]
+  [tx user-data]
   (jdbc/execute-one! tx
-                     (sql/create-user first-name
-                                      last-name
-                                      email)
+                     (sql/create-user user-data)
                      {:return-keys true
                       :builder-fn result-set/as-unqualified-maps}))
