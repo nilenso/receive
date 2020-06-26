@@ -73,7 +73,7 @@
       (if (and auth
                (= user-id (:owner_id file)))
         (let [shared-with-user-ids (->> shared-with-user-emails
-                                        (map #(user/find-or-create tx %))
+                                        (mapv #(user/find-or-create tx %))
                                         (map :id))]
           (update-file-data tx uid {:private? private?
                                     :shared-with-user-ids shared-with-user-ids}))
