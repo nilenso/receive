@@ -85,7 +85,7 @@
   (let [auth (:auth request)]
     (base-view/success-body-builder
      (component-view/toolbar auth)
-     upload-view/upload-button)))
+     (upload-view/upload-button auth))))
 
 (defn download-link
   [uid]

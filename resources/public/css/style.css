@@ -20,6 +20,14 @@ body {
     background-size: cover;
 }
 
+input[type=text] {
+    border: 2px solid white;
+    border-radius: 4px;
+    padding: 8px;
+    width: 180px;
+    color: black;
+}
+
 body.env-staging {
     background: var(--primary-staging);
 }
@@ -46,6 +54,11 @@ button {
     border: none;
     transition: all .4s;
     min-width: 200px;
+}
+
+button.small {
+    font-size: 14px;
+    width: 120px;
 }
 
 button:hover, button:active {
@@ -117,4 +130,58 @@ p {
 
 .upload-error.show {
     opacity: 1;
+}
+
+.private-upload {
+    flex-direction: column;
+    display: none;
+}
+
+.private-upload.show {
+    display: flex;
+}
+
+.private-upload>div {
+    text-align: center;
+    margin: 4px;
+}
+
+.private-upload>.toggle {
+    display: flex;
+    align-self: center;
+}
+
+.private-upload>.toggle>input {
+    margin-left: 4px;
+}
+
+input[type=checkbox] {
+    -webkit-appearance: none;
+    background-color: white;
+    border: 1px solid white;
+    box-shadow: none;
+    padding: 9px;
+    border-radius: 3px;
+    display: inline-block;
+    position: relative;
+}
+
+input[type=checkbox]:active, input[type=checkbox]:checked:active {
+    box-shadow: none;
+}
+
+input[type=checkbox]:checked {
+    background-color: white;
+    border: 1px solid white;
+    box-shadow: none;
+    color: white;
+}
+
+input[type=checkbox]:checked:after {
+    content: '\2714';
+    font-size: 14px;
+    position: absolute;
+    top: 0px;
+    left: 3px;
+    color: var(--accent);
 }
