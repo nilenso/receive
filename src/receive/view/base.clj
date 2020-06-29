@@ -11,6 +11,8 @@
    [:title (:ui-title config/config)]
    [:meta {:charset "utf-8"}]
    [:meta {:name "theme-color" :content "#5CDb95"}]
+   [:meta {:name "viewport"
+           :content "width=device-width, initial-scale=1"}]
    [:meta {:name "google-signin-client_id"
            :content (-> config/config
                         :secrets
@@ -21,13 +23,15 @@
    (page/include-js "js/config.js")
    (page/include-js "js/main.js")
    [:script {:src "https://apis.google.com/js/api:client.js"}]
+   [:script {:src "https://kit.fontawesome.com/3547196ebb.js"}]
    (page/include-js "js/signin.js")
    [:script "startApp()"]])
 
 (defn base [& children]
   (page/html5
    head
-   [:body (if config/staging? {:class "env-staging"} {})
+   [:body
+    (if config/staging? {:class "env-staging"} {})
     [:div {:class "container"}
      children]]))
 

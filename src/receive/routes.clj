@@ -21,22 +21,34 @@
    [ring.logger :refer [wrap-with-logger]]
    [ring.util.response :as response]))
 
+(def logout (constantly
+             {:status 302
+              :headers {"Location" "/"}
+              :cookies {"access_token" {:value nil
+                                        :max-age 0
+                                        :same-site :strict
+                                        :path "/"}}
+              :body ""}))
+
 (def api-routes
   {"/ping"      api-handlers/ping
    "/download/" {[:id ""] file-handlers/download-file}
    "/upload"    {:post {"" file-handlers/upload}}
-   "/user"      {""        {:put api-handlers/sign-in
-                            :get api-handlers/fetch-user}
-                 "/files/" {[:id ""] {:put api-handlers/update-file}}}
+   "/user"      {""       {:put api-handlers/sign-in
+                           :get api-handlers/fetch-user}
+                 "/files" {""  {:get api-handlers/uploaded-files}
+                           "/" {[:id ""] {:put api-handlers/update-file}}}}
    true       api-handlers/not-found})
 
 (def routes
-  ["/" {""          file-handlers/index
-        "api"       (->WrapMiddleware api-routes wrap-json-response)
-        "download/" {[:id ""] file-handlers/download-view}
-        "share"     {:get file-handlers/share-handler}
-        "404"       {:get ui-handlers/error-page}
-        true      (constantly (response/redirect "/404"))}])
+  ["/" {""           file-handlers/index
+        "api"        (->WrapMiddleware api-routes wrap-json-response)
+        "download/"  {[:id ""] file-handlers/download-view}
+        "share"      {:get file-handlers/share-handler}
+        "user/files" {:get file-handlers/uploaded-files}
+        "404"        {:get ui-handlers/error-page}
+        "logout"     logout
+        true       (constantly (response/redirect "/404"))}])
 
 (def handler
   (-> routes

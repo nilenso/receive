@@ -9,7 +9,8 @@
             [receive.view.base :as base-view]
             [receive.view.components :as component-view]
             [receive.view.download :as download-view]
-            [receive.view.upload :as upload-view])
+            [receive.view.upload :as upload-view]
+            [receive.view.file :as file-view])
   (:import java.util.UUID))
 
 (defn uuid-str []
@@ -37,17 +38,16 @@
 
 (defn upload
   "Handles file upload and saves to the location specified in the config"
-  [{params :params auth :auth :as request}]
+  [{:keys [params auth] :as request}]
   (cond
     (not (spec/params-valid? params)) response-no-file-uploaded
     (not (spec/max-file-size-valid? params)) response-file-too-large
     (not (spec/min-file-size-valid? params)) response-file-not-provided
     (not (spec/max-filename-length-valid? params)) response-filename-too-long
     :else
-    (let [file (-> request :params :file)
-          tempfile (:tempfile file)
-          filename (:filename file)
-          result (files/save-file auth tempfile filename)]
+    (let [{:keys [tempfile filename]
+           :as _file} (-> request :params :file)
+          result (files/save-file auth tempfile {:filename filename})]
       {:status 200
        :body {:name filename
               :uid result
@@ -98,3 +98,17 @@
     (base-view/success-body-builder
      (component-view/toolbar auth)
      (upload-view/copy-button link))))
+
+(defn file->file-data [file]
+  {:filename (:file_storage/filename file)
+   :link (download-link (:file_storage/uid file))})
+
+(defn uploaded-files [{auth :auth}]
+  (if auth
+    (let [files (->> (:user_id auth)
+                     (files/get-uploaded-files)
+                     (map file->file-data))]
+      (base-view/success-body-builder
+       (component-view/toolbar auth)
+       (file-view/file-listing files)))
+    (base-view/error-ui 401 "Not authenticated")))

@@ -1,0 +1,7 @@
+{:up   ["ALTER TABLE file_storage 
+         ADD user_id int4 NULL,
+         ADD CONSTRAINT file_storage_fk FOREIGN KEY (user_id) 
+         REFERENCES users (id);"]
+ :down ["ALTER TABLE file_storage 
+         DROP CONSTRAINT file_storage_fk,
+         DROP COLUMN user_id;"]}

@@ -1,7 +1,13 @@
 (ns receive.handlers.api
-  (:require [receive.service.user :as user]
+  (:require [receive.error-handler :refer [if-error error->http-response]]
+            [receive.handlers.helper :refer [map-response-data]]
             [receive.service.files :as files]
-            [receive.error-handler :refer [if-error]]))
+            [receive.service.user :as user]))
+
+(defn success [data]
+  {:status 200
+   :body {:success true
+          :data data}})
 
 (def ping (constantly
            {:status 200
@@ -30,13 +36,8 @@
 
 (defn fetch-user [{auth :auth}]
   (if auth
-    {:status 200
-     :body {:success true
-            :data
-            (user/get-user (:user_id auth))}}
-    {:status 401
-     :body {:status false
-            :message "Not authenticated"}}))
+    (success (user/get-user (:user_id auth)))
+    (error->http-response {:error :unauthorized})))
 
 (defn update-file [{:keys [params route-params auth]}]
   (let [result (files/find-and-update-file auth
@@ -45,6 +46,13 @@
                                             :shared-with-user-emails (:shared_with_users params)})]
     (if-error result
               :http-response
-              {:status 200
-               :body {:success true
-                      :data result}})))
+              (success result))))
+
+(defn uploaded-files [{auth :auth}]
+  (if auth
+    (success (->> (:user_id auth)
+                  (files/get-uploaded-files)
+                  (map (map-response-data :filename
+                                          :uid
+                                          :created_at))))
+    (error->http-response {:error :unauthorized})))
