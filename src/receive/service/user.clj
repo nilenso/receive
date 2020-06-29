@@ -1,44 +1,31 @@
 (ns receive.service.user
   (:require [next.jdbc :as jdbc]
-            [next.jdbc.result-set :as result-set]
+            [receive.auth.jwt :as jwt]
             [receive.auth.google :as auth]
             [receive.error-handler :refer [if-error]]
-            [receive.auth.jwt :as jwt]
             [receive.db.connection :as connection]
-            [receive.db.sql :as sql]))
+            [receive.model.user :as model]))
 
 (defn check-user-exists
-  [{google-id :google-id}]
-  (:account_google/user_id
-   (jdbc/execute-one! connection/datasource
-                      (sql/get-google-user google-id))))
+  [google-user]
+  (:user_id
+   (model/check-user-exists google-user)))
 
 (defn get-user
   [user-id]
-  (jdbc/execute-one! connection/datasource
-                     (sql/get-user user-id)
-                     {:return-keys true
-                      :builder-fn result-set/as-unqualified-maps}))
+  (model/get-user user-id))
 
 (defn get-user-by-email
   [tx email]
-  (jdbc/execute-one! tx
-                     (sql/get-user-by-email email)
-                     {:return-keys true
-                      :builder-fn result-set/as-unqualified-maps}))
+  (model/get-user-by-email tx email))
 
 (defn create-google-user
   [tx user-id google-id]
-  (jdbc/execute-one! tx
-                     (sql/create-google-user user-id google-id)
-                     {:return-keys true}))
+  (model/create-google-user tx user-id google-id))
 
 (defn create-user
   [tx user-data]
-  (jdbc/execute-one! tx
-                     (sql/create-user user-data)
-                     {:return-keys true
-                      :builder-fn result-set/as-unqualified-maps}))
+  (model/create-user tx user-data))
 
 (defn create-unregistered-user
   "Creates a user with unregistered status"

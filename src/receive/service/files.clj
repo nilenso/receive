@@ -4,15 +4,11 @@
             [clj-time.coerce :as time-coerce]
             [clj-time.core :as time]
             [next.jdbc :as jdbc]
-            [next.jdbc.result-set :as result-set]
-            [next.jdbc.sql :refer [find-by-keys]]
             [receive.db.connection :as connection]
             [receive.error-handler :refer [if-error]]
             [receive.service.user :as user]
-            [receive.db.sql :as sql]
             [receive.model.file :as model]
-            [receive.config :as conf])
-  (:import [java.util UUID]))
+            [receive.config :as conf]))
 
 (defn expand-home
   "Replaces the tilde in file path with the user's home directory"
@@ -40,9 +36,7 @@
                         (time/seconds)
                         (#(time/plus (time/now) %))
                         (time-coerce/to-sql-time))
-          result (jdbc/execute-one! tx
-                                    (sql/save-file filename dt-expire user-id)
-                                    {:return-keys true})
+          result (model/save-file tx user-id filename dt-expire)
           uid (:file_storage/uid result)]
       (save-to-disk file (file-save-path uid filename))
       (str uid))))
@@ -65,13 +59,8 @@
               :raise
               (file-save-path uid filename))))
 
-(defn update-file-data [tx uid {:keys [private? shared-with-user-ids]}]
-  (-> (jdbc/execute-one! tx
-                         (sql/update-file (UUID/fromString uid)
-                                          {:private? private?
-                                           :shared-with-users shared-with-user-ids})
-                         {:return-keys true
-                          :builder-fn result-set/as-unqualified-maps})
+(defn update-file-data [tx uid file-data]
+  (-> (model/update-file-data tx uid file-data)
       (update :shared_with_users (comp
                                   #(map int %)
                                   #(.getArray %)))))
@@ -117,6 +106,4 @@
       true)))
 
 (defn get-uploaded-files [user-id]
-  (find-by-keys connection/datasource
-                :file_storage
-                {:owner_id user-id}))
+  (model/get-uploaded-files user-id))
