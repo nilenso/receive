@@ -51,10 +51,10 @@
     :else
     (let [{:keys [tempfile filename]
            :as _file} (-> request :params :file)
-          result (files/save-file auth tempfile {:filename filename})]
+          uid (files/save-file auth tempfile {:filename filename})]
       {:status 200
        :body {:name filename
-              :uid result
+              :uid (str uid)
               :success true
               :message "File saved successfully!"}})))
 

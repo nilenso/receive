@@ -39,7 +39,7 @@
           result (model/save-file tx user-id filename dt-expire)
           uid (:file_storage/uid result)]
       (save-to-disk file (file-save-path uid filename))
-      (str uid))))
+      uid)))
 
 (defn get-filename
   "Finds the file name given a uid"
