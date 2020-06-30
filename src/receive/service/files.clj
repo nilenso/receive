@@ -96,14 +96,11 @@
     false))
 
 (defn has-read-access? [{user-id :user_id} uid]
-  (let [file (model/find-file uid)]
-    (if (:is-private file)
-      (if (is-owner? user-id (:owner-id file))
-        true
-        (if (is-shared-with? user-id (:shared-with-users file))
-          true
-          false))
-      true)))
+  (let [{:keys [is-private owner-id shared-with-users]}
+        (model/find-file uid)]
+    (or (not is-private)
+        (is-owner? user-id owner-id)
+        (is-shared-with? user-id shared-with-users))))
 
 (defn get-uploaded-files [user-id]
   (model/get-uploaded-files user-id))
