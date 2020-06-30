@@ -11,3 +11,8 @@
            (for [[k v] data]
              [(-> k name keyword) v]))
      keys)))
+
+(defn success [data]
+  {:status 200
+   :body {:success true
+          :data data}})

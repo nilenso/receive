@@ -5,6 +5,7 @@
    [receive.handlers.api :as api-handlers]
    [receive.handlers.file :as file-handlers]
    [receive.handlers.ui :as ui-handlers]
+   [receive.handlers.user :as user-handlers]
    [receive.middlewares :refer [wrap-fallback-exception
                                 wrap-postgres-exception
                                 wrap-with-uri-rewrite
@@ -34,10 +35,10 @@
   {"/ping"      api-handlers/ping
    "/download/" {[:id ""] file-handlers/download-file}
    "/upload"    {:post {"" file-handlers/upload}}
-   "/user"      {""       {:put api-handlers/sign-in
-                           :get api-handlers/fetch-user}
-                 "/files" {""  {:get api-handlers/uploaded-files}
-                           "/" {[:id ""] {:put api-handlers/update-file}}}}
+   "/user"      {""       {:put user-handlers/sign-in
+                           :get user-handlers/fetch-user}
+                 "/files" {""  {:get file-handlers/uploaded-files}
+                           "/" {[:id ""] {:put file-handlers/update-file}}}}
    true       api-handlers/not-found})
 
 (def routes
@@ -45,7 +46,7 @@
         "api"        (->WrapMiddleware api-routes wrap-json-response)
         "download/"  {[:id ""] file-handlers/download-view}
         "share"      {:get file-handlers/share-handler}
-        "user/files" {:get file-handlers/uploaded-files}
+        "user/files" {:get file-handlers/uploaded-files-ui}
         "404"        {:get ui-handlers/error-page}
         "logout"     logout
         true       (constantly (response/redirect "/404"))}])

@@ -1,16 +1,20 @@
 (ns receive.handlers.file
-  (:require [clojure.java.io :as io]
-            [receive.config :refer [config]]
-            [receive.error-handler :refer [error?
-                                           error->http-response
-                                           error->ui-response]]
-            [receive.service.files :as files]
-            [receive.spec.file :as spec]
-            [receive.view.base :as base-view]
-            [receive.view.components :as component-view]
-            [receive.view.download :as download-view]
-            [receive.view.upload :as upload-view]
-            [receive.view.file :as file-view])
+  (:require
+   [clojure.java.io :as io]
+   [receive.config :refer [config]]
+   [receive.error-handler :refer [error?
+                                  error->http-response
+                                  error->ui-response
+                                  if-error]]
+   [receive.handlers.helper :refer [map-response-data
+                                    success]]
+   [receive.service.files :as files]
+   [receive.spec.file :as spec]
+   [receive.view.base :as base-view]
+   [receive.view.components :as component-view]
+   [receive.view.download :as download-view]
+   [receive.view.upload :as upload-view]
+   [receive.view.file :as file-view])
   (:import java.util.UUID))
 
 (defn uuid-str []
@@ -103,7 +107,7 @@
   {:filename (:file_storage/filename file)
    :link (download-link (:file_storage/uid file))})
 
-(defn uploaded-files [{auth :auth}]
+(defn uploaded-files-ui [{auth :auth}]
   (if auth
     (let [files (->> (:user_id auth)
                      (files/get-uploaded-files)
@@ -112,3 +116,21 @@
        (component-view/toolbar auth)
        (file-view/file-listing files)))
     (base-view/error-ui 401 "Not authenticated")))
+
+(defn update-file [{:keys [params route-params auth]}]
+  (let [result (files/find-and-update-file auth
+                                           (:id route-params)
+                                           {:private? (:is_private params)
+                                            :shared-with-user-emails (:shared_with_users params)})]
+    (if-error result
+              :http-response
+              (success result))))
+
+(defn uploaded-files [{auth :auth}]
+  (if auth
+    (success (->> (:user_id auth)
+                  (files/get-uploaded-files)
+                  (map (map-response-data :filename
+                                          :uid
+                                          :created_at))))
+    (error->http-response {:error :unauthorized})))
