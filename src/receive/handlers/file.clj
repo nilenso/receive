@@ -104,8 +104,7 @@
      (upload-view/copy-button link))))
 
 (defn file->file-data [file]
-  {:filename (:file_storage/filename file)
-   :link (download-link (:file_storage/uid file))})
+  (assoc file :link (download-link (:uid file))))
 
 (defn uploaded-files-ui [{auth :auth}]
   (if auth

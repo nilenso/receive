@@ -177,16 +177,16 @@
                      :message "File name is too long"}})))))
 
 (def get-uploaded-files-data
-  [#:file_storage{:id 194
-                  :filename "saber1.png"
-                  :uid "3b24ceb1-42cd-459b-ba74-8a82dad5cbb6"
-                  :created_at #inst "2020-06-09T09:13:34.396941000-00:00"
-                  :user_id 111}
-   #:file_storage{:id 195
-                  :filename "saber2.png"
-                  :uid "33327486-9830-4c16-bbae-995d695195aa"
-                  :created_at #inst "2020-06-09T09:13:58.564455000-00:00"
-                  :user_id 111}])
+  [{:id 194
+    :filename "saber1.png"
+    :uid "3b24ceb1-42cd-459b-ba74-8a82dad5cbb6"
+    :created-at #inst "2020-06-09T09:13:34.396941000-00:00"
+    :user-id 111}
+   {:id 195
+    :filename "saber2.png"
+    :uid "33327486-9830-4c16-bbae-995d695195aa"
+    :created-at #inst "2020-06-09T09:13:58.564455000-00:00"
+    :user-id 111}])
 
 (defn filename->file-div [filename]
   [:div {:class "filename"}
@@ -209,17 +209,17 @@
 (def update-file-result
   {:filename "image1.png"
    :uid #uuid "94c22936-b0bb-11ea-9e05-4c32759dd39d"
-   :dt_created #inst "2020-06-17T16:57:08.931927000-00:00"
-   :dt_expire #inst "2020-06-19T16:57:08.930000000-00:00"
-   :dt_updated #inst "2020-06-17T17:58:06.365726000-00:00"
-   :is_private true
-   :shared_with_users [11 12]
-   :owner_id 10})
+   :dt-created #inst "2020-06-17T16:57:08.931927000-00:00"
+   :dt-expire #inst "2020-06-19T16:57:08.930000000-00:00"
+   :dt-updated #inst "2020-06-17T17:58:06.365726000-00:00"
+   :is-private true
+   :shared-with-users [11 12]
+   :owner-id 10})
 
 (def find-file-result
   {:filename "image1.png"
-   :owner_id 10
-   :shared_with_users []
+   :owner-id 10
+   :shared-with-users []
    :expired false})
 
 (deftest update-file-test
@@ -228,14 +228,14 @@
                 file-model/find-file (constantly find-file-result)]
     (let [uid (str (:uid update-file-result))
           mock-request (-> (mock/request :put (str "/api/user/files/" uid))
-                           (assoc :params {:is_private true
-                                           :shared_with_users ["email1@google.com"
+                           (assoc :params {:is-private true
+                                           :shared-with-users ["email1@google.com"
                                                                "email2@gmail.com"]}
                                   :route-params {:id uid}
                                   :auth {:user_id 10}))
           mock-response (handler/update-file mock-request)
           status (:status mock-response)
-          is-private (-> mock-response :body :data :is_private)]
+          is-private (-> mock-response :body :data :is-private)]
       (is (= 200 status))
       (is (true? is-private)))))
 

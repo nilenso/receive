@@ -5,10 +5,10 @@
    [receive.service.user :as user]))
 
 (def mock-google-user
-  {:user_id 1
-   :google_id "115723412421412341324"
-   :dt_created #inst "2020-06-29T18:38:26.749455000-00:00"
-   :dt_updated #inst "2020-06-29T18:38:26.749455000-00:00"})
+  {:user-id 1
+   :google-id "115723412421412341324"
+   :dt-created #inst "2020-06-29T18:38:26.749455000-00:00"
+   :dt-updated #inst "2020-06-29T18:38:26.749455000-00:00"})
 
 (deftest check-user-exists
   (testing "returns id of a known user"

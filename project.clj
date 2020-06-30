@@ -14,7 +14,7 @@
                  [aero "1.1.6"]
 
                  [honeysql "0.9.10"]
-                 [seancorfield/next.jdbc "1.0.409"]
+                 [seancorfield/next.jdbc "1.1.547"]
                  [org.postgresql/postgresql "42.2.12"]
                  [hiccup "1.0.5"]
                  [ragtime "0.8.0"]

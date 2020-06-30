@@ -7,8 +7,7 @@
    [next.jdbc.sql :refer [insert! delete! get-by-id update!]]
    [receive.db.connection :refer [datasource]]
    [receive.factory :as factory]
-   [receive.model.file :as model]
-   [receive.util :as util])
+   [receive.model.file :as model])
   (:import java.util.UUID))
 
 (def ^:dynamic *file-data* nil)
@@ -18,34 +17,33 @@
 
 (defn expire-file [uid]
   (update! datasource :file_storage
-           {:dt_expire (time-coerce/to-sql-time (time/now))}
+           {:dt-expire (time-coerce/to-sql-time (time/now))}
            {:uid uid}))
 
 (defn delete-tempfile [file]
   (io/delete-file file))
 
 (defn create-file [file-data]
-  (insert! datasource :file_storage
-           (util/keywords->sql-keywords file-data)))
+  (insert! datasource :file_storage file-data))
 
-(defn delete-file [{uid :file_storage/uid}]
+(defn delete-file [{uid :uid}]
   (delete! datasource :file_storage {:uid uid}))
 
 (deftest find-file-test
   (testing "should return an existing file"
-    (let [uid (-> *file-data* :file_storage/uid str)
+    (let [uid (-> *file-data* :uid str)
           file (model/find-file uid)]
       (is (= (:filename file)
-             (:file_storage/filename *file-data*)))))
+             (:filename *file-data*)))))
   (testing "should return nil when file uid does not match"
     (is (nil? (model/find-file (str (UUID/randomUUID)))))))
 
 (deftest save-file-test
   (testing "should save a file to disk"
     (let [file (model/save-file datasource nil "tempfile.dat" nil)
-          uid (:file_storage/uid file)]
+          uid (:uid file)]
       (is (= "tempfile.dat"
-             (:file_storage/filename (get-file (str uid)))))
+             (:filename (get-file (str uid)))))
       (delete-file file))))
 
 (defn file-fixture [f]

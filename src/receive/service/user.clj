@@ -8,7 +8,7 @@
 
 (defn check-user-exists
   [google-user]
-  (:user_id
+  (:user-id
    (model/check-user-exists google-user)))
 
 (defn get-user
