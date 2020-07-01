@@ -17,6 +17,11 @@
                                    :timestamp) user-id]])
       sql/format))
 
+(defn get-file [uid]
+  (sql/format {:select [:*]
+               :from [:file-storage]
+               :where [:= :uid uid]}))
+
 (defn find-file
   [uid]
   (sql/format {:select [:filename

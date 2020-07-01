@@ -20,6 +20,11 @@
 (defn delete-file [tx uid]
   (jdbc/execute-one! tx (sql/delete-file uid)))
 
+(defn get-file [uid]
+  (jdbc/execute-one! connection/datasource
+                     (sql/get-file (UUID/fromString uid))
+                     db-options))
+
 (defn find-file [uid]
   (jdbc/execute-one! connection/datasource
                      (sql/find-file (UUID/fromString uid))

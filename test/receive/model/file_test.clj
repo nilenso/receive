@@ -7,7 +7,8 @@
    [next.jdbc.sql :refer [insert! delete! get-by-id update!]]
    [receive.db.connection :refer [datasource]]
    [receive.factory :as factory]
-   [receive.model.file :as model])
+   [receive.model.file :as model]
+   [receive.spec.file :as spec])
   (:import java.util.UUID))
 
 (def ^:dynamic *file-data* nil)
@@ -28,6 +29,12 @@
 
 (defn delete-file [{uid :uid}]
   (delete! datasource :file_storage {:uid uid}))
+
+(deftest get-file-test
+  (testing "should be valid data entries"
+    (is (true? (spec/valid-db-entry?
+                (model/get-file
+                 (-> *file-data* :uid str)))))))
 
 (deftest find-file-test
   (testing "should return an existing file"
