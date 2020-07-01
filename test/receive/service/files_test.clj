@@ -66,23 +66,19 @@
            (files/has-read-access? {:user_id 10} "mock_uid")))))
   (testing "should return false when private and not owner and not shared with"
     (with-redefs [model/find-file
-                  (constantly private-file-data)
-                  files/is-shared-with?
-                  (constantly false)]
-      (is (false?
-           (files/has-read-access? {:user_id 10} "mock_uid")))))
+                  (constantly private-file-data)]
+      (is (not=
+           true (files/has-read-access? {:user_id 10} "mock_uid")))))
   (testing "should return true when private and owner"
     (with-redefs [model/find-file
                   (constantly private-file-data)]
       (is (true?
            (files/has-read-access? {:user_id 1} "mock_uid")))))
-  (testing "should return true when not owner by shared with"
+  (testing "should return true when not owner but shared with"
     (with-redefs [model/find-file
-                  (constantly private-file-data)
-                  files/is-shared-with?
-                  (constantly true)]
+                  (constantly private-file-data)]
       (is (true?
-           (files/has-read-access? {:user_id 10} "mock_uid"))))))
+           (files/has-read-access? {:user_id 2} "mock_uid"))))))
 
 (defn create-temp-file
   "Creates a file given a filename"

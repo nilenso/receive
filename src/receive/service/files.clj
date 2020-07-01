@@ -60,10 +60,7 @@
               (file-save-path uid filename))))
 
 (defn update-file-data [tx uid file-data]
-  (-> (model/update-file-data tx uid file-data)
-      (update :shared-with-users (comp
-                                  #(map int %)
-                                  #(.getArray %)))))
+  (model/update-file-data tx uid file-data))
 
 (defn find-and-update-file
   [{user-id :user_id :as auth} uid {:keys [private? shared-with-user-emails]}]
@@ -88,12 +85,8 @@
        (is-owner? user-id)))
 
 (defn is-shared-with? [user-id shared-with-users]
-  (if shared-with-users
-    (let [ids (->> shared-with-users
-                   (.getArray)
-                   (map int))]
-      (some #(= user-id %) ids))
-    false))
+  (when shared-with-users
+    (some #(= user-id %) shared-with-users)))
 
 (defn has-read-access? [{user-id :user_id} uid]
   (let [{:keys [is-private owner-id shared-with-users]}
