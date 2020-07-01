@@ -17,7 +17,7 @@
                  (sql/find-expired-files)
                  db-options))
 
-(defn delete-db-entry [tx uid]
+(defn delete-file [tx uid]
   (jdbc/execute-one! tx (sql/delete-file uid)))
 
 (defn find-file [uid]

@@ -65,7 +65,7 @@
   (log/info "Deleting file" filename uid)
   (let [file-path (file-save-path uid filename)]
     (jdbc/with-transaction [tx connection/datasource]
-      (model/delete-db-entry tx uid)
+      (model/delete-file tx uid)
       (when (.exists (io/file file-path))
         (io/delete-file file-path)))))
 

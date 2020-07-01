@@ -56,8 +56,8 @@
 
 (deftest delete-db-entry-test
   (testing "should delete a file given uid"
-    (let [result (model/delete-db-entry datasource
-                                        (:uid *file-data*))]
+    (let [result (model/delete-file datasource
+                                    (:uid *file-data*))]
       (is (= 1 (:next.jdbc/update-count result))))))
 
 (defn file-fixture [f]
