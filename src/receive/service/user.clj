@@ -1,9 +1,47 @@
 (ns receive.service.user
   (:require
-   [receive.auth.google :as auth]
+   [next.jdbc :as jdbc]
    [receive.auth.jwt :as jwt]
+   [receive.auth.google :as auth]
    [receive.error-handler :refer [if-error]]
+   [receive.db.connection :as connection]
    [receive.model.user :as model]))
+
+(defn check-user-exists
+  [google-user]
+  (:user-id
+   (model/check-user-exists google-user)))
+
+(defn get-user
+  [user-id]
+  (model/get-user user-id))
+
+(defn get-user-by-email
+  [tx email]
+  (model/get-user-by-email tx email))
+
+(defn create-google-user
+  [tx user-id google-id]
+  (model/create-google-user tx user-id google-id))
+
+(defn create-user
+  [tx user-data]
+  (model/create-user tx user-data))
+
+(defn create-unregistered-user
+  "Creates a user with unregistered status"
+  [tx email]
+  (create-user tx  {:first-name email
+                    :email email
+                    :status "unregistered"}))
+
+(defn register-user
+  [{google-id :google-id :as user}]
+  (jdbc/with-transaction [tx connection/datasource]
+    (let [user (create-user tx user)
+          id (:id user)]
+      (create-google-user tx id google-id)
+      user)))
 
 (defn create-or-fetch-user
   [user-data]
@@ -25,7 +63,10 @@
 (defn auth->user
   "Fetches the user data for authenticated user"
   [{user-id :user_id}]
-  (model/get-user user-id))
+  (get-user user-id))
 
-(defn get-user [user-id]
-  (model/get-user user-id))
+(defn find-or-create
+  "Search for a user by email or creates an unregistered user"
+  [tx email]
+  (or (get-user-by-email tx email)
+      (create-unregistered-user tx email)))

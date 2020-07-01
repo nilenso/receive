@@ -1,7 +1,6 @@
 (ns receive.handlers.api-test
   (:require [clojure.test :refer [deftest is]]
             [receive.handlers.api :as handler]
-            [receive.service.user :as user-service]
             [ring.mock.request :as mock]))
 
 (deftest ping-handler
@@ -15,25 +14,3 @@
          {:status 404
           :body {:success false
                  :message "Not found"}})))
-
-(deftest sign-in-handler
-  (with-redefs [user-service/signin-with-google (constantly "jwt_token")]
-    (is (=
-         (handler/sign-in (-> (mock/request :put "/user")
-                              (assoc :params {:id_token "mock_token"})))
-         {:status 200
-          :cookies {"access_token" {:value "jwt_token"
-                                    :http-only true
-                                    :same-site :strict
-                                    :path "/"}}
-          :body {:data "jwt_token", :success true, :message "User authenticated"}}))))
-
-(deftest sign-in-handler-failed
-  (with-redefs [user-service/signin-with-google
-                (constantly {:error :jwt-no-token})]
-    (is (=
-         (handler/sign-in (-> (mock/request :put "/user")
-                              (assoc :params {:id_token "mock_token"})))
-         {:status 400
-          :body {:success false
-                 :message "No token provided"}}))))

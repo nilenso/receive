@@ -44,6 +44,42 @@
   (is (= (files/get-filename (uuid-str))
          {:error :not-found})))
 
+(def public-file-data
+  {:filename "tempfile.dat"
+   :owner-id nil
+   :shared-with-users nil
+   :is-private false
+   :expired false})
+
+(def private-file-data
+  {:filename "tempfile.dat"
+   :owner-id 1
+   :shared-with-users [2 3]
+   :is-private true
+   :expired false})
+
+(deftest has-read-access-test
+  (testing "should return true if file is not private"
+    (with-redefs [model/find-file
+                  (constantly public-file-data)]
+      (is (true?
+           (files/has-read-access? {:user_id 10} "mock_uid")))))
+  (testing "should return false when private and not owner and not shared with"
+    (with-redefs [model/find-file
+                  (constantly private-file-data)]
+      (is (not=
+           true (files/has-read-access? {:user_id 10} "mock_uid")))))
+  (testing "should return true when private and owner"
+    (with-redefs [model/find-file
+                  (constantly private-file-data)]
+      (is (true?
+           (files/has-read-access? {:user_id 1} "mock_uid")))))
+  (testing "should return true when not owner but shared with"
+    (with-redefs [model/find-file
+                  (constantly private-file-data)]
+      (is (true?
+           (files/has-read-access? {:user_id 2} "mock_uid"))))))
+
 (defn create-temp-file
   "Creates a file given a filename"
   [file]
