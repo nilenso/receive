@@ -1,41 +1,38 @@
 (ns receive.service.user
   (:require [next.jdbc :as jdbc]
-            [next.jdbc.result-set :as result-set]
+            [receive.auth.jwt :as jwt]
             [receive.auth.google :as auth]
             [receive.error-handler :refer [if-error]]
-            [receive.auth.jwt :as jwt]
             [receive.db.connection :as connection]
-            [receive.db.sql :as sql]))
+            [receive.model.user :as model]))
 
 (defn check-user-exists
-  [{google-id :google-id}]
-  (:account_google/user_id
-   (jdbc/execute-one! connection/datasource
-                      (sql/get-google-user google-id))))
+  [google-user]
+  (:user-id
+   (model/check-user-exists google-user)))
 
 (defn get-user
   [user-id]
-  (jdbc/execute-one! connection/datasource
-                     (sql/get-user user-id)
-                     {:return-keys true
-                      :builder-fn result-set/as-unqualified-maps}))
+  (model/get-user user-id))
+
+(defn get-user-by-email
+  [tx email]
+  (model/get-user-by-email tx email))
 
 (defn create-google-user
   [tx user-id google-id]
-  (jdbc/execute-one! tx
-                     (sql/create-google-user user-id google-id)
-                     {:return-keys true}))
+  (model/create-google-user tx user-id google-id))
 
 (defn create-user
-  [tx {email :email
-       first-name :first-name
-       last-name :last-name}]
-  (jdbc/execute-one! tx
-                     (sql/create-user first-name
-                                      last-name
-                                      email)
-                     {:return-keys true
-                      :builder-fn result-set/as-unqualified-maps}))
+  [tx user-data]
+  (model/create-user tx user-data))
+
+(defn create-unregistered-user
+  "Creates a user with unregistered status"
+  [tx email]
+  (create-user tx  {:first-name email
+                    :email email
+                    :status "unregistered"}))
 
 (defn register-user
   [{google-id :google-id :as user}]
@@ -66,3 +63,9 @@
   "Fetches the user data for authenticated user"
   [{user-id :user_id}]
   (get-user user-id))
+
+(defn find-or-create
+  "Search for a user by email or creates an unregistered user"
+  [tx email]
+  (or (get-user-by-email tx email)
+      (create-unregistered-user tx email)))

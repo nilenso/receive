@@ -60,7 +60,7 @@
    :db-uid     (:file_storage/uid data)
    :dt-created (:file_storage/dt_created data)
    :dt-expire  (:file_storage/dt_expire data)
-   :user-id    (:file_storage/user_id data)})
+   :user-id    (:file_storage/owner_id data)})
 
 (defn valid-db-entry? [data]
   (s/valid? ::db-entry (db-entry->spec

@@ -4,12 +4,11 @@
             [clj-time.coerce :as time-coerce]
             [clj-time.core :as time]
             [next.jdbc :as jdbc]
-            [next.jdbc.sql :refer [find-by-keys]]
             [receive.db.connection :as connection]
             [receive.error-handler :refer [if-error]]
-            [receive.db.sql :as sql]
-            [receive.config :as conf])
-  (:import [java.util UUID]))
+            [receive.service.user :as user]
+            [receive.model.file :as model]
+            [receive.config :as conf]))
 
 (defn expand-home
   "Replaces the tilde in file path with the user's home directory"
@@ -30,30 +29,23 @@
 
 (defn save-file
   "Adds a new database entry and saves file to disk and returns the uid"
-  [file {:keys [filename] :as file-data}]
+  [{user-id :user_id} file {:keys [filename] :as _file-data}]
   (jdbc/with-transaction [tx connection/datasource]
     (let [expire-in (-> conf/config :public-file :expire-in-sec)
           dt-expire (-> expire-in
                         (time/seconds)
                         (#(time/plus (time/now) %))
                         (time-coerce/to-sql-time))
-          result (jdbc/execute-one! tx
-                                    (sql/save-file file-data dt-expire)
-                                    {:return-keys true})
-          uid (:file_storage/uid result)]
-      (save-to-disk file (file-save-path uid filename))
-      (str uid))))
-
-(defn find-file
-  [uid]
-  (jdbc/execute-one! connection/datasource
-                     (sql/find-file (UUID/fromString uid))))
+          result (model/save-file tx user-id filename dt-expire)
+          uid (:uid result)]
+      (save-to-disk file (file-save-path (str uid) filename))
+      uid)))
 
 (defn get-filename
   "Finds the file name given a uid"
   [uid]
-  (if-let [response (find-file uid)]
-    (let [file (:file_storage/filename response)
+  (if-let [response (model/find-file uid)]
+    (let [file (:filename response)
           expired? (:expired response)]
       (if expired?
         {:error :file-expired}
@@ -67,7 +59,41 @@
               :raise
               (file-save-path uid filename))))
 
+(defn update-file-data [tx uid file-data]
+  (model/update-file-data tx uid file-data))
+
+(defn find-and-update-file
+  [{user-id :user_id :as auth} uid {:keys [private? shared-with-user-emails]}]
+  (jdbc/with-transaction [tx connection/datasource]
+    (if-let [file (model/find-file uid)]
+      (if (and auth
+               (= user-id (:owner-id file)))
+        (let [shared-with-user-ids (->> shared-with-user-emails
+                                        (map #(user/find-or-create tx %))
+                                        (map :id))]
+          (update-file-data tx uid {:private? private?
+                                    :shared-with-user-ids shared-with-user-ids}))
+        {:error :forbidden})
+      {:error :not-found})))
+
+(defn is-owner? [user-id owner-id]
+  (= user-id owner-id))
+
+(defn is-file-owner? [{user-id :user_id} uid]
+  (->> (model/find-file uid)
+       :owner-id
+       (is-owner? user-id)))
+
+(defn is-shared-with? [user-id shared-with-users]
+  (when shared-with-users
+    (some #(= user-id %) shared-with-users)))
+
+(defn has-read-access? [{user-id :user_id} uid]
+  (let [{:keys [is-private owner-id shared-with-users]}
+        (model/find-file uid)]
+    (or (not is-private)
+        (is-owner? user-id owner-id)
+        (is-shared-with? user-id shared-with-users))))
+
 (defn get-uploaded-files [user-id]
-  (find-by-keys connection/datasource
-                :file_storage
-                {:user_id user-id}))
+  (model/get-uploaded-files user-id))
