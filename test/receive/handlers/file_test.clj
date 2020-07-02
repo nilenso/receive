@@ -245,7 +245,8 @@
   (testing "should return an error when domain locked and emails are not on the same domain"
     (with-redefs [user-service/find-or-create (constantly nil)
                   file-service/update-file-data (constantly nil)
-                  file-model/find-file (constantly nil)]
+                  file-model/find-file (constantly nil)
+                  config  {:domain-locked true :domain "nilenso.com"}]
       (let [uid (str (:uid update-file-result))
             mock-request (-> (mock/request :put (str "/api/user/files/" uid))
                              (assoc :params {:is_private true

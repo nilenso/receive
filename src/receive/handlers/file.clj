@@ -125,8 +125,9 @@
               email))
 
 (defn- validate-domain-locked-users [emails]
-  (when (:domain-locked config)
-    (every? same-domain? emails)))
+  (if (:domain-locked config)
+    (every? same-domain? emails)
+    true))
 
 (defn update-file [{:keys [params route-params auth]
                     {shared_with_users :shared_with_users} :params}]
