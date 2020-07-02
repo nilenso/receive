@@ -14,5 +14,5 @@
  :max-filename-length 255
  :public-file         {:expire-in-sec 172800}
  :jwt-token-expiry    86400
- :domain-locked       true
+ :domain-locked       false
  :domain              "nilenso.com"}
