@@ -4,13 +4,14 @@
    [clojure.string :as string]
    [clojure.test :refer [deftest is use-fixtures testing are]]
    [hiccup.core :as h]
+   [receive.config :refer [config]]
+   [receive.error-handler :refer [error]]
    [receive.handlers.file :as handler]
    [receive.model.file :as file-model]
    [receive.service.files :as file-service]
    [receive.service.user :as user-service]
    [receive.service.files-test :as files]
-   [ring.mock.request :as mock]
-   [receive.config :refer [config]]))
+   [ring.mock.request :as mock]))
 
 (def tempfile-name "tempfile.dat")
 (def tempfolder-path "/tmp/")
@@ -71,7 +72,7 @@
       (is (= status 200)))))
 
 (deftest download-ui-expired-test
-  (with-redefs [file-service/get-filename (constantly {:error :file-expired})]
+  (with-redefs [file-service/get-filename (constantly (error :file-expired))]
     (let [uid (handler/uuid-str)
           mock-request (assoc
                         (mock/request :get (format "/download/%s/" uid))

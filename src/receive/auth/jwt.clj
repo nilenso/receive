@@ -1,7 +1,8 @@
 (ns receive.auth.jwt
   (:require [buddy.sign.jwt :as jwt]
             [clj-time.core :as time]
-            [receive.config :refer [config]]))
+            [receive.config :refer [config]]
+            [receive.error-handler :refer [error]]))
 
 (defn sign [{:keys [email user-id]}]
   (let [dt-expire (time/plus (time/now)
@@ -16,6 +17,6 @@
   (try
     (jwt/unsign token (-> config :secrets :jwt-secret))
     (catch java.lang.NullPointerException _
-      {:error :jwt-no-token})
+      (error :jwt-no-token))
     (catch Exception _
-      {:error :jwt-expired})))
+      (error :jwt-expired))))

@@ -5,7 +5,8 @@
    [receive.error-handler :refer [error?
                                   error->http-response
                                   error->ui-response
-                                  if-error]]
+                                  if-error
+                                  error]]
    [receive.handlers.helper :refer [map-response-data
                                     success]]
    [receive.service.files :as files]
@@ -68,8 +69,8 @@
             (error->http-response abs-filename)
             {:status 200
              :body (io/file abs-filename)}))
-        (error->http-response {:error :forbidden})))
-    (error->http-response {:error :invalid-uuid})))
+        (error->http-response (error :forbidden))))
+    (error->http-response (error :invalid-uuid))))
 
 (defn download-view [{:keys [params auth] :as request}]
   (if (spec/uuid-valid? params)
@@ -81,9 +82,9 @@
             (base-view/success-body-builder
              (component-view/toolbar (:auth request))
              (download-view/download-button uid filename))))
-        (error->ui-response {:error :forbidden})))
+        (error->ui-response (error :forbidden))))
     (error->ui-response
-     {:error :invalid-uuid})))
+     (error :invalid-uuid))))
 
 (defn index [request]
   (let [auth (:auth request)]
@@ -137,7 +138,7 @@
       (if-error result
                 :http-response
                 (success result)))
-    (error->http-response {:error :invalid-email-domain})))
+    (error->http-response (error :invalid-email-domain))))
 
 (defn uploaded-files [{auth :auth}]
   (if auth
@@ -146,4 +147,4 @@
                   (map (map-response-data :filename
                                           :uid
                                           :created_at))))
-    (error->http-response {:error :unauthorized})))
+    (error->http-response (error :unauthorized))))
