@@ -45,9 +45,9 @@
 
 (defn create-or-fetch-user
   [user-data]
-  (if-let [user-id (model/check-user-exists user-data)]
-    (model/get-user user-id)
-    (model/register-user user-data)))
+  (if-let [{user-id :user-id} (model/check-user-exists user-data)]
+    (get-user user-id)
+    (register-user user-data)))
 
 (defn signin-with-google
   "If Google `id-token` verified, returns a JWT token"
