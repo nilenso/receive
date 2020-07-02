@@ -1,17 +1,16 @@
 (ns receive.service.files
-  (:require [clojure.java.io :as io]
-            [clojure.string :as string]
-            [clj-time.coerce :as time-coerce]
-            [clj-time.core :as time]
-            [next.jdbc :as jdbc]
-            [next.jdbc.result-set :as result-set]
-            [receive.db.connection :as connection]
-            [receive.error-handler :refer [if-error]]
-            [receive.service.user :as user]
-            [receive.db.sql :as sql]
-            [receive.model.file :as model]
-            [receive.config :as conf])
-  (:import [java.util UUID]))
+  (:require
+   [clojure.java.io :as io]
+   [clojure.string :as string]
+   [clojure.tools.logging :as log]
+   [clj-time.coerce :as time-coerce]
+   [clj-time.core :as time]
+   [next.jdbc :as jdbc]
+   [receive.config :as conf]
+   [receive.db.connection :as connection]
+   [receive.error-handler :refer [if-error]]
+   [receive.model.file :as model]
+   [receive.service.user :as user]))
 
 (defn expand-home
   "Replaces the tilde in file path with the user's home directory"
@@ -32,19 +31,17 @@
 
 (defn save-file
   "Adds a new database entry and saves file to disk and returns the uid"
-  [{user-id :user_id} file filename]
+  [{user-id :user_id} file {:keys [filename] :as _file-data}]
   (jdbc/with-transaction [tx connection/datasource]
     (let [expire-in (-> conf/config :public-file :expire-in-sec)
           dt-expire (-> expire-in
                         (time/seconds)
                         (#(time/plus (time/now) %))
                         (time-coerce/to-sql-time))
-          result (jdbc/execute-one! tx
-                                    (sql/save-file filename dt-expire user-id)
-                                    {:return-keys true})
-          uid (:file_storage/uid result)]
-      (save-to-disk file (file-save-path uid filename))
-      (str uid))))
+          result (model/save-file tx user-id filename dt-expire)
+          uid (:uid result)]
+      (save-to-disk file (file-save-path (str uid) filename))
+      uid)))
 
 (defn get-filename
   "Finds the file name given a uid"
@@ -64,23 +61,29 @@
               :raise
               (file-save-path uid filename))))
 
-(defn update-file-data [tx uid {:keys [private? shared-with-user-ids]}]
-  (-> (jdbc/execute-one! tx
-                         (sql/update-file (UUID/fromString uid)
-                                          {:private? private?
-                                           :shared-with-users shared-with-user-ids})
-                         {:return-keys true
-                          :builder-fn result-set/as-unqualified-maps})
-      (update :shared_with_users (comp
-                                  #(map int %)
-                                  #(.getArray %)))))
+(defn delete-file-and-db-entry! [{:keys [filename uid]}]
+  (log/info "Deleting file" filename uid)
+  (let [file-path (file-save-path uid filename)]
+    (jdbc/with-transaction [tx connection/datasource]
+      (model/delete-file tx uid)
+      (when (.exists (io/file file-path))
+        (io/delete-file file-path)))))
+
+(defn purge-expired-files! []
+  (log/info "Purging")
+  (let [files (model/find-expired-files)]
+    (doseq [file files]
+      (delete-file-and-db-entry! file))))
+
+(defn update-file-data [tx uid file-data]
+  (model/update-file-data tx uid file-data))
 
 (defn find-and-update-file
   [{user-id :user_id :as auth} uid {:keys [private? shared-with-user-emails]}]
   (jdbc/with-transaction [tx connection/datasource]
     (if-let [file (model/find-file uid)]
       (if (and auth
-               (= user-id (:owner_id file)))
+               (= user-id (:owner-id file)))
         (let [shared-with-user-ids (->> shared-with-user-emails
                                         (map #(user/find-or-create tx %))
                                         (map :id))]
@@ -94,23 +97,19 @@
 
 (defn is-file-owner? [{user-id :user_id} uid]
   (->> (model/find-file uid)
-       :owner_id
+       :owner-id
        (is-owner? user-id)))
 
 (defn is-shared-with? [user-id shared-with-users]
-  (if shared-with-users
-    (let [ids (->> shared-with-users
-                   (.getArray)
-                   (map int))]
-      (some #(= user-id %) ids))
-    false))
+  (when shared-with-users
+    (some #(= user-id %) shared-with-users)))
 
 (defn has-read-access? [{user-id :user_id} uid]
-  (let [file (model/find-file uid)]
-    (if (:is_private file)
-      (if (is-owner? user-id (:owner_id file))
-        true
-        (if (is-shared-with? user-id (:shared_with_users file))
-          true
-          false))
-      true)))
+  (let [{:keys [is-private owner-id shared-with-users]}
+        (model/find-file uid)]
+    (or (not is-private)
+        (is-owner? user-id owner-id)
+        (is-shared-with? user-id shared-with-users))))
+
+(defn get-uploaded-files [user-id]
+  (model/get-uploaded-files user-id))

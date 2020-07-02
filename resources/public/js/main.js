@@ -112,17 +112,21 @@ function showUploadError(message) {
     setTimeout(() => uploadError.classList.remove('show'), 3e3)
 }
 
-function copyLink() {
-    const copyButton = document.querySelector(".download-link>#copy-button")
-    const label = document.querySelector(".download-link>p")
-    const copyText = copyButton.innerText
+function copyToClipboard(link) {
     const el = document.createElement('textarea')
-    el.value = copyText
+    el.value = link
     document.body.appendChild(el)
     el.select()
     el.setSelectionRange(0, 99999)
     document.execCommand('copy')
     document.body.removeChild(el)
+}
+
+function copyLink() {
+    const copyButton = document.querySelector(".download-link>#copy-button")
+    const label = document.querySelector(".download-link>p")
+    const copyText = copyButton.innerText
+    copyToClipboard(copyText)
     label.innerText = "Copied ✔"
 }
 
