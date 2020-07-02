@@ -2,26 +2,28 @@
   (:require [receive.view.base :refer [error-body-builder]]))
 
 (defonce error-map
-  {:jwt-invalid-input {:message "Invalid JWT"
-                       :status  400}
-   :jwt-no-token      {:message "No token provided"
-                       :status  400}
-   :jwt-bad-token     {:message "JWT format is incorrect"
-                       :status  400}
-   :jwt-expired       {:message "Token has expired"
-                       :status  401}
-   :file-expired      {:message "Link has expired"
-                       :status  410}
-   :not-found         {:message "File not found"
-                       :status  404}
-   :invalid-uuid      {:message "Not valid UUID"
-                       :status  400}
-   :forbidden         {:message "You do not have access to this content"
-                       :status  403}
-   :unauthorized      {:message "Not authenticated"
-                       :status  401}
-   :default           {:message "Unknown Error"
-                       :status  500}})
+  {:jwt-invalid-input    {:message "Invalid JWT"
+                          :status  400}
+   :jwt-no-token         {:message "No token provided"
+                          :status  400}
+   :jwt-bad-token        {:message "JWT format is incorrect"
+                          :status  400}
+   :jwt-expired          {:message "Token has expired"
+                          :status  401}
+   :file-expired         {:message "Link has expired"
+                          :status  410}
+   :not-found            {:message "File not found"
+                          :status  404}
+   :invalid-uuid         {:message "Not valid UUID"
+                          :status  400}
+   :forbidden            {:message "You do not have access to this content"
+                          :status  403}
+   :unauthorized         {:message "Not authenticated"
+                          :status  401}
+   :invalid-email-domain {:message "Only same domain emails allowed"
+                          :status  400}
+   :default              {:message "Unknown Error"
+                          :status  500}})
 
 (defn error? [data]
   (keyword? (:error data)))

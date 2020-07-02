@@ -116,14 +116,28 @@
        (file-view/file-listing files)))
     (base-view/error-ui 401 "Not authenticated")))
 
-(defn update-file [{:keys [params route-params auth]}]
-  (let [result (files/find-and-update-file auth
-                                           (:id route-params)
-                                           {:private? (:is_private params)
-                                            :shared-with-user-emails (:shared_with_users params)})]
-    (if-error result
-              :http-response
-              (success result))))
+(defn- domain-regex [domain]
+  (re-pattern (str "^.*@" domain "$")))
+
+(defn- same-domain? [email]
+  (re-matches (domain-regex (:domain config))
+              email))
+
+(defn- validate-domain-locked-users [emails]
+  (when (:domain-locked config)
+    (every? same-domain? emails)))
+
+(defn update-file [{:keys [params route-params auth]
+                    {shared_with_users :shared_with_users} :params}]
+  (if (validate-domain-locked-users shared_with_users)
+    (let [result (files/find-and-update-file auth
+                                             (:id route-params)
+                                             {:private? (:is_private params)
+                                              :shared-with-user-emails shared_with_users})]
+      (if-error result
+                :http-response
+                (success result)))
+    (error->http-response {:error :invalid-email-domain})))
 
 (defn uploaded-files [{auth :auth}]
   (if auth

@@ -229,9 +229,9 @@
                 file-model/find-file (constantly find-file-result)]
     (let [uid (str (:uid update-file-result))
           mock-request (-> (mock/request :put (str "/api/user/files/" uid))
-                           (assoc :params {:is-private true
-                                           :shared-with-users ["email1@google.com"
-                                                               "email2@gmail.com"]}
+                           (assoc :params {:is_private true
+                                           :shared_with_users ["email1@nilenso.com"
+                                                               "email2@nilenso.com"]}
                                   :route-params {:id uid}
                                   :auth {:user_id 10}))
           mock-response (handler/update-file mock-request)
@@ -239,6 +239,23 @@
           is-private (-> mock-response :body :data :is-private)]
       (is (= 200 status))
       (is (true? is-private)))))
+
+(deftest update-file-validtion-test
+  (testing "should return an error when domain locked and emails are not on the same domain"
+    (with-redefs [user-service/find-or-create (constantly nil)
+                  file-service/update-file-data (constantly nil)
+                  file-model/find-file (constantly nil)]
+      (let [uid (str (:uid update-file-result))
+            mock-request (-> (mock/request :put (str "/api/user/files/" uid))
+                             (assoc :params {:is_private true
+                                             :shared_with_users ["email1@non-nilenso.com"
+                                                                 "email2@nilenso.com"]}
+                                    :route-params {:id uid}
+                                    :auth {:user_id 10}))
+            mock-response (handler/update-file mock-request)]
+        (is (= 400 (:status mock-response)))
+        (is (= "Only same domain emails allowed"
+               (-> mock-response :body :message)))))))
 
 (def uploaded-file-response
   {:status 200

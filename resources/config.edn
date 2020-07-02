@@ -13,4 +13,6 @@
  :max-file-size       536870912
  :max-filename-length 255
  :public-file         {:expire-in-sec 172800}
- :jwt-token-expiry    86400}
+ :jwt-token-expiry    86400
+ :domain-locked       true
+ :domain              "nilenso.com"}
