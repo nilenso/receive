@@ -76,6 +76,7 @@
       (delete-file-and-db-entry! file))))
 
 (defn update-file-data [tx uid file-data]
+  (clojure.tools.logging/warn "file_data" file-data)
   (model/update-file-data tx uid file-data))
 
 (defn find-and-update-file

@@ -33,3 +33,6 @@
 (defn valid-db-entry? [data]
   (s/valid? ::db-entry (db-entry->spec
                         data)))
+
+(defn valid-email? [email]
+  (s/valid? ::email email))
