@@ -48,6 +48,13 @@ function showPrivateUploadOptions(uid) {
     saveButton.setAttribute("id", uid)
 }
 
+function parseAxiosError(error) {
+    if (error.response && error.response.data) {
+        return error.response.data.message || "Unknown Error"
+    }
+    return error.message
+}
+
 function saveSettings() {
     const [saveButton] = document.getElementsByClassName("save-settings")
     const uid = saveButton.getAttribute('id')
@@ -56,13 +63,17 @@ function saveSettings() {
         document.getElementById("shared-with-emails")
             .value
             .split(',')
+            .map(email => email.trim())
+            .filter(email => email.length > 0)
     const data = {
         is_private: isPrivate,
         shared_with_users: sharedWithEmails
     }
     axios.put(`/api/user/files/${uid}`, data)
-        .then(goToShareLink(`/share?uid=${uid}`))
-        .catch(error => showUploadError(error.message || "Unknown Error"))
+        .then(_ => goToShareLink(`/share?uid=${uid}`))
+        .catch(error => {
+            showUploadError(parseAxiosError(error))
+        })
 }
 
 function toggleDisplay(element, show) {
