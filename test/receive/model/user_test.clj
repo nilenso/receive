@@ -5,6 +5,7 @@
    [receive.db.connection :refer [datasource]]
    [receive.factory :as factory]
    [receive.model.user :as model]
+   [receive.spec.user :as spec]
    [receive.util :as util]))
 
 (def ^:dynamic *user-data* nil)
@@ -22,7 +23,10 @@
           (model/get-user (:id *user-data*))]
       (is (= first_name (:first_name *user-data*)))
       (is (= last_name (:last_name *user-data*)))
-      (is (= email (:email *user-data*))))))
+      (is (= email (:email *user-data*)))))
+  (testing "should return valid entries"
+    (is (true? (spec/valid-db-entry? (model/get-user
+                                      (:id *user-data*)))))))
 
 (deftest create-user-test
   (testing "should create a user and return correct data"

@@ -1,14 +1,16 @@
 (ns receive.service.files
-  (:require [clojure.java.io :as io]
-            [clojure.string :as string]
-            [clj-time.coerce :as time-coerce]
-            [clj-time.core :as time]
-            [next.jdbc :as jdbc]
-            [receive.db.connection :as connection]
-            [receive.error-handler :refer [if-error]]
-            [receive.service.user :as user]
-            [receive.model.file :as model]
-            [receive.config :as conf]))
+  (:require
+   [clojure.java.io :as io]
+   [clojure.string :as string]
+   [clojure.tools.logging :as log]
+   [clj-time.coerce :as time-coerce]
+   [clj-time.core :as time]
+   [next.jdbc :as jdbc]
+   [receive.config :as conf]
+   [receive.db.connection :as connection]
+   [receive.error-handler :refer [if-error]]
+   [receive.model.file :as model]
+   [receive.service.user :as user]))
 
 (defn expand-home
   "Replaces the tilde in file path with the user's home directory"
@@ -58,6 +60,20 @@
     (if-error filename
               :raise
               (file-save-path uid filename))))
+
+(defn delete-file-and-db-entry! [{:keys [filename uid]}]
+  (log/info "Deleting file" filename uid)
+  (let [file-path (file-save-path uid filename)]
+    (jdbc/with-transaction [tx connection/datasource]
+      (model/delete-file tx uid)
+      (when (.exists (io/file file-path))
+        (io/delete-file file-path)))))
+
+(defn purge-expired-files! []
+  (log/info "Purging")
+  (let [files (model/find-expired-files)]
+    (doseq [file files]
+      (delete-file-and-db-entry! file))))
 
 (defn update-file-data [tx uid file-data]
   (model/update-file-data tx uid file-data))

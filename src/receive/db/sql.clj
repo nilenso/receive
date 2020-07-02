@@ -17,6 +17,11 @@
                                    :timestamp) user-id]])
       sql/format))
 
+(defn get-file [uid]
+  (sql/format {:select [:*]
+               :from [:file-storage]
+               :where [:= :uid uid]}))
+
 (defn find-file
   [uid]
   (sql/format {:select [:filename
@@ -26,6 +31,17 @@
                         [(sql/call :< :dt-expire (sql/call :now)) :expired]]
                :from   [:file-storage]
                :where  [:= :uid uid]}))
+
+(defn find-expired-files
+  []
+  (sql/format {:select [:filename :uid]
+               :from [:file-storage]
+               :where (sql/call :< :dt_expire (sql/call :now))}))
+
+(defn delete-file [uid]
+  (sql/format {:delete []
+               :from [:file-storage]
+               :where [:= :uid uid]}))
 
 (defn get-google-user
   [google-id]

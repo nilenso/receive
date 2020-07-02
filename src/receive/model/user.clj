@@ -37,3 +37,11 @@
   (jdbc/execute-one! tx
                      (sql/create-user user-data)
                      db-options))
+
+(defn register-user
+  [{google-id :google-id :as user}]
+  (jdbc/with-transaction [tx connection/datasource]
+    (let [user (create-user tx user)
+          id (:id user)]
+      (create-google-user tx id google-id)
+      user)))

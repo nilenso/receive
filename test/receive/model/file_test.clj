@@ -7,7 +7,8 @@
    [next.jdbc.sql :refer [insert! delete! get-by-id update!]]
    [receive.db.connection :refer [datasource]]
    [receive.factory :as factory]
-   [receive.model.file :as model])
+   [receive.model.file :as model]
+   [receive.spec.file :as spec])
   (:import java.util.UUID))
 
 (def ^:dynamic *file-data* nil)
@@ -17,7 +18,7 @@
 
 (defn expire-file [uid]
   (update! datasource :file_storage
-           {:dt-expire (time-coerce/to-sql-time (time/now))}
+           {:dt_expire (time-coerce/to-sql-time (time/now))}
            {:uid uid}))
 
 (defn delete-tempfile [file]
@@ -28,6 +29,12 @@
 
 (defn delete-file [{uid :uid}]
   (delete! datasource :file_storage {:uid uid}))
+
+(deftest get-file-test
+  (testing "should be valid data entries"
+    (is (true? (spec/valid-db-entry?
+                (model/get-file
+                 (-> *file-data* :uid str)))))))
 
 (deftest find-file-test
   (testing "should return an existing file"
@@ -45,6 +52,20 @@
       (is (= "tempfile.dat"
              (:filename (get-file (str uid)))))
       (delete-file file))))
+
+(deftest find-expired-files-test
+  (testing "should return list of expired files"
+    (expire-file (:uid *file-data*))
+    (let [files (model/find-expired-files)]
+      (is (= (count files) 1))
+      (is (= (:filename *file-data*)
+             (:filename (get files 0)))))))
+
+(deftest delete-db-entry-test
+  (testing "should delete a file given uid"
+    (let [result (model/delete-file datasource
+                                    (:uid *file-data*))]
+      (is (= 1 (:next.jdbc/update-count result))))))
 
 (defn file-fixture [f]
   (let [file-data (create-file (factory/generate-file))]

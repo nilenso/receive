@@ -1,15 +1,16 @@
 (ns receive.handlers.file-test
-  (:require [clojure.java.io :as io]
-            [clojure.string :as string]
-            [clojure.test :refer [deftest is use-fixtures testing are]]
-            [hiccup.core :as h]
-            [receive.handlers.file :as handler]
-            [receive.model.file :as file-model]
-            [receive.service.files :as file-service]
-            [receive.service.user :as user-service]
-            [receive.service.files-test :as files]
-            [ring.mock.request :as mock]
-            [receive.config :refer [config]]))
+  (:require
+   [clojure.java.io :as io]
+   [clojure.string :as string]
+   [clojure.test :refer [deftest is use-fixtures testing are]]
+   [hiccup.core :as h]
+   [receive.handlers.file :as handler]
+   [receive.model.file :as file-model]
+   [receive.service.files :as file-service]
+   [receive.service.user :as user-service]
+   [receive.service.files-test :as files]
+   [ring.mock.request :as mock]
+   [receive.config :refer [config]]))
 
 (def tempfile-name "tempfile.dat")
 (def tempfolder-path "/tmp/")

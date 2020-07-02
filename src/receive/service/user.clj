@@ -1,10 +1,11 @@
 (ns receive.service.user
-  (:require [next.jdbc :as jdbc]
-            [receive.auth.jwt :as jwt]
-            [receive.auth.google :as auth]
-            [receive.error-handler :refer [if-error]]
-            [receive.db.connection :as connection]
-            [receive.model.user :as model]))
+  (:require
+   [next.jdbc :as jdbc]
+   [receive.auth.jwt :as jwt]
+   [receive.auth.google :as auth]
+   [receive.error-handler :refer [if-error]]
+   [receive.db.connection :as connection]
+   [receive.model.user :as model]))
 
 (defn check-user-exists
   [google-user]
@@ -44,9 +45,9 @@
 
 (defn create-or-fetch-user
   [user-data]
-  (if-let [user-id (check-user-exists user-data)]
-    (get-user user-id)
-    (register-user user-data)))
+  (if-let [user-id (model/check-user-exists user-data)]
+    (model/get-user user-id)
+    (model/register-user user-data)))
 
 (defn signin-with-google
   "If Google `id-token` verified, returns a JWT token"

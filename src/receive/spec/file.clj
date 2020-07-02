@@ -27,6 +27,10 @@
 (s/def ::nil nil?)
 (s/def ::dt-expire (s/or ::date ::nil))
 (s/def ::user-id (s/or ::id ::nil))
+(s/def ::private? boolean?)
+(s/def ::coll-of-ids (s/coll-of integer?))
+(s/def ::shared-with-users (s/or ::coll-of-ids ::nil))
+
 (s/def ::file (s/keys :req-un [::filename
                                ::content-type
                                ::size]))
@@ -40,9 +44,11 @@
 (s/def ::db-entry (s/keys :req-un [::filename
                                    ::db-uid
                                    ::dt-created
-                                   ::user-id]
+                                   ::private?]
                           :opt-un [:receive.spec.user/user-id
-                                   ::dt-expire]))
+                                   ::dt-expire
+                                   ::user-id
+                                   ::shared-with-users]))
 
 (defn params-valid? [params] (s/valid? ::params params))
 
@@ -56,11 +62,13 @@
   (s/valid? ::max-filename-length (-> params :file :filename)))
 
 (defn db-entry->spec [data]
-  {:filename   (:file_storage/filename data)
-   :db-uid     (:file_storage/uid data)
-   :dt-created (:file_storage/dt_created data)
-   :dt-expire  (:file_storage/dt_expire data)
-   :user-id    (:file_storage/owner_id data)})
+  {:filename          (:filename data)
+   :db-uid            (:uid data)
+   :dt-created        (:dt-created data)
+   :dt-expire         (:dt-expire data)
+   :user-id           (:owner-id data)
+   :private?          (:is-private data)
+   :shared-with-users (:shared-with-users data)})
 
 (defn valid-db-entry? [data]
   (s/valid? ::db-entry (db-entry->spec

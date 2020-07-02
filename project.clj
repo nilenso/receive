@@ -33,4 +33,5 @@
                  :init (require '[clojure.repl :refer :all])}
   :aliases {"migrate"  ["run" "-m" "receive.db.migration/migrate"]
             "rollback" ["run" "-m" "receive.db.migration/rollback"]
-            "reset-test-db" ["run" "-m" "receive.fixtures/clear-state"]})
+            "reset-test-db" ["run" "-m" "receive.fixtures/clear-state"]
+            "purge-expired" ["run" "-m" "receive.service.files/purge-expired-files!"]})

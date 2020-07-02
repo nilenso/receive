@@ -5,11 +5,25 @@
    [receive.db.connection :as connection]
    [receive.db.helper :refer [as-unqualified-kebab-maps]]
    [receive.db.sql :as sql])
-  (:import [java.util UUID]))
+  (:import
+   [java.util UUID]))
 
 (def db-options
   {:builder-fn as-unqualified-kebab-maps
    :return-keys true})
+
+(defn find-expired-files []
+  (jdbc/execute! connection/datasource
+                 (sql/find-expired-files)
+                 db-options))
+
+(defn delete-file [tx uid]
+  (jdbc/execute-one! tx (sql/delete-file uid)))
+
+(defn get-file [uid]
+  (jdbc/execute-one! connection/datasource
+                     (sql/get-file (UUID/fromString uid))
+                     db-options))
 
 (defn find-file [uid]
   (jdbc/execute-one! connection/datasource
