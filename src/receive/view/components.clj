@@ -15,8 +15,8 @@
 
 (defn user-button [auth]
   (let [user (user/auth->user auth)
-        first-name (:first_name user)
-        last-name (:last_name user)
+        first-name (:first-name user)
+        last-name (:last-name user)
         full-name (format "%s %s" first-name last-name)]
     [:div {:id "btn_user"
            :class (str "toolbar_btn "

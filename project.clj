@@ -14,7 +14,7 @@
                  [aero "1.1.6"]
 
                  [honeysql "0.9.10"]
-                 [seancorfield/next.jdbc "1.0.409"]
+                 [seancorfield/next.jdbc "1.1.547"]
                  [org.postgresql/postgresql "42.2.12"]
                  [nilenso/honeysql-postgres "0.2.6"]
                  [hiccup "1.0.5"]
@@ -34,4 +34,5 @@
                  :init (require '[clojure.repl :refer :all])}
   :aliases {"migrate"  ["run" "-m" "receive.db.migration/migrate"]
             "rollback" ["run" "-m" "receive.db.migration/rollback"]
-            "reset-test-db" ["run" "-m" "receive.fixtures/clear-state"]})
+            "reset-test-db" ["run" "-m" "receive.fixtures/clear-state"]
+            "purge-expired" ["run" "-m" "receive.service.files/purge-expired-files!"]})

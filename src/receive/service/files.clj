@@ -2,14 +2,15 @@
   (:require
    [clojure.java.io :as io]
    [clojure.string :as string]
+   [clojure.tools.logging :as log]
    [clj-time.coerce :as time-coerce]
    [clj-time.core :as time]
    [next.jdbc :as jdbc]
+   [receive.config :as conf]
    [receive.db.connection :as connection]
    [receive.error-handler :refer [if-error]]
    [receive.model.file :as model]
-   [receive.service.user :as user]
-   [receive.config :as conf]))
+   [receive.service.user :as user]))
 
 (defn expand-home
   "Replaces the tilde in file path with the user's home directory"
@@ -38,9 +39,9 @@
                         (#(time/plus (time/now) %))
                         (time-coerce/to-sql-time))
           result (model/save-file tx user-id filename dt-expire)
-          uid (:file_storage/uid result)]
-      (save-to-disk file (file-save-path uid filename))
-      (str uid))))
+          uid (:uid result)]
+      (save-to-disk file (file-save-path (str uid) filename))
+      uid)))
 
 (defn get-filename
   "Finds the file name given a uid"
@@ -60,18 +61,29 @@
               :raise
               (file-save-path uid filename))))
 
+(defn delete-file-and-db-entry! [{:keys [filename uid]}]
+  (log/info "Deleting file" filename uid)
+  (let [file-path (file-save-path uid filename)]
+    (jdbc/with-transaction [tx connection/datasource]
+      (model/delete-file tx uid)
+      (when (.exists (io/file file-path))
+        (io/delete-file file-path)))))
+
+(defn purge-expired-files! []
+  (log/info "Purging")
+  (let [files (model/find-expired-files)]
+    (doseq [file files]
+      (delete-file-and-db-entry! file))))
+
 (defn update-file-data [tx uid file-data]
-  (-> (model/update-file-data tx uid file-data)
-      (update :shared_with_users (comp
-                                  #(map int %)
-                                  #(.getArray %)))))
+  (model/update-file-data tx uid file-data))
 
 (defn find-and-update-file
   [{user-id :user_id :as auth} uid {:keys [private? shared-with-user-emails]}]
   (jdbc/with-transaction [tx connection/datasource]
     (if-let [file (model/find-file uid)]
       (if (and auth
-               (= user-id (:owner_id file)))
+               (= user-id (:owner-id file)))
         (let [shared-with-user-ids (->> shared-with-user-emails
                                         (mapv #(user/find-or-create tx %))
                                         (map :id))]
@@ -81,10 +93,8 @@
       {:error :not-found})))
 
 (defn get-shared-with-user-ids [uid]
-  (-> (model/get-shared-with-user-ids uid)
-      :shared_with_users
-      (->> (.getArray)
-           (map int))))
+  (:shared-with-users
+   (model/get-shared-with-user-ids uid)))
 
 (defn get-shared-user-details [uid]
   (->> uid
@@ -94,7 +104,21 @@
 (defn get-uploaded-files [user-id]
   (model/get-uploaded-files user-id))
 
-(defn is-file-owner? [{user-id :user_id :as _auth} uid]
+(defn is-owner? [user-id owner-id]
+  (= user-id owner-id))
+
+(defn is-file-owner? [{user-id :user_id} uid]
   (->> (model/find-file uid)
-       :owner_id
-       (= user-id)))
+       :owner-id
+       (is-owner? user-id)))
+
+(defn is-shared-with? [user-id shared-with-users]
+  (when shared-with-users
+    (some #(= user-id %) shared-with-users)))
+
+(defn has-read-access? [{user-id :user_id} uid]
+  (let [{:keys [is-private owner-id shared-with-users]}
+        (model/find-file uid)]
+    (or (not is-private)
+        (is-owner? user-id owner-id)
+        (is-shared-with? user-id shared-with-users))))

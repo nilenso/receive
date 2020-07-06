@@ -5,6 +5,7 @@
    [receive.db.connection :refer [datasource]]
    [receive.factory :as factory]
    [receive.model.user :as model]
+   [receive.spec.user :as spec]
    [receive.util :as util]))
 
 (def ^:dynamic *user-data* nil)
@@ -13,16 +14,19 @@
   (insert! datasource :users
            (util/keywords->sql-keywords user)))
 
-(defn delete-user [{user-id :users/id}]
+(defn delete-user [{user-id :id}]
   (delete! datasource :users {:id user-id}))
 
 (deftest get-user-test
   (testing "should return the user data given user ID"
-    (let [{:keys [first_name last_name email]}
-          (model/get-user (:users/id *user-data*))]
-      (is (= first_name (:users/first_name *user-data*)))
-      (is (= last_name (:users/last_name *user-data*)))
-      (is (= email (:users/email *user-data*))))))
+    (let [{:keys [first-name last-name email]}
+          (model/get-user (:id *user-data*))]
+      (is (= first-name (:first-name *user-data*)))
+      (is (= last-name (:last-name *user-data*)))
+      (is (= email (:email *user-data*)))))
+  (testing "should return valid entries"
+    (is (true? (spec/valid-db-entry? (model/get-user
+                                      (:id *user-data*)))))))
 
 (deftest create-user-test
   (testing "should create a user and return correct data"
@@ -32,9 +36,9 @@
       (is (:first-name user-data) (:first-name user))
       (is (:last-name user-data) (:last-name user))
       (is (:email user-data) (:email user))
-      (is (inst? (:dt_created user)))
-      (is (inst? (:dt_updated user)))
-      (delete-user {:users/id (:id user)}))))
+      (is (inst? (:dt-created user)))
+      (is (inst? (:dt-updated user)))
+      (delete-user {:id (:id user)}))))
 
 (defn user-fixture [f]
   (let [user (create-user (factory/generate-user))]

@@ -1,15 +1,16 @@
 (ns receive.service.user
   (:require
    [next.jdbc :as jdbc]
+   [receive.auth.jwt :as jwt]
    [receive.auth.google :as auth]
    [receive.error-handler :refer [if-error]]
-   [receive.auth.jwt :as jwt]
    [receive.db.connection :as connection]
    [receive.model.user :as model]))
 
 (defn check-user-exists
   [google-user]
-  (model/check-user-exists google-user))
+  (:user-id
+   (model/check-user-exists google-user)))
 
 (defn get-user
   [user-id]
@@ -44,7 +45,7 @@
 
 (defn create-or-fetch-user
   [user-data]
-  (if-let [user-id (check-user-exists user-data)]
+  (if-let [{user-id :user-id} (model/check-user-exists user-data)]
     (get-user user-id)
     (register-user user-data)))
 
