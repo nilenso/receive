@@ -51,14 +51,18 @@
 
 (deftest download-link-test
   (with-redefs [handler/uuid-str (constantly "958a5425-060b-4aad-ba65-bf25e4458991")
-                file-service/get-absolute-filename (constantly "/tmp/tempfile.dat")]
+                file-service/get-filename (constantly "tempfile.dat")
+                file-service/file-save-path (constantly "/tmp/tempfile.dat")]
     (let [uid (handler/uuid-str)
           mock-request (-> (mock/request :get (format "/download/api/%s/" uid))
                            (assoc :params {:id uid}))
           mock-response (handler/download-file mock-request)]
       (files/create-temp-file tempfile-path)
-      (is (= (:status mock-response) 200))
-      (is (-> mock-response :body (.exists))))))
+      (are [key value] (= (key mock-response) value)
+        :status 200
+        :headers {"Content-Disposition"
+                  "attachment; filename=\"tempfile.dat\""})
+      (is (-> mock-response :body .exists)))))
 
 (deftest download-ui-link-test
   (with-redefs [handler/uuid-str (constantly "958a5425-060b-4aad-ba65-bf25e4458991")

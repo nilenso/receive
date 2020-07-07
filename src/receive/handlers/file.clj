@@ -63,11 +63,13 @@
   (if (spec/uuid-valid? params)
     (let [uid (:id params)]
       (if (files/has-read-access? auth uid)
-        (let [abs-filename (files/get-absolute-filename uid)]
-          (if (error? abs-filename)
-            (error->http-response abs-filename)
-            {:status 200
-             :body (io/file abs-filename)}))
+        (let [filename (files/get-filename uid)]
+          (if-error filename
+                    :http-response
+                    {:status 200
+                     :headers {"Content-Disposition"
+                               (format "attachment; filename=\"%s\"" filename)}
+                     :body (io/file (files/file-save-path uid filename))}))
         (error->http-response {:error :forbidden})))
     (error->http-response {:error :invalid-uuid})))
 
