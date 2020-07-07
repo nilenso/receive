@@ -20,6 +20,8 @@
                        :status  403}
    :unauthorized      {:message "Not authenticated"
                        :status  401}
+   :bad-email         {:message "Bad email address"
+                       :status  400}
    :default           {:message "Unknown Error"
                        :status  500}})
 

@@ -2,7 +2,7 @@ function getFile() {
     document.getElementById("upfile").click()
 }
 
-function uploadFile(obj) {
+function uploadFile(obj, isPrivate) {
     const MAX_FILE_SIZE = window.config.MAX_FILE_SIZE
     const MAX_FILENAME_LENGTH = window.config.MAX_FILENAME_LENGTH
 
@@ -26,12 +26,94 @@ function uploadFile(obj) {
         onUploadProgress: ({ loaded, total }) =>
             uploadInput[0].innerText =
             `Uploading ${Math.floor(loaded / total * 100)}%`
-
     })
-        .then(({ data }) => data.uid)
-        .then(uid => `/share?uid=${uid}`)
-        .then(link => window.location.href = link)
+        .then(({ data }) => {
+            uploadInput[0].innerText = `Upload Complete!`
+            return data.uid
+        })
+        .then(uid => {
+            if (isPrivate) {
+                showPrivateUploadOptions(uid)
+            } else {
+                goToShareLink(`/share?uid=${uid}`)
+            }
+        })
         .catch(error => showUploadError(error.message || "Unknown Error"))
+}
+
+function showPrivateUploadOptions(uid) {
+    const [uploadDiv] = document.getElementsByClassName("private-upload")
+    uploadDiv.classList.add("show")
+    const [saveButton] = document.getElementsByClassName("save-settings")
+    saveButton.setAttribute("id", uid)
+}
+
+function parseAxiosError(error) {
+    if (error.response && error.response.data) {
+        return error.response.data.message || "Unknown Error"
+    }
+    return error.message
+}
+
+function saveSettings() {
+    const [saveButton] = document.getElementsByClassName("save-settings")
+    const uid = saveButton.getAttribute('id')
+    const isPrivate = document.getElementById("is-private").checked
+    const sharedWithEmails =
+        document.getElementById("shared-with-emails")
+            .value
+            .split(',')
+            .map(email => email.trim())
+            .filter(email => email.length > 0)
+    const data = {
+        is_private: isPrivate,
+        shared_with_users: sharedWithEmails
+    }
+    axios.put(`/api/user/files/${uid}`, data)
+        .then(_ => goToShareLink(`/share?uid=${uid}`))
+        .catch(error => {
+            showUploadError(parseAxiosError(error))
+        })
+}
+
+function toggleDisplay(element, show) {
+    if (show) {
+        element.classList.remove('no-display')
+    } else {
+        element.classList.add('no-display')
+    }
+}
+
+function showSaveOptions(show) {
+    const emails = document.getElementById('shared-with-emails')
+    const saveButton = document.getElementById('upload-save-button')
+    for (e of [emails, saveButton]) {
+        toggleDisplay(e, show)
+    }
+}
+
+function showGetLink(show) {
+    const getLinkButton = document.getElementById('upload-get-link')
+    toggleDisplay(getLinkButton, show)
+}
+
+function toggleUploadSettings(show) {
+    showSaveOptions(show)
+    showGetLink(!show)
+}
+
+function onIsPrivateToggle(checkbox) {
+    toggleUploadSettings(checkbox.checked)
+}
+
+function openShareLink() {
+    const [saveButton] = document.getElementsByClassName("save-settings")
+    const uid = saveButton.getAttribute('id')
+    goToShareLink(`/share?uid=${uid}`)
+}
+
+function goToShareLink(link) {
+    window.location.href = link
 }
 
 function showUploadError(message) {
