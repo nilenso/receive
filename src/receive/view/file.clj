@@ -8,15 +8,15 @@
     [:span "Filename"]
     [:h4 filename]]
    [:div {:class "icons"}
-    [:i.far.fa-copy
-     {:onclick (format "copyToClipboard('%s')"
-                       link)}]
-    [:i.fas.fa-file-download
-     {:onclick (format "window.open('api/download/%s')"
-                       uid)}]
-    [:i.fas.fa-chevron-right
-     {:onclick (format "window.open('user/files/%s')"
-                       uid)}]]])
+    [:a [:i.far.fa-copy
+         {:onclick (format "copyToClipboard('%s')"
+                           link)}]]
+    [:a {:href (format "api/download/%s" uid)
+         :download "download"}
+     [:i.fas.fa-file-download]]
+    [:a {:href (format "user/files/%s" uid)
+         :target "_self"}
+     [:i.fas.fa-chevron-right]]]])
 
 (defn file-listing
   [files]

@@ -84,7 +84,7 @@ p {
     align-items: center;
 }
 
-.container > * {
+.container>* {
     margin: 4px;
 }
 
@@ -254,18 +254,18 @@ input[type=checkbox]:checked:after {
     width: 64px;
 }
 
-.file-item>.icons>i {
-    margin: 4px;
+.file-item>.icons>a {
+    padding: 4px;
     cursor: pointer;
 }
 
-.file-item>.icons>i {
-    font-size: 20px;
+.file-item>.icons>a {
+    font-size: 18px;
 }
 
-.file-item>.icons>i:hover {
+.file-item>.icons>a:hover {
     font-size: 24px;
-    transition: all .2s;
+    transition: all .2s linear;
 }
 
 .file-details {
