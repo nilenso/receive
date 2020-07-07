@@ -47,7 +47,8 @@
         "api"        (->WrapMiddleware api-routes wrap-json-response)
         "download/"  {[:id ""] file-handlers/download-view}
         "share"      {:get file-handlers/share-handler}
-        "user/files" {:get file-handlers/uploaded-files-ui}
+        "user/files" {:get file-handlers/uploaded-files-ui
+                      "/" {[:id ""] file-handlers/file-details-ui}}
         "404"        {:get ui-handlers/error-page}
         "logout"     logout
         true       (constantly (response/redirect "/404"))}])

@@ -1,16 +1,27 @@
 @import url('https://fonts.googleapis.com/css?family=Exo+2:400,500,900&display=swap');
-:root {
-    --primary: #5CDb95;
-    --primary-dark: #379683;
-    --primary-light: #8EE4AF;
-    --accent: #05386B;
-    --accent-light: #EDF5E1;
-    --primary-staging: #DE8143;
-    --error: #4e244f;
-}
-
 html {
     overflow: scroll;
+}
+
+input[type=text] {
+    border: 0px solid white;
+    border-radius: 4px;
+    padding: 10px;
+    width: 180px;
+    color: black;
+}
+
+textarea {
+    border: 0px solid white;
+    border-radius: 4px;
+    padding: 10px;
+    width: 180px;
+    color: black;
+    box-sizing: border-box;
+}
+
+textarea.vertical-only {
+    resize: vertical;
 }
 
 body {
@@ -22,10 +33,6 @@ body {
     background: var(--primary);
     background-attachment: fixed;
     background-size: cover;
-}
-
-body.env-staging {
-    background: var(--primary-staging);
 }
 
 * {
@@ -75,6 +82,10 @@ p {
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+.container > * {
+    margin: 4px;
 }
 
 .upload-input {
@@ -157,6 +168,37 @@ p {
     opacity: 1;
 }
 
+input[type=checkbox] {
+    -webkit-appearance: none;
+    background-color: white;
+    border: 1px solid white;
+    box-shadow: none;
+    padding: 9px;
+    border-radius: 3px;
+    display: inline-block;
+    position: relative;
+}
+
+input[type=checkbox]:active, input[type=checkbox]:checked:active {
+    box-shadow: none;
+}
+
+input[type=checkbox]:checked {
+    background-color: white;
+    border: 1px solid white;
+    box-shadow: none;
+    color: white;
+}
+
+input[type=checkbox]:checked:after {
+    content: '\2714';
+    font-size: 14px;
+    position: absolute;
+    top: 0px;
+    left: 3px;
+    color: var(--accent);
+}
+
 .file-listing {
     width: 400px;
     border: 1px solid var(--accent);
@@ -179,12 +221,19 @@ p {
     margin: 2px;
     border-radius: 2px;
     justify-content: space-between;
+    box-sizing: border-box;
 }
 
 .file-item:hover {
     border-radius: 6px;
     background: var(--accent);
     transition: all .4s;
+}
+
+.file-item>.filename {
+    flex: 1;
+    overflow: hidden;
+    margin-right: 10px;
 }
 
 .file-item>.filename>span {
@@ -201,6 +250,8 @@ p {
 
 .file-item>.icons {
     align-self: center;
+    display: flex;
+    width: 64px;
 }
 
 .file-item>.icons>i {
@@ -215,4 +266,25 @@ p {
 .file-item>.icons>i:hover {
     font-size: 24px;
     transition: all .2s;
+}
+
+.file-details {
+    min-width: 400px;
+}
+
+.file-details>.shared-with {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.file-details>.shared-with>label {
+    font-size: 12px;
+}
+
+.file-details>.shared-with>textarea {
+    margin-top: 4px;
+    font-size: 12px;
+    width: 100%;
 }

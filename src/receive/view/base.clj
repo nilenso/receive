@@ -18,6 +18,10 @@
                         :secrets
                         :google-credentials
                         :client-id)}]
+   (page/include-css
+    (if config/staging?
+      "css/colors_staging.css"
+      "css/colors.css"))
    (page/include-css "css/style.css")
    (page/include-js "https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js")
    (page/include-js "js/config.js")
@@ -31,7 +35,6 @@
   (page/html5
    head
    [:body
-    (if config/staging? {:class "env-staging"} {})
     [:div {:class "container"}
      children]]))
 

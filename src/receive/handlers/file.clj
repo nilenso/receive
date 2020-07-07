@@ -141,7 +141,17 @@
       (let [result (files/get-shared-user-details (:id route-params))]
         (if-error result
                   :http-response
-                  {:status 200
-                   :body {:success true
-                          :data result}}))
+                  (success result)))
       (error->http-response {:error :forbidden}))))
+
+(defn file-details-ui [{:keys [route-params auth]}]
+  (let [uid (:id route-params)
+        is-owner? (files/is-file-owner? auth uid)]
+    (if is-owner?
+      (base-view/success-body-builder
+       (component-view/toolbar auth)
+       (file-view/file-details
+        (-> (files/find-file uid)
+            (assoc :shared-with-users
+                   (files/get-shared-user-details uid)))))
+      (error->ui-response {:error :forbidden}))))

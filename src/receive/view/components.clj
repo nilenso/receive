@@ -4,6 +4,7 @@
 
 (def title
   [:a {:class "title-section"
+       :target "_self"
        :href (:base-url config/config)}
    [:div "> Receive"]])
 
