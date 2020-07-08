@@ -11,7 +11,9 @@
    [receive.service.files :as file-service]
    [receive.service.user :as user-service]
    [receive.service.files-test :as files]
-   [ring.mock.request :as mock]))
+   [ring.mock.request :as mock])
+  (:import
+   java.util.UUID))
 
 (def tempfile-name "tempfile.dat")
 (def tempfolder-path "/tmp/")
@@ -247,7 +249,7 @@
                   file-service/update-file-data (constantly nil)
                   file-model/find-file (constantly nil)
                   config  {:domain-locked true :domain "nilenso.com"}]
-      (let [uid (str (:uid update-file-result))
+      (let [uid (str (UUID/randomUUID))
             mock-request (-> (mock/request :put (str "/api/user/files/" uid))
                              (assoc :params {:is_private true
                                              :shared_with_users ["email1@non-nilenso.com"
