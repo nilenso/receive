@@ -22,6 +22,8 @@
                            :status  401}
    ::invalid-email-domain {:message "Only same domain emails allowed"
                            :status  400}
+   ::bad-email            {:message "Bad email address"
+                           :status  400}
    ::default              {:message "Unknown Error"
                            :status  500}})
 

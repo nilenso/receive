@@ -11,6 +11,7 @@
                                     success]]
    [receive.service.files :as files]
    [receive.spec.file :as spec]
+   [receive.spec.user :refer [valid-email?]]
    [receive.view.base :as base-view]
    [receive.view.components :as component-view]
    [receive.view.download :as download-view]
@@ -90,7 +91,7 @@
   (let [auth (:auth request)]
     (base-view/success-body-builder
      (component-view/toolbar auth)
-     upload-view/upload-button)))
+     (upload-view/upload-button auth))))
 
 (defn download-link
   [uid]
@@ -117,6 +118,9 @@
        (file-view/file-listing files)))
     (base-view/error-ui 401 "Not authenticated")))
 
+(defn- emails-valid? [emails]
+  (every? valid-email? emails))
+
 (defn- domain-regex [domain]
   (re-pattern (str "^.*@" domain "$")))
 
@@ -132,15 +136,21 @@
 (defn update-file [{:keys [route-params auth]
                     {shared-with-emails :shared_with_users
                      private? :is_private} :params}]
-  (if (all-domains-allowed? shared-with-emails)
+  (cond
+    (not (all-domains-allowed?
+          shared-with-emails)) (error->http-response
+                                (error :invalid-email-domain))
+    (not (emails-valid?
+          shared-with-emails)) (error->http-response
+                                (error :bad-email))
+    :else
     (let [result (files/find-and-update-file auth
                                              (:id route-params)
                                              {:private? private?
                                               :shared-with-user-emails shared-with-emails})]
       (if-error result
                 :http-response
-                (success result)))
-    (error->http-response (error :invalid-email-domain))))
+                (success result)))))
 
 (defn uploaded-files [{auth :auth}]
   (if auth
