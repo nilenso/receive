@@ -120,22 +120,23 @@
 (defn- domain-regex [domain]
   (re-pattern (str "^.*@" domain "$")))
 
-(defn- same-domain? [email]
+(defn- allowed-domain? [email]
   (re-matches (domain-regex (:domain config))
               email))
 
-(defn- validate-domain-locked-users [emails]
+(defn- all-domains-allowed? [emails]
   (if (:domain-locked config)
-    (every? same-domain? emails)
+    (every? allowed-domain? emails)
     true))
 
-(defn update-file [{:keys [params route-params auth]
-                    {shared_with_users :shared_with_users} :params}]
-  (if (validate-domain-locked-users shared_with_users)
+(defn update-file [{:keys [route-params auth]
+                    {shared-with-emails :shared_with_users
+                     private? :is_private} :params}]
+  (if (all-domains-allowed? shared-with-emails)
     (let [result (files/find-and-update-file auth
                                              (:id route-params)
-                                             {:private? (:is_private params)
-                                              :shared-with-user-emails shared_with_users})]
+                                             {:private? private?
+                                              :shared-with-user-emails shared-with-emails})]
       (if-error result
                 :http-response
                 (success result)))
