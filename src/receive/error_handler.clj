@@ -25,7 +25,7 @@
    ::default              {:message "Unknown Error"
                            :status  500}})
 
-(defonce current-ns (str *ns*))
+(defonce current-ns "receive.error-handler")
 
 (defn error? [data]
   (keyword? (::error data)))
@@ -35,7 +35,8 @@
    Throws error if `code` does not exists in error-map"
   [code]
   (let [error-code (keyword current-ns (name code))]
-    (assert (error-code error-map))
+    (assert (error-code error-map)
+            "Error `code` provided does not exist in `error-map`")
     {::error error-code}))
 
 (def not-error? (complement error?))
