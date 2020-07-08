@@ -1,4 +1,4 @@
-(defproject receive "0.1.0-SNAPSHOT"
+(defproject receive "1.0.0-alpha"
   :description "Send and Receive files"
   :url "http://receive.nilenso.com"
   :license {:name "EPL-2.0 OR GPL-2.0-or-later WITH Classpath-exception-2.0"
