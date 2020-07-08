@@ -1,5 +1,6 @@
 (ns receive.auth.google
-  (:require [receive.config :refer [config]])
+  (:require [receive.config :refer [config]]
+            [receive.error-handler :refer [error]])
   (:import [com.google.api.client.googleapis.auth.oauth2
             GoogleIdTokenVerifier$Builder]
            [com.google.api.client.json.jackson2 JacksonFactory]
@@ -25,10 +26,10 @@
       (-> verified-token
           (.getPayload)
           (payload->user-info))
-      {:error :jwt-expired})
+      (error :jwt-expired))
     (catch java.lang.IllegalArgumentException _
-      {:error :jwt-invalid-input})
+      (error :jwt-invalid-input))
     (catch java.lang.NullPointerException _
-      {:error :jwt-no-token})
+      (error :jwt-no-token))
     (catch Exception _
-      {:error :jwt-bad-token})))
+      (error :jwt-bad-token))))

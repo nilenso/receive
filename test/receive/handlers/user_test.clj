@@ -1,5 +1,6 @@
 (ns receive.handlers.user-test
   (:require [clojure.test :refer [deftest is]]
+            [receive.error-handler :refer [error]]
             [receive.handlers.user :as user-handlers]
             [receive.service.user :as user-service]
             [ring.mock.request :as mock]))
@@ -18,7 +19,7 @@
 
 (deftest sign-in-handler-failed
   (with-redefs [user-service/signin-with-google
-                (constantly {:error :jwt-no-token})]
+                (constantly (error :jwt-no-token))]
     (is (=
          (user-handlers/sign-in (-> (mock/request :put "/user")
                                     (assoc :params {:id_token "mock_token"})))

@@ -1,4 +1,4 @@
-(defproject receive "0.1.0-SNAPSHOT"
+(defproject receive "1.0.0-alpha"
   :description "Send and Receive files"
   :url "http://receive.nilenso.com"
   :license {:name "EPL-2.0 OR GPL-2.0-or-later WITH Classpath-exception-2.0"
@@ -27,6 +27,8 @@
   :profiles {:test {:prep-tasks [["reset-test-db"]]
                     :dependencies [[ring/ring-mock "0.4.0"]]}}
   :main receive.core
+  :aot [receive.core]
+  :uberjar-name "receive.jar"
   :plugins [[lein-ring "0.12.5"]]
   :ring {:handler receive.core/app}
   :repl-options {:init-ns receive.core

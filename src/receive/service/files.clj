@@ -8,7 +8,8 @@
    [next.jdbc :as jdbc]
    [receive.config :as conf]
    [receive.db.connection :as connection]
-   [receive.error-handler :refer [if-error]]
+   [receive.error-handler :refer [if-error
+                                  error]]
    [receive.model.file :as model]
    [receive.service.user :as user]))
 
@@ -50,9 +51,9 @@
     (let [file (:filename response)
           expired? (:expired response)]
       (if expired?
-        {:error :file-expired}
+        (error :file-expired)
         file))
-    {:error :not-found}))
+    (error :not-found)))
 
 (defn get-absolute-filename
   [uid]
@@ -89,8 +90,8 @@
                                         (map :id))]
           (update-file-data tx uid {:private? private?
                                     :shared-with-user-ids shared-with-user-ids}))
-        {:error :forbidden})
-      {:error :not-found})))
+        (error :forbidden))
+      (error :not-found))))
 
 (defn is-owner? [user-id owner-id]
   (= user-id owner-id))

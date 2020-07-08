@@ -5,6 +5,7 @@
    [receive.handlers.file :refer [uuid-str]]
    [next.jdbc.sql :refer [find-by-keys]]
    [receive.db.connection :refer [datasource]]
+   [receive.error-handler :refer [error]]
    [receive.model.file :as model]
    [receive.service.files :as files])
   (:import (java.util UUID)))
@@ -31,7 +32,7 @@
              (:filename file-data)))))
   (testing "should return error when file does not exists"
     (is (= (files/get-filename (uuid-str))
-           {:error :not-found}))))
+           (error :not-found)))))
 
 (deftest save-file-to-disk
   (testing "should save file to the specified location"
@@ -42,7 +43,7 @@
 
 (deftest find-file-bad-uid-test
   (is (= (files/get-filename (uuid-str))
-         {:error :not-found})))
+         (error :not-found))))
 
 (def public-file-data
   {:filename "tempfile.dat"

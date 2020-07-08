@@ -4,13 +4,16 @@
    [clojure.string :as string]
    [clojure.test :refer [deftest is use-fixtures testing are]]
    [hiccup.core :as h]
+   [receive.config :refer [config]]
+   [receive.error-handler :refer [error]]
    [receive.handlers.file :as handler]
    [receive.model.file :as file-model]
    [receive.service.files :as file-service]
    [receive.service.user :as user-service]
    [receive.service.files-test :as files]
-   [ring.mock.request :as mock]
-   [receive.config :refer [config]]))
+   [ring.mock.request :as mock])
+  (:import
+   java.util.UUID))
 
 (def tempfile-name "tempfile.dat")
 (def tempfolder-path "/tmp/")
@@ -71,7 +74,7 @@
       (is (= status 200)))))
 
 (deftest download-ui-expired-test
-  (with-redefs [file-service/get-filename (constantly {:error :file-expired})]
+  (with-redefs [file-service/get-filename (constantly (error :file-expired))]
     (let [uid (handler/uuid-str)
           mock-request (assoc
                         (mock/request :get (format "/download/%s/" uid))
@@ -230,8 +233,8 @@
     (let [uid (str (:uid update-file-result))
           mock-request (-> (mock/request :put (str "/api/user/files/" uid))
                            (assoc :params {:is_private true
-                                           :shared_with_users ["email1@google.com"
-                                                               "email2@gmail.com"]}
+                                           :shared_with_users ["email1@nilenso.com"
+                                                               "email2@nilenso.com"]}
                                   :route-params {:id uid}
                                   :auth {:user_id 10}))
           mock-response (handler/update-file mock-request)
@@ -240,16 +243,38 @@
       (is (= 200 status))
       (is (true? is-private)))))
 
+(deftest update-file-validtion-test
+  (testing "should return an error when domain locked and emails are not on the same domain"
+    (with-redefs [user-service/find-or-create (constantly nil)
+                  file-service/update-file-data (constantly nil)
+                  file-model/find-file (constantly nil)
+                  config  {:domain-locked true :domain "nilenso.com"}]
+      (let [uid (str (UUID/randomUUID))
+            mock-request (-> (mock/request :put (str "/api/user/files/" uid))
+                             (assoc :params {:is_private true
+                                             :shared_with_users
+                                             ["email1@non-nilenso.com"
+                                              "email2@nilenso.com"]}
+                                    :route-params {:id uid}
+                                    :auth {:user_id 10}))
+            mock-response (handler/update-file mock-request)]
+        (is (= 400 (:status mock-response)))
+        (is (= "Only same domain emails allowed"
+
+               (-> mock-response :body :message)))))))
+
 (deftest update-file-email-validation-test
   (testing "should return an error if emails are not valid"
     (with-redefs [user-service/find-or-create (constantly nil)
                   file-service/update-file-data (constantly nil)
-                  file-model/find-file (constantly nil)]
+                  file-model/find-file (constantly nil)
+                  config  {:domain-locked false}]
       (let [uid (str (:uid update-file-result))
             mock-request (-> (mock/request :put (str "/api/user/files/" uid))
                              (assoc :params {:is_private true
-                                             :shared_with_users ["bad_email"
-                                                                 "email2@gmail.com"]}
+                                             :shared_with_users
+                                             ["bad_email"
+                                              "email2@gmail.com"]}
                                     :route-params {:id uid}
                                     :auth {:user_id 10}))
             mock-response (handler/update-file mock-request)]
