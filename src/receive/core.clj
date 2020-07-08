@@ -1,4 +1,5 @@
 (ns receive.core
+  (:gen-class)
   (:require
    [receive.config :refer [config]]
    [receive.routes :as routes]

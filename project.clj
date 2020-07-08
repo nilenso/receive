@@ -27,6 +27,8 @@
   :profiles {:test {:prep-tasks [["reset-test-db"]]
                     :dependencies [[ring/ring-mock "0.4.0"]]}}
   :main receive.core
+  :aot [receive.core]
+  :uberjar-name "receive.jar"
   :plugins [[lein-ring "0.12.5"]]
   :ring {:handler receive.core/app}
   :repl-options {:init-ns receive.core
