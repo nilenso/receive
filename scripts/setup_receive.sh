@@ -23,6 +23,9 @@ lein deps > /dev/null
 echo "Running database migration"
 lein migrate
 
+echo "Building uberjar"
+lein uberjar
+
 echo "Restarting service"
 systemctl restart receive.$env.service
 echo "Setup Completed"

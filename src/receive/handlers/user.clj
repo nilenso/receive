@@ -1,14 +1,15 @@
 (ns receive.handlers.user
   (:require
    [receive.error-handler :refer [error->http-response
-                                  if-error]]
+                                  if-error
+                                  error]]
    [receive.handlers.helper :refer [success]]
    [receive.service.user :as user]))
 
 (defn fetch-user [{auth :auth}]
   (if auth
     (success (user/get-user (:user_id auth)))
-    (error->http-response {:error :unauthorized})))
+    (error->http-response (error :unauthorized))))
 
 (defn sign-in [request]
   (let [id-token (-> request :params :id_token)

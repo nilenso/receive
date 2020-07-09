@@ -55,10 +55,10 @@ Description=Receive API
 Environment=NOMAD_INSTANCE=PROD
 Environment=PORT=3000
 Type=simple
-ExecStart=/usr/bin/lein run
+ExecStart=/usr/bin/java -jar receive.jar
 Restart=always
 User=root
-WorkingDirectory=/opt/staging/receive
+WorkingDirectory=/opt/staging/receive/target
 
 [Install]
 WantedBy=mutli-user.target
@@ -92,7 +92,7 @@ Repeat the same processs for the production setup.
 
 ## License
 
-Copyright © 2020 FIXME
+Copyright © 2020 Nilenso
 
 This program and the accompanying materials are made available under the
 terms of the Eclipse Public License 2.0 which is available at

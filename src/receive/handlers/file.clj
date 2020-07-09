@@ -5,11 +5,13 @@
    [receive.error-handler :refer [error?
                                   error->http-response
                                   error->ui-response
-                                  if-error]]
+                                  if-error
+                                  error]]
    [receive.handlers.helper :refer [map-response-data
                                     success]]
    [receive.service.files :as files]
    [receive.spec.file :as spec]
+   [receive.spec.user :refer [valid-email?]]
    [receive.view.base :as base-view]
    [receive.view.components :as component-view]
    [receive.view.download :as download-view]
@@ -70,8 +72,8 @@
                      :headers {"Content-Disposition"
                                (format "attachment; filename=\"%s\"" filename)}
                      :body (io/file (files/file-save-path uid filename))}))
-        (error->http-response {:error :forbidden})))
-    (error->http-response {:error :invalid-uuid})))
+        (error->http-response (error :forbidden))))
+    (error->http-response (error :invalid-uuid))))
 
 (defn download-view [{:keys [params auth] :as request}]
   (if (spec/uuid-valid? params)
@@ -83,15 +85,15 @@
             (base-view/success-body-builder
              (component-view/toolbar (:auth request))
              (download-view/download-button uid filename))))
-        (error->ui-response {:error :forbidden})))
+        (error->ui-response (error :forbidden))))
     (error->ui-response
-     {:error :invalid-uuid})))
+     (error :invalid-uuid))))
 
 (defn index [request]
   (let [auth (:auth request)]
     (base-view/success-body-builder
      (component-view/toolbar auth)
-     upload-view/upload-button)))
+     (upload-view/upload-button auth))))
 
 (defn download-link
   [uid]
@@ -118,14 +120,39 @@
        (file-view/file-listing files)))
     (base-view/error-ui 401 "Not authenticated")))
 
-(defn update-file [{:keys [params route-params auth]}]
-  (let [result (files/find-and-update-file auth
-                                           (:id route-params)
-                                           {:private? (:is_private params)
-                                            :shared-with-user-emails (:shared_with_users params)})]
-    (if-error result
-              :http-response
-              (success result))))
+(defn- emails-valid? [emails]
+  (every? valid-email? emails))
+
+(defn- domain-regex [domain]
+  (re-pattern (str "^.*@" domain "$")))
+
+(defn- allowed-domain? [email]
+  (re-matches (domain-regex (:domain config))
+              email))
+
+(defn- all-domains-allowed? [emails]
+  (if (:domain-locked config)
+    (every? allowed-domain? emails)
+    true))
+
+(defn update-file [{:keys [route-params auth]
+                    {shared-with-emails :shared_with_users
+                     private? :is_private} :params}]
+  (cond
+    (not (all-domains-allowed?
+          shared-with-emails)) (error->http-response
+                                (error :invalid-email-domain))
+    (not (emails-valid?
+          shared-with-emails)) (error->http-response
+                                (error :bad-email))
+    :else
+    (let [result (files/find-and-update-file auth
+                                             (:id route-params)
+                                             {:private? private?
+                                              :shared-with-user-emails shared-with-emails})]
+      (if-error result
+                :http-response
+                (success result)))))
 
 (defn uploaded-files [{auth :auth}]
   (if auth
@@ -134,7 +161,7 @@
                   (map (map-response-data :filename
                                           :uid
                                           :created_at))))
-    (error->http-response {:error :unauthorized})))
+    (error->http-response (error :unauthorized))))
 
 (defn get-shared-with-users [{:keys [route-params auth]}]
   (let [uid (:id route-params)
@@ -144,7 +171,7 @@
         (if-error result
                   :http-response
                   (success result)))
-      (error->http-response {:error :forbidden}))))
+      (error->http-response (error :forbidden)))))
 
 (defn file-details-ui [{:keys [route-params auth]}]
   (let [uid (:id route-params)
@@ -156,4 +183,4 @@
         (-> (files/find-file uid)
             (assoc :shared-with-users
                    (files/get-shared-user-details uid)))))
-      (error->ui-response {:error :forbidden}))))
+      (error->ui-response (error :forbidden)))))

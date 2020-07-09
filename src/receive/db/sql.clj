@@ -86,7 +86,9 @@
 (defn update-file [uid {:keys [private? shared-with-users]}]
   (-> (update :file-storage)
       (sset {:is-private private?
-             :shared-with-users (array shared-with-users)})
+             :shared-with-users (if (empty? shared-with-users)
+                                  nil
+                                  (array shared-with-users))})
       (where [:= :uid uid])
       (sql/format)))
 
