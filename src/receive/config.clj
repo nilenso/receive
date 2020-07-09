@@ -13,3 +13,6 @@
 
 (defonce production?
   (= (:env config) "production"))
+
+(defonce deployed?
+  (or staging? production?))
