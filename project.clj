@@ -26,7 +26,8 @@
                  [clj-time "0.15.2"]
                  [camel-snake-kebab "0.4.1"]]
   :profiles {:test {:prep-tasks [["reset-test-db"]]
-                    :dependencies [[ring/ring-mock "0.4.0"]]}}
+                    :dependencies [[ring/ring-mock "0.4.0"]]}
+             :uberjar {:aot :all}}
   :main receive.core
   :aot [receive.core]
   :uberjar-name "receive.jar"
