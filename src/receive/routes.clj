@@ -38,7 +38,7 @@
    "/user"      {""       {:put user-handlers/sign-in
                            :get user-handlers/fetch-user}
                  "/files" {""  {:get file-handlers/uploaded-files}
-                           "/" {[:id ""]        {:put file-handlers/update-file}
+                           "/" {[:id ""]        {:patch file-handlers/update-file}
                                 [:id "/shared"] {:get file-handlers/get-shared-with-users}}}}
    true       api-handlers/not-found})
 

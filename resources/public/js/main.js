@@ -69,7 +69,7 @@ function saveSettings() {
         is_private: isPrivate,
         shared_with_users: sharedWithEmails
     }
-    axios.put(`/api/user/files/${uid}`, data)
+    axios.patch(`/api/user/files/${uid}`, data)
         .then(_ => goToShareLink(`/share?uid=${uid}`))
         .catch(error => {
             showUploadError(parseAxiosError(error))

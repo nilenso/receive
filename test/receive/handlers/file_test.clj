@@ -260,7 +260,7 @@
                 file-service/update-file-data (constantly update-file-result)
                 file-model/find-file (constantly find-file-result)]
     (let [uid (str (:uid update-file-result))
-          mock-request (-> (mock/request :put (str "/api/user/files/" uid))
+          mock-request (-> (mock/request :patch (str "/api/user/files/" uid))
                            (assoc :params {:is_private true
                                            :shared_with_users ["email1@nilenso.com"
                                                                "email2@nilenso.com"]
