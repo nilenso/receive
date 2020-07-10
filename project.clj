@@ -16,6 +16,7 @@
                  [honeysql "0.9.10"]
                  [seancorfield/next.jdbc "1.1.547"]
                  [org.postgresql/postgresql "42.2.12"]
+                 [nilenso/honeysql-postgres "0.2.6"]
                  [hiccup "1.0.5"]
                  [ragtime "0.8.0"]
 
@@ -25,7 +26,8 @@
                  [clj-time "0.15.2"]
                  [camel-snake-kebab "0.4.1"]]
   :profiles {:test {:prep-tasks [["reset-test-db"]]
-                    :dependencies [[ring/ring-mock "0.4.0"]]}}
+                    :dependencies [[ring/ring-mock "0.4.0"]]}
+             :uberjar {:aot :all}}
   :main receive.core
   :aot [receive.core]
   :uberjar-name "receive.jar"

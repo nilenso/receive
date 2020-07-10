@@ -4,8 +4,8 @@
                                 :test    #include "database_test.edn"}
  :secrets             #include "secrets.edn"
  :base-url            #profile {:development "http://localhost:3000"
-                                :staging     "http://receive-staging.nilenso.com"
-                                :production  "http://receive.nilenso.com"}
+                                :staging     "https://receive-staging.nilenso.com"
+                                :production  "https://receive.nilenso.com"}
  :env                 #or [#env ENV "development"]
  :ui-title            #profile {:development "Receive [Development]"
                                 :staging     "Receive [Staging]"

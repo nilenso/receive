@@ -1,8 +1,9 @@
 (ns receive.handlers.user
   (:require
-   [receive.error-handler :refer [error->http-response
-                                  if-error
-                                  error]]
+   [receive.config :as config]
+   [receive.error-handler :refer [error
+                                  error->http-response
+                                  if-error]]
    [receive.handlers.helper :refer [success]]
    [receive.service.user :as user]))
 
@@ -18,7 +19,7 @@
               :http-response
               {:status 200
                :cookies {"access_token" {:value token
-                                 ;; TODO: set :secure true after HTTPS is enabled
+                                         :secure config/deployed?
                                          :http-only true
                                          :same-site :strict
                                          :path "/"}}

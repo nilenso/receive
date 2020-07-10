@@ -1,16 +1,27 @@
 @import url('https://fonts.googleapis.com/css?family=Exo+2:400,500,900&display=swap');
-:root {
-    --primary: #5CDb95;
-    --primary-dark: #379683;
-    --primary-light: #8EE4AF;
-    --accent: #05386B;
-    --accent-light: #EDF5E1;
-    --primary-staging: #DE8143;
-    --error: #4e244f;
-}
-
 html {
     overflow: scroll;
+}
+
+input[type=text] {
+    border: 0px solid white;
+    border-radius: 4px;
+    padding: 10px;
+    width: 180px;
+    color: black;
+}
+
+textarea {
+    border: 0px solid white;
+    border-radius: 4px;
+    padding: 10px;
+    width: 180px;
+    color: black;
+    box-sizing: border-box;
+}
+
+textarea.vertical-only {
+    resize: vertical;
 }
 
 body {
@@ -88,6 +99,10 @@ p {
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+.container>* {
+    margin: 4px;
 }
 
 .upload-input {
@@ -223,6 +238,7 @@ input[type=checkbox]:checked:after {
     left: 3px;
     color: var(--accent);
 }
+
 .file-listing {
     width: 400px;
     border: 1px solid var(--accent);
@@ -245,12 +261,19 @@ input[type=checkbox]:checked:after {
     margin: 2px;
     border-radius: 2px;
     justify-content: space-between;
+    box-sizing: border-box;
 }
 
 .file-item:hover {
     border-radius: 6px;
     background: var(--accent);
     transition: all .4s;
+}
+
+.file-item>.filename {
+    flex: 1;
+    overflow: hidden;
+    margin-right: 10px;
 }
 
 .file-item>.filename>span {
@@ -267,18 +290,41 @@ input[type=checkbox]:checked:after {
 
 .file-item>.icons {
     align-self: center;
+    display: flex;
+    width: 64px;
 }
 
-.file-item>.icons>i {
-    margin: 4px;
+.file-item>.icons>a {
+    padding: 4px;
     cursor: pointer;
 }
 
-.file-item>.icons>i {
-    font-size: 20px;
+.file-item>.icons>a {
+    font-size: 18px;
 }
 
-.file-item>.icons>i:hover {
+.file-item>.icons>a:hover {
     font-size: 24px;
-    transition: all .2s;
+    transition: all .2s linear;
+}
+
+.file-details {
+    min-width: 400px;
+}
+
+.file-details>.shared-with {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.file-details>.shared-with>label {
+    font-size: 12px;
+}
+
+.file-details>.shared-with>textarea {
+    margin-top: 4px;
+    font-size: 12px;
+    width: 100%;
 }

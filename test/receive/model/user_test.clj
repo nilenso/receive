@@ -19,10 +19,10 @@
 
 (deftest get-user-test
   (testing "should return the user data given user ID"
-    (let [{:keys [first_name last_name email]}
+    (let [{:keys [first-name last-name email]}
           (model/get-user (:id *user-data*))]
-      (is (= first_name (:first_name *user-data*)))
-      (is (= last_name (:last_name *user-data*)))
+      (is (= first-name (:first-name *user-data*)))
+      (is (= last-name (:last-name *user-data*)))
       (is (= email (:email *user-data*)))))
   (testing "should return valid entries"
     (is (true? (spec/valid-db-entry? (model/get-user

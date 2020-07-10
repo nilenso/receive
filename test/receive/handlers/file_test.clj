@@ -52,14 +52,18 @@
 
 (deftest download-link-test
   (with-redefs [handler/uuid-str (constantly "958a5425-060b-4aad-ba65-bf25e4458991")
-                file-service/get-absolute-filename (constantly "/tmp/tempfile.dat")]
+                file-service/get-filename (constantly "tempfile.dat")
+                file-service/file-save-path (constantly "/tmp/tempfile.dat")]
     (let [uid (handler/uuid-str)
           mock-request (-> (mock/request :get (format "/download/api/%s/" uid))
                            (assoc :params {:id uid}))
           mock-response (handler/download-file mock-request)]
       (files/create-temp-file tempfile-path)
-      (is (= (:status mock-response) 200))
-      (is (-> mock-response :body (.exists))))))
+      (are [key value] (= (key mock-response) value)
+        :status 200
+        :headers {"Content-Disposition"
+                  "attachment; filename=\"tempfile.dat\""})
+      (is (-> mock-response :body .exists)))))
 
 (deftest download-ui-link-test
   (with-redefs [handler/uuid-str (constantly "958a5425-060b-4aad-ba65-bf25e4458991")
@@ -312,6 +316,29 @@
         (is (= 200 (:status  response)))
         (is (-> response :body :success))
         (is (= (-> response :body :data count) 2))))))
+
+(def shared-with-user-details
+  [{:id 69
+    :first_name "email@something.com"
+    :last_name nil
+    :email "email@something.com"
+    :dt_created #inst "2020-06-19T09:36:57.277049000-00:00"
+    :dt_updated #inst "2020-06-19T09:36:57.277049000-00:00"
+    :status "unregistered"}])
+
+(deftest get-shared-with-users-test
+  (with-redefs [file-service/get-shared-user-details
+                (constantly shared-with-user-details)
+                file-service/is-file-owner? (constantly true)]
+    (let [uid (str (UUID/randomUUID))
+          mock-response (-> (mock/request :get
+                                          (str "/api/user/files/" uid "/shared"))
+                            (assoc :route-params {:id uid}
+                                   :auth {:user_id 11})
+                            (handler/get-shared-with-users))]
+      (is (= 200 (:status mock-response)))
+      (is (= (-> mock-response :body :data)
+             shared-with-user-details)))))
 
 (defn cleanup-tempfile [f]
   (f)

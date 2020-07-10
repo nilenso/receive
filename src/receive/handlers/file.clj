@@ -65,11 +65,13 @@
   (if (spec/uuid-valid? params)
     (let [uid (:id params)]
       (if (files/has-read-access? auth uid)
-        (let [abs-filename (files/get-absolute-filename uid)]
-          (if (error? abs-filename)
-            (error->http-response abs-filename)
-            {:status 200
-             :body (io/file abs-filename)}))
+        (let [filename (files/get-filename uid)]
+          (if-error filename
+                    :http-response
+                    {:status 200
+                     :headers {"Content-Disposition"
+                               (format "attachment; filename=\"%s\"" filename)}
+                     :body (io/file (files/file-save-path uid filename))}))
         (error->http-response (error :forbidden))))
     (error->http-response (error :invalid-uuid))))
 
@@ -160,3 +162,25 @@
                                           :uid
                                           :created_at))))
     (error->http-response (error :unauthorized))))
+
+(defn get-shared-with-users [{:keys [route-params auth]}]
+  (let [uid (:id route-params)
+        is-owner? (files/is-file-owner? auth uid)]
+    (if is-owner?
+      (let [result (files/get-shared-user-details (:id route-params))]
+        (if-error result
+                  :http-response
+                  (success result)))
+      (error->http-response (error :forbidden)))))
+
+(defn file-details-ui [{:keys [route-params auth]}]
+  (let [uid (:id route-params)
+        is-owner? (files/is-file-owner? auth uid)]
+    (if is-owner?
+      (base-view/success-body-builder
+       (component-view/toolbar auth)
+       (file-view/file-details
+        (-> (files/find-file uid)
+            (assoc :shared-with-users
+                   (files/get-shared-user-details uid)))))
+      (error->ui-response (error :forbidden)))))

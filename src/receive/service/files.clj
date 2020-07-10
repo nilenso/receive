@@ -44,10 +44,13 @@
       (save-to-disk file (file-save-path (str uid) filename))
       uid)))
 
+(defn find-file [uid]
+  (model/find-file uid))
+
 (defn get-filename
   "Finds the file name given a uid"
   [uid]
-  (if-let [response (model/find-file uid)]
+  (if-let [response (find-file uid)]
     (let [file (:filename response)
           expired? (:expired response)]
       (if expired?
@@ -82,22 +85,34 @@
 (defn find-and-update-file
   [{user-id :user_id :as auth} uid {:keys [private? shared-with-user-emails]}]
   (jdbc/with-transaction [tx connection/datasource]
-    (if-let [file (model/find-file uid)]
+    (if-let [file (find-file uid)]
       (if (and auth
                (= user-id (:owner-id file)))
         (let [shared-with-user-ids (->> shared-with-user-emails
-                                        (map #(user/find-or-create tx %))
+                                        (mapv #(user/find-or-create tx %))
                                         (map :id))]
           (update-file-data tx uid {:private? private?
                                     :shared-with-user-ids shared-with-user-ids}))
         (error :forbidden))
       (error :not-found))))
 
+(defn get-shared-with-user-ids [uid]
+  (:shared-with-users
+   (model/get-shared-with-user-ids uid)))
+
+(defn get-shared-user-details [uid]
+  (->> uid
+       get-shared-with-user-ids
+       (map user/get-user)))
+
+(defn get-uploaded-files [user-id]
+  (model/get-uploaded-files user-id))
+
 (defn is-owner? [user-id owner-id]
   (= user-id owner-id))
 
 (defn is-file-owner? [{user-id :user_id} uid]
-  (->> (model/find-file uid)
+  (->> (find-file uid)
        :owner-id
        (is-owner? user-id)))
 
@@ -107,10 +122,7 @@
 
 (defn has-read-access? [{user-id :user_id} uid]
   (let [{:keys [is-private owner-id shared-with-users]}
-        (model/find-file uid)]
+        (find-file uid)]
     (or (not is-private)
         (is-owner? user-id owner-id)
         (is-shared-with? user-id shared-with-users))))
-
-(defn get-uploaded-files [user-id]
-  (model/get-uploaded-files user-id))

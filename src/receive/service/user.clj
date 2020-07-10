@@ -31,9 +31,9 @@
 (defn create-unregistered-user
   "Creates a user with unregistered status"
   [tx email]
-  (create-user tx  {:first-name email
-                    :email email
-                    :status "unregistered"}))
+  (create-user tx {:first-name email
+                   :email email
+                   :status "unregistered"}))
 
 (defn register-user
   [{google-id :google-id :as user}]

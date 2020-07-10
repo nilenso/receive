@@ -48,3 +48,9 @@
                 :file_storage
                 {:owner_id user-id}
                 db-options))
+
+(defn get-shared-with-user-ids [uid]
+  (jdbc/execute-one! connection/datasource
+                     (sql/get-shared-with-users
+                      (UUID/fromString uid))
+                     db-options))

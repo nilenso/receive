@@ -38,7 +38,8 @@
    "/user"      {""       {:put user-handlers/sign-in
                            :get user-handlers/fetch-user}
                  "/files" {""  {:get file-handlers/uploaded-files}
-                           "/" {[:id ""] {:put file-handlers/update-file}}}}
+                           "/" {[:id ""]        {:put file-handlers/update-file}
+                                [:id "/shared"] {:get file-handlers/get-shared-with-users}}}}
    true       api-handlers/not-found})
 
 (def routes
@@ -46,7 +47,8 @@
         "api"        (->WrapMiddleware api-routes wrap-json-response)
         "download/"  {[:id ""] file-handlers/download-view}
         "share"      {:get file-handlers/share-handler}
-        "user/files" {:get file-handlers/uploaded-files-ui}
+        "user/files" {:get file-handlers/uploaded-files-ui
+                      "/" {[:id ""] file-handlers/file-details-ui}}
         "404"        {:get ui-handlers/error-page}
         "logout"     logout
         true       (constantly (response/redirect "/404"))}])
