@@ -34,6 +34,14 @@
 (defn delete-file [{uid :uid}]
   (delete! datasource :file_storage {:uid uid}))
 
+(defn file-fixture [f]
+  (let [file-data (create-file (factory/generate-file))]
+    (binding [*file-data* file-data]
+      (f))
+    (delete-file file-data)))
+
+(use-fixtures :each file-fixture)
+
 (deftest get-file-test
   (testing "should be valid data entries"
     (is (true? (spec/valid-db-entry?
@@ -109,14 +117,6 @@
         :uid
         :is-private
         :shared-with-users))))
-
-(defn file-fixture [f]
-  (let [file-data (create-file (factory/generate-file))]
-    (binding [*file-data* file-data]
-      (f))
-    (delete-file file-data)))
-
-(use-fixtures :each file-fixture)
 
 #_((def ^:dynamic *file-data*
      (create-file (factory/generate-file))))

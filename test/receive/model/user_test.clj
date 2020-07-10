@@ -17,6 +17,14 @@
 (defn delete-user [{user-id :id}]
   (delete! datasource :users {:id user-id}))
 
+(defn user-fixture [f]
+  (let [user (create-user (factory/generate-user))]
+    (binding [*user-data* user]
+      (f))
+    (delete-user user)))
+
+(use-fixtures :each user-fixture)
+
 (deftest get-user-test
   (testing "should return the user data given user ID"
     (let [{:keys [first-name last-name email]}
@@ -39,11 +47,3 @@
       (is (inst? (:dt-created user)))
       (is (inst? (:dt-updated user)))
       (delete-user {:id (:id user)}))))
-
-(defn user-fixture [f]
-  (let [user (create-user (factory/generate-user))]
-    (binding [*user-data* user]
-      (f))
-    (delete-user user)))
-
-(use-fixtures :each user-fixture)
