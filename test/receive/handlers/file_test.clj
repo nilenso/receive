@@ -3,6 +3,7 @@
    [clojure.java.io :as io]
    [clojure.string :as string]
    [clojure.test :refer [deftest is use-fixtures testing are]]
+   [clj-time.core :as time]
    [hiccup.core :as h]
    [receive.config :refer [config]]
    [receive.error-handler :refer [error]]
@@ -25,6 +26,57 @@
    :filename (.getName tempfile)
    :size (.length tempfile)})
 
+(def get-uploaded-files-data
+  [{:id 194
+    :filename "saber1.png"
+    :uid "3b24ceb1-42cd-459b-ba74-8a82dad5cbb6"
+    :created-at #inst "2020-06-09T09:13:34.396941000-00:00"
+    :user-id 111}
+   {:id 195
+    :filename "saber2.png"
+    :uid "33327486-9830-4c16-bbae-995d695195aa"
+    :created-at #inst "2020-06-09T09:13:58.564455000-00:00"
+    :user-id 111}])
+
+(defn filename->file-div [filename]
+  [:div {:class "filename"}
+   [:span "Filename"]
+   [:h4 filename]])
+
+(def shared-with-user-details
+  [{:id 69
+    :first_name "email@something.com"
+    :last_name nil
+    :email "email@something.com"
+    :dt_created #inst "2020-06-19T09:36:57.277049000-00:00"
+    :dt_updated #inst "2020-06-19T09:36:57.277049000-00:00"
+    :status "unregistered"}])
+
+(def update-file-result
+  {:filename "image1.png"
+   :uid #uuid "94c22936-b0bb-11ea-9e05-4c32759dd39d"
+   :dt-created #inst "2020-06-17T16:57:08.931927000-00:00"
+   :dt-expire #inst "2020-06-19T16:57:08.930000000-00:00"
+   :dt-updated #inst "2020-06-17T17:58:06.365726000-00:00"
+   :is-private true
+   :shared-with-users [11 12]
+   :owner-id 10})
+
+(def find-file-result
+  {:filename "image1.png"
+   :owner-id 10
+   :shared-with-users []
+   :expired false})
+
+(def uploaded-file-response
+  {:status 200
+   :body {:success true
+          :data ({:filename "saber.png"
+                  :uid "3b24ceb1-42cd-459b-ba74-8a82dad5cbb6", :created_at #inst "2020-06-09T09:13:34.396-00:00"}
+                 {:filename "saber.png"
+                  :uid "33327486-9830-4c16-bbae-995d695195aa"
+                  :created_at #inst "2020-06-09T09:13:58.564-00:00"})}})
+
 (defn mock-upload-request [file]
   (-> (mock/request :post "/upload/")
       (assoc :content-type "multipart/form-data"
@@ -34,6 +86,15 @@
 
 (defn mock-upload-response [file]
   (handler/upload (mock-upload-request file)))
+
+(defn rand-str [len]
+  (apply str (take len (repeatedly #(char (+ (rand 26) 65))))))
+
+(defn cleanup-tempfile [f]
+  (f)
+  (io/delete-file tempfile-path))
+
+(use-fixtures :once cleanup-tempfile)
 
 (deftest upload-handler
   (with-redefs [handler/uuid-str
@@ -167,9 +228,6 @@
               :body {:success false
                      :message "File not provided"}})))))
 
-(defn rand-str [len]
-  (apply str (take len (repeatedly #(char (+ (rand 26) 65))))))
-
 (deftest upload-validate-filename
   (with-redefs
    [file-service/save-file (constantly "file.dat")]
@@ -184,23 +242,6 @@
               :body {:success false
                      :message "File name is too long"}})))))
 
-(def get-uploaded-files-data
-  [{:id 194
-    :filename "saber1.png"
-    :uid "3b24ceb1-42cd-459b-ba74-8a82dad5cbb6"
-    :created-at #inst "2020-06-09T09:13:34.396941000-00:00"
-    :user-id 111}
-   {:id 195
-    :filename "saber2.png"
-    :uid "33327486-9830-4c16-bbae-995d695195aa"
-    :created-at #inst "2020-06-09T09:13:58.564455000-00:00"
-    :user-id 111}])
-
-(defn filename->file-div [filename]
-  [:div {:class "filename"}
-   [:span "Filename"]
-   [:h4 filename]])
-
 (deftest uploaded-files-ui-test
   (testing "should return list of files that were uploaded by the user"
     (with-redefs
@@ -214,22 +255,6 @@
           (:body response) (h/html (filename->file-div "saber1.png"))
           (:body response) (h/html (filename->file-div "saber1.png")))))))
 
-(def update-file-result
-  {:filename "image1.png"
-   :uid #uuid "94c22936-b0bb-11ea-9e05-4c32759dd39d"
-   :dt-created #inst "2020-06-17T16:57:08.931927000-00:00"
-   :dt-expire #inst "2020-06-19T16:57:08.930000000-00:00"
-   :dt-updated #inst "2020-06-17T17:58:06.365726000-00:00"
-   :is-private true
-   :shared-with-users [11 12]
-   :owner-id 10})
-
-(def find-file-result
-  {:filename "image1.png"
-   :owner-id 10
-   :shared-with-users []
-   :expired false})
-
 (deftest update-file-test
   (with-redefs [user-service/find-or-create (constantly [{:id 11} {:id 12}])
                 file-service/update-file-data (constantly update-file-result)
@@ -238,7 +263,8 @@
           mock-request (-> (mock/request :put (str "/api/user/files/" uid))
                            (assoc :params {:is_private true
                                            :shared_with_users ["email1@nilenso.com"
-                                                               "email2@nilenso.com"]}
+                                                               "email2@nilenso.com"]
+                                           :dt-expire (time/now)}
                                   :route-params {:id uid}
                                   :auth {:user_id 10}))
           mock-response (handler/update-file mock-request)
@@ -286,15 +312,6 @@
         (is (= "Bad email address"
                (-> mock-response :body :message)))))))
 
-(def uploaded-file-response
-  {:status 200
-   :body {:success true
-          :data ({:filename "saber.png"
-                  :uid "3b24ceb1-42cd-459b-ba74-8a82dad5cbb6", :created_at #inst "2020-06-09T09:13:34.396-00:00"}
-                 {:filename "saber.png"
-                  :uid "33327486-9830-4c16-bbae-995d695195aa"
-                  :created_at #inst "2020-06-09T09:13:58.564-00:00"})}})
-
 (deftest uploaded-files-test
   (testing "should return body for not authenticated when no auth provided"
     (with-redefs
@@ -317,15 +334,6 @@
         (is (-> response :body :success))
         (is (= (-> response :body :data count) 2))))))
 
-(def shared-with-user-details
-  [{:id 69
-    :first_name "email@something.com"
-    :last_name nil
-    :email "email@something.com"
-    :dt_created #inst "2020-06-19T09:36:57.277049000-00:00"
-    :dt_updated #inst "2020-06-19T09:36:57.277049000-00:00"
-    :status "unregistered"}])
-
 (deftest get-shared-with-users-test
   (with-redefs [file-service/get-shared-user-details
                 (constantly shared-with-user-details)
@@ -339,10 +347,3 @@
       (is (= 200 (:status mock-response)))
       (is (= (-> mock-response :body :data)
              shared-with-user-details)))))
-
-(defn cleanup-tempfile [f]
-  (f)
-  (io/delete-file tempfile-path))
-
-;; TODO: Add functionality to use fixtures per test
-(use-fixtures :once cleanup-tempfile)

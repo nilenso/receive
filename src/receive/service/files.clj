@@ -83,7 +83,9 @@
   (model/update-file-data tx uid file-data))
 
 (defn find-and-update-file
-  [{user-id :user_id :as auth} uid {:keys [private? shared-with-user-emails]}]
+  [{user-id :user_id :as auth} uid {:keys [dt-expire
+                                           private?
+                                           shared-with-user-emails]}]
   (jdbc/with-transaction [tx connection/datasource]
     (if-let [file (find-file uid)]
       (if (and auth
@@ -92,7 +94,8 @@
                                         (mapv #(user/find-or-create tx %))
                                         (map :id))]
           (update-file-data tx uid {:private? private?
-                                    :shared-with-user-ids shared-with-user-ids}))
+                                    :shared-with-user-ids shared-with-user-ids
+                                    :dt-expire (time-coerce/to-sql-time dt-expire)}))
         (error :forbidden))
       (error :not-found))))
 

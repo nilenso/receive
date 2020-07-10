@@ -36,11 +36,13 @@
                      db-options))
 
 (defn update-file-data [tx uid {:keys [private?
-                                       shared-with-user-ids]}]
+                                       shared-with-user-ids
+                                       dt-expire]}]
   (jdbc/execute-one! tx
                      (sql/update-file (UUID/fromString uid)
                                       {:private? private?
-                                       :shared-with-users shared-with-user-ids})
+                                       :shared-with-users shared-with-user-ids
+                                       :dt-expire dt-expire})
                      db-options))
 
 (defn get-uploaded-files [user-id]

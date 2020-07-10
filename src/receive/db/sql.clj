@@ -83,12 +83,14 @@
       (values [[user-id google-id]])
       (sql/format)))
 
-(defn update-file [uid {:keys [private? shared-with-users]}]
+(defn update-file [uid {:keys [private? shared-with-users dt-expire]}]
   (-> (update :file-storage)
-      (sset {:is-private private?
-             :shared-with-users (if (empty? shared-with-users)
-                                  nil
-                                  (array shared-with-users))})
+      (sset {:is-private (sql/call :coalesce private? :is-private)
+             :shared-with-users (sql/call :coalesce (if (empty? shared-with-users)
+                                                      nil
+                                                      (array shared-with-users))
+                                          :shared-with-users)
+             :dt-expire (sql/call :coalesce dt-expire :dt-expire)})
       (where [:= :uid uid])
       (sql/format)))
 

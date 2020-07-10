@@ -137,7 +137,8 @@
 
 (defn update-file [{:keys [route-params auth]
                     {shared-with-emails :shared_with_users
-                     private? :is_private} :params}]
+                     private? :is_private
+                     dt-expire :dt_expire} :params}]
   (cond
     (not (all-domains-allowed?
           shared-with-emails)) (error->http-response
@@ -149,7 +150,8 @@
     (let [result (files/find-and-update-file auth
                                              (:id route-params)
                                              {:private? private?
-                                              :shared-with-user-emails shared-with-emails})]
+                                              :shared-with-user-emails shared-with-emails
+                                              :dt-expire dt-expire})]
       (if-error result
                 :http-response
                 (success result)))))
