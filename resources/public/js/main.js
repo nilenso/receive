@@ -58,6 +58,8 @@ function parseAxiosError(error) {
 function saveSettings() {
     const [saveButton] = document.getElementsByClassName("save-settings")
     const uid = saveButton.getAttribute('id')
+    const expireIn = parseInt(document.getElementById("expire-in").value)
+    const dtExpire = new Date(Date.now() + expireIn * 1000).toISOString()
     const isPrivate = document.getElementById("is-private").checked
     const sharedWithEmails =
         document.getElementById("shared-with-emails")
@@ -67,7 +69,8 @@ function saveSettings() {
             .filter(email => email.length > 0)
     const data = {
         is_private: isPrivate,
-        shared_with_users: sharedWithEmails
+        shared_with_users: sharedWithEmails,
+        dt_expire: dtExpire
     }
     axios.patch(`/api/user/files/${uid}`, data)
         .then(_ => goToShareLink(`/share?uid=${uid}`))

@@ -43,6 +43,47 @@ input[type=text] {
     color: black;
 }
 
+select {
+    padding: 10px;
+    width: 200px;
+    color: black;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    border: none;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+.select {
+    position: relative
+}
+
+.select:after {
+    content: "\f078";
+    font-family: "FontAwesome";
+    font-size: 16px;
+    color: var(--accent);
+    right: 0px;
+    top: 0px;
+    padding: 4px;
+    position: absolute;
+    pointer-events: none;
+    margin-right: 8px;
+}
+
+.select:before {
+    content: '';
+    right: 4px;
+    top: 0px;
+    width: 23px;
+    height: 18px;
+    background: #fff;
+    position: absolute;
+    pointer-events: none;
+    display: block;
+}
+
 body.env-staging {
     background: var(--primary-staging);
 }

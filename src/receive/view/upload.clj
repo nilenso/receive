@@ -34,6 +34,18 @@
               :autocomplete "off"
               :id "shared-with-emails"
               :placeholder "Enter Emails separated by commas"}]]
+    [:div {:class "expiry-settings"}
+     [:label {:class "select"}
+      [:select {:name "file-expiry"
+                :autocomplete "off"
+                :id "expire-in"}
+       [:option {:value (* 60 60)} "Expire in 1 Hour"]
+       [:option {:value (* 60 60 3)} "Expire in 3 Hours"]
+       [:option {:value (* 60 60 8)} "Expire in Hours"]
+       [:option {:value (* 60 60 24)} "Expire in day"]
+       [:option {:value (* 60 60 24 5)} "Expire in days"]
+       [:option {:value (* 60 60 24 12)} "Expire in days"]
+       [:option {:value 0 :selected "selected"} "Don't expire"]]]]
     [:div {:class "save-settings"}
      [:button {:type "button"
                :class "small no-display"
@@ -43,5 +55,5 @@
      [:button {:type "button"
                :class "small"
                :id "upload-get-link"
-               :onclick "openShareLink()"} "Get Link"]]]
+               :onclick "saveSettings()"} "Get Link"]]]
    [:span {:class "upload-error"} "File size is too big!"]])
