@@ -3,7 +3,6 @@
    [clojure.java.io :as io]
    [clojure.string :as string]
    [clojure.tools.logging :as log]
-   [clj-time.coerce :as time-coerce]
    [clj-time.core :as time]
    [next.jdbc :as jdbc]
    [receive.config :as conf]
@@ -37,8 +36,7 @@
     (let [expire-in (-> conf/config :public-file :expire-in-sec)
           dt-expire (-> expire-in
                         (time/seconds)
-                        (#(time/plus (time/now) %))
-                        (time-coerce/to-sql-time))
+                        (#(time/plus (time/now) %)))
           result (model/save-file tx user-id filename dt-expire)
           uid (:uid result)]
       (save-to-disk file (file-save-path (str uid) filename))

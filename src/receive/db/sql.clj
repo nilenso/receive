@@ -16,7 +16,7 @@
   [filename dt-expire user-id]
   (-> (insert-into :file-storage)
       (columns :filename :dt-expire :owner-id)
-      (values [[filename (sql/call :cast dt-expire
+      (values [[filename (sql/call :cast (time-coerce/to-sql-time dt-expire)
                                    :timestamp) user-id]])
       sql/format))
 
