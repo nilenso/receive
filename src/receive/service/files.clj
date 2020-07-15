@@ -95,7 +95,7 @@
                                             (map :id))]
           (update-file-data tx uid {:private? private?
                                     :shared-with-user-ids shared-with-user-ids
-                                    :dt-expire (time-coerce/to-sql-time dt-expire)}))
+                                    :dt-expire dt-expire}))
         (error :forbidden))
       (error :not-found))))
 

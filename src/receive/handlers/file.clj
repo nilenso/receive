@@ -138,7 +138,8 @@
 (defn update-file [{:keys [route-params auth]
                     {shared-with-emails :shared_with_users
                      private? :is_private
-                     dt-expire :dt_expire} :params}]
+                     dt-expire :dt_expire
+                     :or {dt-expire :no-update}} :params}]
   (cond
     (not (all-domains-allowed?
           shared-with-emails)) (error->http-response

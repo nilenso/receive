@@ -1,15 +1,16 @@
 (ns receive.db.sql
   (:refer-clojure :exclude [update])
-  (:require  [honeysql.core :as sql]
-             [honeysql.types :refer [array]]
-             [honeysql-postgres.format]
-             [honeysql-postgres.helpers :as psqlh]
-             [honeysql.helpers :refer [insert-into
-                                       columns
-                                       values
-                                       where
-                                       update
-                                       sset]]))
+  (:require
+   [clj-time.coerce :as time-coerce]
+   [honeysql.core :as sql]
+   [honeysql-postgres.format]
+   [honeysql-postgres.helpers :as psqlh]
+   [honeysql.helpers :refer [insert-into
+                             columns
+                             values
+                             where
+                             update
+                             sset]]))
 
 (defn save-file
   [filename dt-expire user-id]
@@ -90,7 +91,9 @@
                                   (into-array Integer/TYPE shared-with-users)
                                   (sql/call :coalesce nil
                                             :shared-with-users))
-             :dt-expire (sql/call :coalesce dt-expire :dt-expire)})
+             :dt-expire (if (= dt-expire :no-update)
+                          (sql/call :coalesce nil :dt-expire)
+                          (time-coerce/to-sql-time dt-expire))})
       (where [:= :uid uid])
       (sql/format)))
 
