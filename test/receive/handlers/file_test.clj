@@ -100,16 +100,14 @@
   (with-redefs [handler/uuid-str
                 (constantly "958a5425-060b-4aad-ba65-bf25e4458991")
                 file-service/save-file
-                (constantly "958a5425-060b-4aad-ba65-bf25e4458991")]
+                (constantly {:uid "958a5425-060b-4aad-ba65-bf25e4458991"})]
     (let [tempfile (files/create-temp-file tempfile-path)
           file (tempfile->file tempfile)
           mock-response (mock-upload-response file)]
       (is (= mock-response
              {:status 200
-              :body {:name tempfile-name
-                     :success true
-                     :message "File saved successfully!"
-                     :uid "958a5425-060b-4aad-ba65-bf25e4458991"}})))))
+              :body {:success true
+                     :data {:uid "958a5425-060b-4aad-ba65-bf25e4458991"}}})))))
 
 (deftest download-link-test
   (with-redefs [handler/uuid-str (constantly "958a5425-060b-4aad-ba65-bf25e4458991")

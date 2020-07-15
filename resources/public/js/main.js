@@ -29,7 +29,7 @@ function uploadFile(obj, isPrivate) {
     })
         .then(({ data }) => {
             uploadInput[0].innerText = `Upload Complete!`
-            return data.uid
+            return data.data.uid
         })
         .then(uid => {
             if (isPrivate) {
