@@ -34,9 +34,10 @@
   [{user-id :user_id} file {:keys [filename] :as _file-data}]
   (jdbc/with-transaction [tx connection/datasource]
     (let [expire-in (-> conf/config :public-file :expire-in-sec)
-          dt-expire (-> expire-in
-                        (time/seconds)
-                        (#(time/plus (time/now) %)))
+          ;; No expiry by default for signed-in users
+          dt-expire (when-not user-id (-> expire-in
+                                          (time/seconds)
+                                          (#(time/plus (time/now) %))))
           result (model/save-file tx user-id filename dt-expire)
           uid (:uid result)]
       (save-to-disk file (file-save-path (str uid) filename))
