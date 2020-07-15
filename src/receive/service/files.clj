@@ -90,9 +90,9 @@
     (if-let [file (find-file uid)]
       (if (and auth
                (= user-id (:owner-id file)))
-        (let [shared-with-user-ids (->> shared-with-user-emails
-                                        (mapv #(user/find-or-create tx %))
-                                        (map :id))]
+        (let [shared-with-user-ids (some->> shared-with-user-emails
+                                            (mapv #(user/find-or-create tx %))
+                                            (map :id))]
           (update-file-data tx uid {:private? private?
                                     :shared-with-user-ids shared-with-user-ids
                                     :dt-expire (time-coerce/to-sql-time dt-expire)}))
