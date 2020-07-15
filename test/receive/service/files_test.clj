@@ -98,22 +98,22 @@
     (with-redefs [model/find-file
                   (constantly public-file-data)]
       (is (true?
-           (files/has-read-access? {:user_id 10} "mock_uid")))))
+           (files/has-read-access? {:user-id 10} "mock_uid")))))
   (testing "should return false when private and not owner and not shared with"
     (with-redefs [model/find-file
                   (constantly private-file-data)]
       (is (not=
-           true (files/has-read-access? {:user_id 10} "mock_uid")))))
+           true (files/has-read-access? {:user-id 10} "mock_uid")))))
   (testing "should return true when private and owner"
     (with-redefs [model/find-file
                   (constantly private-file-data)]
       (is (true?
-           (files/has-read-access? {:user_id 1} "mock_uid")))))
+           (files/has-read-access? {:user-id 1} "mock_uid")))))
   (testing "should return true when not owner but shared with"
     (with-redefs [model/find-file
                   (constantly private-file-data)]
       (is (true?
-           (files/has-read-access? {:user_id 2} "mock_uid"))))))
+           (files/has-read-access? {:user-id 2} "mock_uid"))))))
 
 (deftest find-and-update-file-test
   (testing "should return forbidden error when not auth provided"

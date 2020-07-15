@@ -1,9 +1,11 @@
 (ns receive.middlewares
-  (:require [clojure.string :as string]
-            [clojure.tools.logging :as log]
-            [clojure.walk :refer [keywordize-keys]]
-            [receive.error-handler :refer [not-error?]]
-            [receive.auth.jwt :as jwt]))
+  (:require
+   [clojure.set :refer [rename-keys]]
+   [clojure.string :as string]
+   [clojure.tools.logging :as log]
+   [clojure.walk :refer [keywordize-keys]]
+   [receive.error-handler :refer [not-error?]]
+   [receive.auth.jwt :as jwt]))
 
 (defn wrap-fallback-exception
   [handler]
@@ -49,7 +51,8 @@
                            :value)
           verified-token (jwt/verify access-token)
           auth (when (not-error? verified-token) verified-token)]
-      (handler (assoc request :auth auth)))))
+      (handler (assoc request
+                      :auth (rename-keys auth {:user_id :user-id}))))))
 
 (defn wrap-cookies-keyword
   "Converts :cookies in request to keywordized map"

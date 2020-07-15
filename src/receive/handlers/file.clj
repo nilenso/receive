@@ -108,7 +108,7 @@
 
 (defn uploaded-files-ui [{auth :auth}]
   (if auth
-    (let [files (->> (:user_id auth)
+    (let [files (->> (:user-id auth)
                      (files/get-uploaded-files)
                      (map file->file-data))]
       (base-view/success-body-builder
@@ -155,7 +155,7 @@
 
 (defn uploaded-files [{auth :auth}]
   (if auth
-    (success (->> (:user_id auth)
+    (success (->> (:user-id auth)
                   (files/get-uploaded-files)
                   (map (map-response-data :filename
                                           :uid

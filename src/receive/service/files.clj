@@ -31,7 +31,7 @@
 
 (defn save-file
   "Adds a new database entry and saves file to disk and returns the uid"
-  [{user-id :user_id} file {:keys [filename] :as _file-data}]
+  [{user-id :user-id} file {:keys [filename] :as _file-data}]
   (jdbc/with-transaction [tx connection/datasource]
     (let [expire-in (-> conf/config :public-file :expire-in-sec)
           ;; No expiry by default for signed-in users
@@ -82,7 +82,7 @@
   (model/update-file-data tx uid file-data))
 
 (defn find-and-update-file
-  [{user-id :user_id :as auth} uid {:keys [dt-expire
+  [{user-id :user-id :as auth} uid {:keys [dt-expire
                                            private?
                                            shared-with-user-emails]}]
   (jdbc/with-transaction [tx connection/datasource]
@@ -113,7 +113,7 @@
 (defn is-owner? [user-id owner-id]
   (= user-id owner-id))
 
-(defn is-file-owner? [{user-id :user_id} uid]
+(defn is-file-owner? [{user-id :user-id} uid]
   (->> (find-file uid)
        :owner-id
        (is-owner? user-id)))
@@ -122,7 +122,7 @@
   (when shared-with-users
     (some #(= user-id %) shared-with-users)))
 
-(defn has-read-access? [{user-id :user_id} uid]
+(defn has-read-access? [{user-id :user-id} uid]
   (let [{:keys [is-private owner-id shared-with-users]}
         (find-file uid)]
     (or (not is-private)

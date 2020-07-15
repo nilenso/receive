@@ -62,7 +62,7 @@
 
 (defn auth->user
   "Fetches the user data for authenticated user"
-  [{user-id :user_id}]
+  [{user-id :user-id}]
   (get-user user-id))
 
 (defn find-or-create

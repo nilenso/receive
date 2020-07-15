@@ -246,7 +246,7 @@
      [file-service/get-uploaded-files
       (constantly get-uploaded-files-data)]
       (let [mock-request (-> (mock/request :get "/api/user/files")
-                             (assoc :auth {:user_id 111}))
+                             (assoc :auth {:user-id 111}))
             response (handler/uploaded-files-ui mock-request)]
         (is (= (:status response) 200))
         (are [response html] (string/includes? response html)
@@ -264,7 +264,7 @@
                                                                "email2@nilenso.com"]
                                            :dt-expire (time/now)}
                                   :route-params {:id uid}
-                                  :auth {:user_id 10}))
+                                  :auth {:user-id 10}))
           mock-response (handler/update-file mock-request)
           status (:status mock-response)
           is-private (-> mock-response :body :data :is-private)]
@@ -284,7 +284,7 @@
                                              ["email1@non-nilenso.com"
                                               "email2@nilenso.com"]}
                                     :route-params {:id uid}
-                                    :auth {:user_id 10}))
+                                    :auth {:user-id 10}))
             mock-response (handler/update-file mock-request)]
         (is (= 400 (:status mock-response)))
         (is (= "Only same domain emails allowed"
@@ -304,7 +304,7 @@
                                              ["bad_email"
                                               "email2@gmail.com"]}
                                     :route-params {:id uid}
-                                    :auth {:user_id 10}))
+                                    :auth {:user-id 10}))
             mock-response (handler/update-file mock-request)]
         (is (= 400 (:status mock-response)))
         (is (= "Bad email address"
@@ -340,7 +340,7 @@
           mock-response (-> (mock/request :get
                                           (str "/api/user/files/" uid "/shared"))
                             (assoc :route-params {:id uid}
-                                   :auth {:user_id 11})
+                                   :auth {:user-id 11})
                             (handler/get-shared-with-users))]
       (is (= 200 (:status mock-response)))
       (is (= (-> mock-response :body :data)
