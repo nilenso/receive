@@ -74,7 +74,7 @@
                         data)))
 
 (defn find-file-valid? [file-data]
-  (s/explain ::find-file file-data))
+  (s/valid? ::find-file file-data))
 
 (defn uuid-valid? [params]
   (s/valid? ::uid (-> params :id)))
