@@ -15,14 +15,13 @@
    "Sign in"])
 
 (defn user-button [auth]
-  (let [user (user/auth->user auth)
-        first-name (:first-name user)
-        last-name (:last-name user)
+  (let [{:keys [first-name last-name email]} (user/auth->user auth)
         full-name (format "%s %s" first-name last-name)]
     [:div {:id "btn_user"
            :class (str "toolbar_btn "
                        (if auth "" "no-display"))}
-     full-name
+     [:div full-name]
+     [:div email]
      [:ul {:class "user_menu"}
       [:li [:a {:href "/user/files" :target "_self"} "My Files"]]
       [:li [:a {:href "/logout" :target "_self"}  "Logout"]]]]))

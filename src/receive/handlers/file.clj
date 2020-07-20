@@ -53,12 +53,8 @@
     :else
     (let [{:keys [tempfile filename]
            :as _file} (-> request :params :file)
-          uid (files/save-file auth tempfile {:filename filename})]
-      {:status 200
-       :body {:name filename
-              :uid (str uid)
-              :success true
-              :message "File saved successfully!"}})))
+          result (files/save-file auth tempfile {:filename filename})]
+      (success result))))
 
 (defn download-file
   [{:keys [params auth]}]
@@ -112,7 +108,7 @@
 
 (defn uploaded-files-ui [{auth :auth}]
   (if auth
-    (let [files (->> (:user_id auth)
+    (let [files (->> (:user-id auth)
                      (files/get-uploaded-files)
                      (map file->file-data))]
       (base-view/success-body-builder
@@ -137,7 +133,9 @@
 
 (defn update-file [{:keys [route-params auth]
                     {shared-with-emails :shared_with_users
-                     private? :is_private} :params}]
+                     private? :is_private
+                     dt-expire :dt_expire
+                     :or {dt-expire :no-update}} :params}]
   (cond
     (not (all-domains-allowed?
           shared-with-emails)) (error->http-response
@@ -149,14 +147,15 @@
     (let [result (files/find-and-update-file auth
                                              (:id route-params)
                                              {:private? private?
-                                              :shared-with-user-emails shared-with-emails})]
+                                              :shared-with-user-emails shared-with-emails
+                                              :dt-expire dt-expire})]
       (if-error result
                 :http-response
                 (success result)))))
 
 (defn uploaded-files [{auth :auth}]
   (if auth
-    (success (->> (:user_id auth)
+    (success (->> (:user-id auth)
                   (files/get-uploaded-files)
                   (map (map-response-data :filename
                                           :uid

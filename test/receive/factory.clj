@@ -21,6 +21,9 @@
         (gen/such-that non-blank-str? (gen/string-alphanumeric))
         (gen/such-that non-blank-str? (gen/string-alphanumeric)))))))
 
+(def shared-with-users
+  (gen/vector (s/gen pos-int?)))
+
 (defn generate-data
   "Takes a hash-map of keys and specs and returns a hash-map of
    key and generated data based on the spec"
@@ -37,7 +40,8 @@
 
 (defn generate-file []
   (generate-data
-   {:filename (s/gen :receive.spec.file/filename)}))
+   {:filename (s/gen :receive.spec.file/filename)
+    :shared-with-users shared-with-users}))
 
 (comment
   (generate-user)

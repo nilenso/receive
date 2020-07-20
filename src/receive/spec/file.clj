@@ -24,12 +24,11 @@
 (s/def ::id integer?)
 (s/def ::dt-created inst?)
 (s/def ::date inst?)
-(s/def ::nil nil?)
-(s/def ::dt-expire (s/or ::date ::nil))
-(s/def ::user-id (s/or ::id ::nil))
+(s/def ::dt-expire (s/nilable ::date))
+(s/def ::user-id (s/nilable ::id))
 (s/def ::private? boolean?)
 (s/def ::coll-of-ids (s/coll-of integer?))
-(s/def ::shared-with-users (s/or ::coll-of-ids ::nil))
+(s/def ::shared-with-users (s/nilable ::coll-of-ids))
 
 (s/def ::file (s/keys :req-un [::filename
                                ::content-type

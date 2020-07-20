@@ -3,7 +3,6 @@
    [clojure.java.io :as io]
    [clojure.string :as string]
    [clojure.tools.logging :as log]
-   [clj-time.coerce :as time-coerce]
    [clj-time.core :as time]
    [next.jdbc :as jdbc]
    [receive.config :as conf]
@@ -32,17 +31,17 @@
 
 (defn save-file
   "Adds a new database entry and saves file to disk and returns the uid"
-  [{user-id :user_id} file {:keys [filename] :as _file-data}]
+  [{user-id :user-id} file {:keys [filename] :as _file-data}]
   (jdbc/with-transaction [tx connection/datasource]
     (let [expire-in (-> conf/config :public-file :expire-in-sec)
-          dt-expire (-> expire-in
-                        (time/seconds)
-                        (#(time/plus (time/now) %))
-                        (time-coerce/to-sql-time))
+          ;; No expiry by default for signed-in users
+          dt-expire (when-not user-id (-> expire-in
+                                          (time/seconds)
+                                          (#(time/plus (time/now) %))))
           result (model/save-file tx user-id filename dt-expire)
           uid (:uid result)]
       (save-to-disk file (file-save-path (str uid) filename))
-      uid)))
+      result)))
 
 (defn find-file [uid]
   (model/find-file uid))
@@ -83,16 +82,19 @@
   (model/update-file-data tx uid file-data))
 
 (defn find-and-update-file
-  [{user-id :user_id :as auth} uid {:keys [private? shared-with-user-emails]}]
+  [{user-id :user-id :as auth} uid {:keys [dt-expire
+                                           private?
+                                           shared-with-user-emails]}]
   (jdbc/with-transaction [tx connection/datasource]
     (if-let [file (find-file uid)]
       (if (and auth
                (= user-id (:owner-id file)))
-        (let [shared-with-user-ids (->> shared-with-user-emails
-                                        (mapv #(user/find-or-create tx %))
-                                        (map :id))]
+        (let [shared-with-user-ids (some->> shared-with-user-emails
+                                            (mapv #(user/find-or-create tx %))
+                                            (map :id))]
           (update-file-data tx uid {:private? private?
-                                    :shared-with-user-ids shared-with-user-ids}))
+                                    :shared-with-user-ids shared-with-user-ids
+                                    :dt-expire dt-expire}))
         (error :forbidden))
       (error :not-found))))
 
@@ -111,7 +113,7 @@
 (defn is-owner? [user-id owner-id]
   (= user-id owner-id))
 
-(defn is-file-owner? [{user-id :user_id} uid]
+(defn is-file-owner? [{user-id :user-id} uid]
   (->> (find-file uid)
        :owner-id
        (is-owner? user-id)))
@@ -120,7 +122,7 @@
   (when shared-with-users
     (some #(= user-id %) shared-with-users)))
 
-(defn has-read-access? [{user-id :user_id} uid]
+(defn has-read-access? [{user-id :user-id} uid]
   (let [{:keys [is-private owner-id shared-with-users]}
         (find-file uid)]
     (or (not is-private)

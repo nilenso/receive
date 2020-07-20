@@ -1,21 +1,22 @@
 (ns receive.db.sql
   (:refer-clojure :exclude [update])
-  (:require  [honeysql.core :as sql]
-             [honeysql.types :refer [array]]
-             [honeysql-postgres.format]
-             [honeysql-postgres.helpers :as psqlh]
-             [honeysql.helpers :refer [insert-into
-                                       columns
-                                       values
-                                       where
-                                       update
-                                       sset]]))
+  (:require
+   [clj-time.coerce :as time-coerce]
+   [honeysql.core :as sql]
+   [honeysql-postgres.format]
+   [honeysql-postgres.helpers :as psqlh]
+   [honeysql.helpers :refer [insert-into
+                             columns
+                             values
+                             where
+                             update
+                             sset]]))
 
 (defn save-file
   [filename dt-expire user-id]
   (-> (insert-into :file-storage)
       (columns :filename :dt-expire :owner-id)
-      (values [[filename (sql/call :cast dt-expire
+      (values [[filename (sql/call :cast (time-coerce/to-sql-time dt-expire)
                                    :timestamp) user-id]])
       sql/format))
 
@@ -83,12 +84,16 @@
       (values [[user-id google-id]])
       (sql/format)))
 
-(defn update-file [uid {:keys [private? shared-with-users]}]
+(defn update-file [uid {:keys [private? shared-with-users dt-expire]}]
   (-> (update :file-storage)
-      (sset {:is-private private?
-             :shared-with-users (if (empty? shared-with-users)
-                                  nil
-                                  (array shared-with-users))})
+      (sset {:is-private (sql/call :coalesce private? :is-private)
+             :shared-with-users (if shared-with-users
+                                  (into-array Integer/TYPE shared-with-users)
+                                  (sql/call :coalesce nil
+                                            :shared-with-users))
+             :dt-expire (if (= dt-expire :no-update)
+                          (sql/call :coalesce nil :dt-expire)
+                          (time-coerce/to-sql-time dt-expire))})
       (where [:= :uid uid])
       (sql/format)))
 

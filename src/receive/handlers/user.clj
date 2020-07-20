@@ -9,7 +9,7 @@
 
 (defn fetch-user [{auth :auth}]
   (if auth
-    (success (user/get-user (:user_id auth)))
+    (success (user/get-user (:user-id auth)))
     (error->http-response (error :unauthorized))))
 
 (defn sign-in [request]
