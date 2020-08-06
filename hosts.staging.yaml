@@ -1,6 +1,0 @@
-all:
-  children:
-    staging:
-      hosts:
-        167.99.19.54:
-          ansible_user: root

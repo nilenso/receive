@@ -1,0 +1,2 @@
+[production]
+receive.nilenso.com env=production ansible_user=root
