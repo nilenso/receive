@@ -1,0 +1,2 @@
+[staging]
+receive-staging.nilenso.com env=staging ansible_user=root

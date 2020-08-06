@@ -1,0 +1,61 @@
+---
+- hosts: all
+  tasks:
+    - name: Update all Ubuntu packages
+      apt:
+        upgrade: "dist"
+      when: ansible_distribution == 'Ubuntu'
+
+    - name: Ensure postgres is installed and is latest
+      apt:
+        name: postgresql
+        state: latest
+
+    - name: Ensure postgres is running
+      service:
+        name: postgresql
+        state: started
+
+    - name: Install JDK 8
+      apt:
+        name: openjdk-8-jdk
+        state: present
+
+    - name: Install Leiningen is installed and is latest
+      apt:
+        name: leiningen
+        state: latest
+
+    - name: Clone repository
+      git:
+        repo: "https://gitlab.com/nilenso/receive.git"
+        dest: /opt/receive/{{ env }}/
+
+    - name: Copy database config
+      copy:
+        src: /opt/receive/database.{{ env }}.edn
+        dest: /opt/receive/{{ env }}/resources/database.edn
+        remote_src: true
+
+    - name: Copy Secrets
+      copy:
+        src: /opt/receive/secrets.{{ env }}.edn
+        dest: /opt/receive/{{ env }}/resources/secrets.edn
+        remote_src: true
+
+    - name: Leiningen dependencies
+      command: lein deps
+      args:
+        chdir: /opt/receive/{{ env }}/
+
+    - name: Database Migrations
+      command: lein migrate
+      args:
+        chdir: /opt/receive/{{ env }}/
+
+    - name: Create uberjar
+      command: lein uberjar
+      args:
+        chdir: /opt/receive/{{ env }}/
+    # - name: Restart service
+    #   command: systemctl restart receive.staging.service
