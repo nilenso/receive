@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css?family=Exo+2:400,500,900&display=swap');
 html {
-    overflow: scroll;
+    overflow: none;
 }
 
 input[type=text] {

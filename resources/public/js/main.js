@@ -70,7 +70,7 @@ function saveSettings() {
     const data = {
         is_private: isPrivate,
         shared_with_users: sharedWithEmails,
-        dt_expire: dtExpire
+        dt_expire: expireIn === 0 ? undefined: dtExpire
     }
     axios.patch(`/api/user/files/${uid}`, data)
         .then(_ => goToShareLink(`/share?uid=${uid}`))
